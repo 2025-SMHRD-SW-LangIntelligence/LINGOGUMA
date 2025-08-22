@@ -53,10 +53,17 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("message", "로그인이 필요합니다."));
         }
-        return ResponseEntity.ok(user.getNickname() + "님 로그인 중입니다.");
+        // ✅ 문자열 말고 JSON 객체로 반환
+        return ResponseEntity.ok(java.util.Map.of(
+                "nickname", user.getNickname(),
+                "id", user.getId(),          // 로그인 아이디(문자열)
+                "index", user.getIndex()     // PK
+        ));
     }
+
 
     // 로그아웃
     @PostMapping("/logout")

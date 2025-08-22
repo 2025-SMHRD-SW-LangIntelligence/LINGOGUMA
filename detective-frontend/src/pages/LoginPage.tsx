@@ -3,6 +3,8 @@ import { api } from "../shared/api/client";
 import { useAuth } from "../store/auth.store";
 import { Link, useNavigate } from "react-router-dom";
 
+type Me = { nickname: string; id: string; index?: number };
+
 export default function LoginPage() {
   const nav = useNavigate();
   const set = useAuth((s) => s.set);
@@ -10,18 +12,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
 
-  const submit = async (e: any) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
     try {
-      const { data } = await api.post("/users/login", {
-        id,
-        password,
-      });
-      set({ user: data }); // 지금은 세션 기반이라 token 없음
+      // 1) 로그인: 세션 쿠키가 생성됨 (client.ts에 withCredentials=true 필요)
+      await api.post("/users/login", { id, password });
+
+      // 2) 내 정보 조회: { nickname, id, index } 형태여야 함
+      const { data } = await api.get<Me>("/users/me");
+
+      // 3) 전역 스토어에 저장 → 헤더에서 nickname(id)님 표시 가능
+      set({ user: data });
+
+      // 4) 이동
       nav("/");
     } catch (e: any) {
-      setErr("이메일 또는 비밀번호가 올바르지 않습니다.");
+      const msg =
+        e?.response?.data?.message ??
+        e?.response?.data ??
+        e?.message ??
+        "이메일 또는 비밀번호가 올바르지 않습니다.";
+      setErr(typeof msg === "string" ? msg : "로그인에 실패했습니다.");
     }
   };
 
@@ -29,12 +41,12 @@ export default function LoginPage() {
     <form onSubmit={submit} style={{ display: "grid", gap: 8 }}>
       <h2>로그인</h2>
       <input
-        placeholder="id"
+        placeholder="ID"
         value={id}
         onChange={(e) => setId(e.target.value)}
       />
       <input
-        placeholder="password"
+        placeholder="Password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
