@@ -26,10 +26,12 @@ export default function SignupPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [resentMsg, setResentMsg] = useState<string>("");
 
+  const getErrMsg = (e: any, fallback: string) =>
+    e?.response?.data?.message ?? e?.response?.data ?? e?.message ?? fallback;
+
   const validate = () => {
     if (!f.id.trim()) return "ID(로그인 아이디)를 입력해주세요.";
     if (!f.email.trim()) return "이메일을 입력해주세요.";
-    // 아주 간단한 이메일 형식 체크(테스트용)
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email))
       return "이메일 형식이 올바르지 않습니다.";
     if (!f.nickname.trim()) return "닉네임을 입력해주세요.";
@@ -37,7 +39,7 @@ export default function SignupPage() {
     return "";
   };
 
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMsg("");
     setErr("");
@@ -49,55 +51,52 @@ export default function SignupPage() {
       return;
     }
 
-    try {
-      setLoading(true);
-      await api.post("/users/signup", f);
-      setMsg(
-        "가입 완료! 이메일 인증 메일을 확인해주세요. 인증 후 로그인 가능합니다."
-      );
-      // 자동 이동 대신, 사용자가 인증 후 로그인 페이지로 이동하도록 유도
-      // nav("/login"); // 필요하면 주석 해제
-    } catch (e: any) {
-      const m =
-        e?.response?.data ?? e?.message ?? "회원가입 중 오류가 발생했습니다.";
-      setErr(typeof m === "string" ? m : "회원가입 실패");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    api
+      .post("/users/signup", f)
+      .then(() => {
+        setMsg(
+          "가입 완료! 이메일 인증 메일을 확인해주세요. 인증 후 로그인 가능합니다."
+        );
+        // 필요하면 자동 이동:
+        // nav("/login");
+      })
+      .catch((e) => {
+        setErr(getErrMsg(e, "회원가입 중 오류가 발생했습니다."));
+      })
+      .finally(() => setLoading(false));
   };
 
   // 인증 메일 재발송
-  const resendVerification = async () => {
+  const resendVerification = () => {
     setErr("");
     setResentMsg("");
+
     if (!f.email.trim()) {
       setErr("이메일을 입력한 뒤 재발송을 시도하세요.");
       return;
     }
-    try {
-      setLoading(true);
-      // 백엔드: @PostMapping("/resend-verification") @RequestParam("email")
-      await api.post(
-        `/users/resend-verification?email=${encodeURIComponent(f.email)}`
-      );
-      setResentMsg(
-        "인증 메일을 재발송했습니다. 메일함(스팸함 포함)을 확인하세요."
-      );
-    } catch (e: any) {
-      const m =
-        e?.response?.data ?? e?.message ?? "재발송 중 오류가 발생했습니다.";
-      setErr(typeof m === "string" ? m : "재발송 실패");
-    } finally {
-      setLoading(false);
-    }
+
+    setLoading(true);
+    api
+      .post(`/users/resend-verification?email=${encodeURIComponent(f.email)}`)
+      .then(() => {
+        setResentMsg(
+          "인증 메일을 재발송했습니다. 메일함(스팸함 포함)을 확인하세요."
+        );
+      })
+      .catch((e) => {
+        setErr(getErrMsg(e, "재발송 중 오류가 발생했습니다."));
+      })
+      .finally(() => setLoading(false));
   };
 
   // 테스트 편의용 자동 채우기
   const fillTest = () => {
     const rand = Math.floor(Math.random() * 10000);
     setF({
-      id: `tester${rand}`, // 로그인 아이디
-      email: `tester${rand}@example.com`, // 테스트 이메일
+      id: `tester${rand}`,
+      email: `tester${rand}@example.com`,
       password: "1234",
       nickname: "홍길동",
     });

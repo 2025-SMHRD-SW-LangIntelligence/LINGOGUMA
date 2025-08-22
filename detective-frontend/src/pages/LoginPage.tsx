@@ -12,29 +12,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
 
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
-    try {
-      // 1) 로그인: 세션 쿠키가 생성됨 (client.ts에 withCredentials=true 필요)
-      await api.post("/users/login", { id, password });
 
-      // 2) 내 정보 조회: { nickname, id, index } 형태여야 함
-      const { data } = await api.get<Me>("/users/me");
-
-      // 3) 전역 스토어에 저장 → 헤더에서 nickname(id)님 표시 가능
-      set({ user: data });
-
-      // 4) 이동
-      nav("/");
-    } catch (e: any) {
-      const msg =
-        e?.response?.data?.message ??
-        e?.response?.data ??
-        e?.message ??
-        "이메일 또는 비밀번호가 올바르지 않습니다.";
-      setErr(typeof msg === "string" ? msg : "로그인에 실패했습니다.");
-    }
+    // 1) 로그인 → 2) /me 조회 → 3) 전역 상태 저장 → 4) 이동
+    api
+      .post("/users/login", { id, password })
+      .then(() => api.get<Me>("/users/me"))
+      .then(({ data }) => {
+        set({ user: data });
+        nav("/");
+      })
+      .catch((e: any) => {
+        const msg =
+          e?.response?.data?.message ??
+          e?.response?.data ??
+          e?.message ??
+          "이메일 또는 비밀번호가 올바르지 않습니다.";
+        setErr(typeof msg === "string" ? msg : "로그인에 실패했습니다.");
+      });
   };
 
   return (
