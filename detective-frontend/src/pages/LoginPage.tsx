@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.post("/users/login", { id, password });
       set({ user: data }); // 세션 기반
-      nav("/");
+      nav("/scenarios", { replace: true });
     } catch {
       setErr("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
