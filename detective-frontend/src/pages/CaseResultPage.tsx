@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import type { Suspect, Question } from "../shared/types/case";
-import "./CaseSummaryPage.css";
+import "./CaseResultPage.css";
 
 /** 시나리오 JSON만 바꾸면 자동으로 맞춰지는 결과 입력 화면 */
-export default function CaseSummaryPage(props: {
+export default function CaseResultPage(props: {
   suspects?: Suspect[];
   questions?: Question[];
-  onSubmit?: (payload: { culpritId: string; answers: Record<string, string> }) => void;
+  onSubmit?: (payload: {
+    culpritId: string;
+    answers: Record<string, string>;
+  }) => void;
 }) {
   const suspects = useMemo(() => props.suspects ?? [], [props.suspects]);
   const questions = useMemo(() => props.questions ?? [], [props.questions]);

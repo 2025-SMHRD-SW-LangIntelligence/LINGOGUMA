@@ -22,22 +22,28 @@ export default function MainLayout() {
   return (
     <div>
       <header style={{ padding: 12, borderBottom: "1px solid #eee" }}>
-        <NavLink to="/" style={linkStyle}>Lobby</NavLink> ·
-        <NavLink to="/scenarios" style={linkStyle}>Scenarios</NavLink> ·
-        <NavLink to="/me" style={linkStyle}>My</NavLink>
-        {/* 현재 경로에 :scenarioId가 있을 때만 Summary 메뉴 노출 */}
+        <NavLink to="/" style={linkStyle}>
+          Lobby
+        </NavLink>{" "}
+        ·
+        <NavLink to="/scenarios" style={linkStyle}>
+          Scenarios
+        </NavLink>{" "}
+        ·
+        <NavLink to="/me" style={linkStyle}>
+          My
+        </NavLink>
+        {/* 현재 경로에 :scenarioId가 있을 때만 Result 메뉴 노출 */}
         {scenarioId && (
           <>
-            {" "}·{" "}
-            <NavLink
-              to={`/play/${scenarioId}/summary`}
-              style={linkStyle}
-            >
-              Summary
+            {" "}
+            ·{" "}
+            <NavLink to={`/play/${scenarioId}/result`} style={linkStyle}>
+              Result
             </NavLink>
           </>
-        )}
-        {" "}·{" "}
+        )}{" "}
+        ·{" "}
         {user ? (
           <>
             <span style={{ marginLeft: 8 }}>{user?.nickname ?? "User"}님</span>
@@ -55,7 +61,9 @@ export default function MainLayout() {
             </button>
           </>
         ) : (
-          <NavLink to="/login" style={linkStyle}>Login</NavLink>
+          <NavLink to="/login" style={linkStyle}>
+            Login
+          </NavLink>
         )}
       </header>
 

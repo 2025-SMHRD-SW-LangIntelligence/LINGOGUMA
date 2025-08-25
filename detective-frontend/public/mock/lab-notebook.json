@@ -5,11 +5,28 @@
   "suspects": [
     { "id": 1, "name": "최연구원", "avatar": "/avatars/researcher.png" },
     { "id": 2, "name": "김참가자", "avatar": "/avatars/participant.png" },
-    { "id": 3, "name": "양인턴",   "avatar": "/avatars/intern.png" }
+    { "id": 3, "name": "양인턴", "avatar": "/avatars/intern.png" }
   ],
   "resultQuestions": [
-    { "id": "when", "label": "연구일지를 언제 훔쳤나요?", "required": true, "placeholder": "예: 10:15분" },
-    { "id": "how",  "label": "연구일지를 어떻게 훔쳤나요?", "required": true, "placeholder": "예: 단검으로 찔러서 살인했다."},
-    { "id": "why",  "label": "연구일지를 왜 훔쳤나요?", "required": true, "placeholder": "예: 자신을 두고 김여자와 바람을 피워서", "multiline": true, "maxLength": 600}
+    {
+      "id": "when",
+      "label": "연구일지를 언제 훔쳤나요?",
+      "required": true,
+      "placeholder": "예: 10:15분"
+    },
+    {
+      "id": "how",
+      "label": "연구일지를 어떻게 훔쳤나요?",
+      "required": true,
+      "placeholder": "예: 단검으로 찔러서 살인했다."
+    },
+    {
+      "id": "why",
+      "label": "연구일지를 왜 훔쳤나요?",
+      "required": true,
+      "placeholder": "예: 자신을 두고 김여자와 바람을 피워서",
+      "multiline": true,
+      "maxLength": 600
+    }
   ]
 }

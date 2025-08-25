@@ -11,8 +11,7 @@ import ScenarioSelectPage from "../../pages/ScenarioSelectPage";
 // import GamePlayPage from "../../pages/GamePlayPage";   // 있으면 import
 // import MyPage from "../../pages/MyPage";
 // import AdminDashboardPage from "../../pages/AdminDashboardPage";
-import CaseSummaryRoute from "../../pages/CaseSummaryRoute";
-
+import CaseResultRoute from "../../pages/CaseResultRoute";
 
 const GamePlayPage = () => <div>Game Play</div>;
 const MyPage = () => <div>My Page</div>;
@@ -34,7 +33,7 @@ export const router = createBrowserRouter([
       { path: "/", element: <LobbyPage /> },
       { path: "/scenarios", element: <ScenarioSelectPage /> },
       { path: "/play/:scenarioId", element: <GamePlayPage /> },
-      { path: "/play/:scenarioId/summary", element: <CaseSummaryRoute /> },
+      { path: "/play/:scenarioId/result", element: <CaseResultRoute /> },
 
       {
         path: "/me",
