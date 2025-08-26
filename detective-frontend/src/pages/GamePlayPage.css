@@ -307,3 +307,65 @@
     transform: none;
   }
 }
+
+.memo-popup {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  background: #1e1e1e;
+  border: 2px solid #e77a3e;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  resize: both; /* 크기 조절 가능 */
+  overflow: auto;
+}
+
+.memo-header {
+  background: #e77a3e;
+  color: #fff;
+  font-weight: bold;
+  padding: 6px 10px;
+  cursor: move; /* 마우스 커서 변경 */
+  user-select: none; /* 드래그 시 텍스트 선택 방지 */
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.memo-popup textarea {
+  flex: 1;
+  resize: none;
+  background: #2a2a2a;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.memo-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.memo-actions button {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.memo-actions button:first-child {
+  background: #666;
+  color: #fff;
+}
+
+.memo-actions button:last-child {
+  background: #e77a3e;
+  color: #fff;
+}

@@ -154,6 +154,40 @@ export default function GamePlayPage() {
   const mm = String(Math.floor(elapsedSec / 60)).padStart(2, "0");
   const ss = String(elapsedSec % 60).padStart(2, "0");
 
+  // ✅ 메모 상태
+  const [memoOpen, setMemoOpen] = useState(false);
+  const [memoText, setMemoText] = useState("");
+
+  // 메모창 위치 상태
+  const [memoPos, setMemoPos] = useState({ x: 20, y: 80 });
+  const memoRef = useRef<HTMLDivElement | null>(null);
+  const dragData = useRef<{ offsetX: number; offsetY: number } | null>(null);
+
+  // 메모창 드래그 이벤트 핸들러
+  const onDragStart = (e: React.MouseEvent) => {
+    if (!memoRef.current) return;
+    dragData.current = {
+      offsetX: e.clientX - memoPos.x,
+      offsetY: e.clientY - memoPos.y,
+    };
+    document.addEventListener("mousemove", onDragging);
+    document.addEventListener("mouseup", onDragEnd);
+  };
+
+  const onDragging = (e: MouseEvent) => {
+    if (!dragData.current) return;
+    setMemoPos({
+      x: e.clientX - dragData.current.offsetX,
+      y: e.clientY - dragData.current.offsetY,
+    });
+  };
+
+  const onDragEnd = () => {
+    dragData.current = null;
+    document.removeEventListener("mousemove", onDragging);
+    document.removeEventListener("mouseup", onDragEnd);
+  };
+
   // 데이터 세팅
   useEffect(() => {
     if (!data) return;
@@ -276,10 +310,37 @@ export default function GamePlayPage() {
         <button className="tool-btn" title="증거 검색">
           🔎
         </button>
-        <button className="tool-btn" title="메모 작성">
+        <button
+          className="tool-btn"
+          title="메모 작성"
+          onClick={() => setMemoOpen((v) => !v)}
+        >
           ✍️
         </button>
       </div>
+
+      {/* ✅ 메모 팝업 */}
+      {memoOpen && (
+        <div
+          ref={memoRef}
+          className="memo-popup"
+          style={{ top: memoPos.y, left: memoPos.x }}
+        >
+          {/* 드래그 핸들 영역 */}
+          <div className="memo-header" onMouseDown={onDragStart}>
+            📝 메모장
+          </div>
+          <textarea
+            value={memoText}
+            onChange={(e) => setMemoText(e.target.value)}
+            placeholder="메모를 입력하세요..."
+          />
+          <div className="memo-actions">
+            <button onClick={() => setMemoOpen(false)}>닫기</button>
+            <button onClick={() => setMemoText("")}>초기화</button>
+          </div>
+        </div>
+      )}
 
       {/* 중앙 무대: ‘대상 선택’은 여기서만 */}
       <div className="stage">
