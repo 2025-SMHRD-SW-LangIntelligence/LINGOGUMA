@@ -1,11 +1,14 @@
 package com.lingoguma.detective_backend.user.repository;
 
+import com.lingoguma.detective_backend.user.entity.Role;
 import com.lingoguma.detective_backend.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
+
 
 /**
  * User 저장/조회 Repository
@@ -27,5 +30,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     Optional<User> findByEmailVerificationToken(String token);
+
+    // 🔽 관리자 페이지용 보강
+    long countByRole(Role role);
+
+    // 간단한 검색(닉네임/이메일/로그인ID)
+    List<User> findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrIdContainingIgnoreCase(
+            String nickname, String email, String id
+    );
 }
 
