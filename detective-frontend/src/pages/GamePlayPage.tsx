@@ -142,27 +142,23 @@ export default function GamePlayPage() {
   const [viewId, setViewId] = useState<string | null>(null); // 우측 패널 아바타로만 변경
 
   const [chatOpen, setChatOpen] = useState(true);
-  const [leftSec, setLeftSec] = useState<number>(10 * 60 + 36);
+  const [elapsedSec, setElapsedSec] = useState(0);
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
 
   // ⏳ 타이머
   useEffect(() => {
-    const t = window.setInterval(
-      () => setLeftSec((x) => (x > 0 ? x - 1 : 0)),
-      1000
-    );
+    const t = window.setInterval(() => setElapsedSec((x) => x + 1), 1000);
     return () => window.clearInterval(t);
   }, []);
-  const mm = String(Math.floor(leftSec / 60)).padStart(2, "0");
-  const ss = String(leftSec % 60).padStart(2, "0");
+  const mm = String(Math.floor(elapsedSec / 60)).padStart(2, "0");
+  const ss = String(elapsedSec % 60).padStart(2, "0");
 
   // 데이터 세팅
   useEffect(() => {
     if (!data) return;
     setMsgs(data.messages ?? []);
     setActiveId((data.suspects && data.suspects[0]?.id) || null);
-    setLeftSec(data.timeLimitSec ?? 10 * 60 + 36);
   }, [data]);
 
   // 우측 리스트 스크롤
