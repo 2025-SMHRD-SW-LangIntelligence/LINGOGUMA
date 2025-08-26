@@ -1,156 +1,153 @@
+// src/main/java/com/lingoguma/detective_backend/user/service/UserService.java
 package com.lingoguma.detective_backend.user.service;
 
-import com.lingoguma.detective_backend.user.dto.SignUpRequest;
-import com.lingoguma.detective_backend.user.entity.User;
 import com.lingoguma.detective_backend.user.entity.Role;
+import com.lingoguma.detective_backend.user.entity.User;
 import com.lingoguma.detective_backend.user.repository.UserRepository;
-import com.lingoguma.detective_backend.user.service.email.EmailSender;
-
 import lombok.RequiredArgsConstructor;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
-    private static final Duration TOKEN_TTL = Duration.ofHours(24);
-
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final EmailSender emailSender;
 
-    @Value("${app.mail.verification-url}")
-    private String verificationUrl; // e.g. https://your-domain.com/api/users/verify-email
-
-    /** 회원가입: 저장 + 이메일 인증 메일 발송 */
-    public Long signUp(SignUpRequest request) {
-        // 유효성
-        requireText(request.getId(), "ID(로그인 아이디)를 입력해주세요.");
-        requireText(request.getEmail(), "이메일을 입력해주세요.");
-        requireText(request.getPassword(), "비밀번호를 입력해주세요.");
-        requireText(request.getNickname(), "닉네임을 입력해주세요.");
-
-        // 중복
-        if (userRepository.existsByLoginId(request.getId())) {
-            throw new IllegalStateException("이미 사용 중인 ID입니다.");
+    /** 세션의 LOGIN_ID 등 문자열 로그인 식별자로 유저 조회 */
+    public User getByLoginId(String loginId) {
+        if (loginId == null || loginId.isBlank()) {
+            throw new IllegalArgumentException("loginId가 비어있습니다.");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalStateException("이미 사용 중인 이메일입니다.");
-        }
-
-        // 토큰
-        String token = UUID.randomUUID().toString().replace("-", "");
-        LocalDateTime expiresAt = LocalDateTime.now().plus(TOKEN_TTL);
-
-        User user = User.builder()
-                .id(request.getId())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .nickname(request.getNickname())
-                .role(Role.MEMBER)
-                .emailVerified(false)
-                .emailVerificationToken(token)
-                .emailVerificationExpiresAt(expiresAt)
-                .build();
-
-        Long index = userRepository.save(user).getIndex();
-
-        // 인증 메일
-        String link = verificationUrl + "?token=" + token;
-        String subject = "[링고구마] 이메일 인증을 완료해주세요";
-        String body = """
-            <p>안녕하세요, %s 님.</p>
-            <p>아래 링크를 클릭해 이메일 인증을 완료해주세요.</p>
-            <p><a href="%s">이메일 인증하기</a></p>
-            <p>유효기간: 24시간</p>
-            """.formatted(user.getNickname(), link);
-
-        emailSender.send(user.getEmail(), subject, body);
-
-        return index;
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 로그인 ID: " + loginId));
     }
 
-    /** 이메일 인증 처리 */
+    /** PK(index)로 유저 조회 */
+    public User getByIndex(Long index) {
+        if (index == null) throw new IllegalArgumentException("index가 null 입니다.");
+        return userRepository.findById(index)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자(PK): " + index));
+    }
+
+    /** 이메일로 유저 조회 */
+    public User getByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email이 비어있습니다.");
+        }
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일: " + email));
+    }
+
+    /** 중복 체크 */
+    public boolean existsByLoginId(String loginId) {
+        if (loginId == null || loginId.isBlank()) return false;
+        return userRepository.existsByLoginId(loginId);
+    }
+
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) return false;
+        return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * 회원 가입/등록
+     * - password는 이미 인코딩되어 들어온다고 가정(보안 정책에 맞게 Controller/Facade에서 인코딩 권장)
+     */
+    @Transactional
+    public User register(String loginId,
+                         String email,
+                         String encodedPassword,
+                         String nickname,
+                         Role roleOrNull) {
+
+        if (loginId == null || loginId.isBlank()) throw new IllegalArgumentException("loginId는 필수입니다.");
+        if (email == null || email.isBlank())     throw new IllegalArgumentException("email은 필수입니다.");
+        if (encodedPassword == null || encodedPassword.isBlank())
+            throw new IllegalArgumentException("password는 필수입니다.");
+        if (nickname == null || nickname.isBlank()) throw new IllegalArgumentException("nickname은 필수입니다.");
+
+        if (userRepository.existsByLoginId(loginId)) {
+            throw new IllegalStateException("이미 사용 중인 로그인 ID입니다: " + loginId);
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalStateException("이미 사용 중인 이메일입니다: " + email);
+        }
+
+        Role role = (roleOrNull != null) ? roleOrNull : Role.MEMBER;
+
+        User user = User.builder()
+                .id(loginId)
+                .email(email)
+                .password(encodedPassword) // Controller에서 BCrypt 등으로 인코딩하여 전달 권장
+                .nickname(nickname)
+                .role(role)
+                .emailVerified(false)
+                .build();
+
+        // createdAt은 @PrePersist에서 자동 세팅
+        return userRepository.save(user);
+    }
+
+    /** 이메일 인증 토큰 검증/확정 */
+    @Transactional
     public void verifyEmail(String token) {
-        requireText(token, "유효하지 않은 토큰입니다.");
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("인증 토큰이 비어있습니다.");
+        }
 
         User user = userRepository.findByEmailVerificationToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 토큰입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 인증 토큰입니다."));
 
-        if (user.getEmailVerificationExpiresAt() == null ||
-            user.getEmailVerificationExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("인증 토큰이 만료되었습니다. 다시 요청해주세요.");
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = user.getEmailVerificationExpiresAt();
+        if (expiresAt != null && expiresAt.isBefore(now)) {
+            throw new IllegalStateException("인증 토큰이 만료되었습니다.");
         }
 
         user.setEmailVerified(true);
-        user.setVerifiedAt(LocalDateTime.now());
+        user.setVerifiedAt(now);
         user.setEmailVerificationToken(null);
         user.setEmailVerificationExpiresAt(null);
-        userRepository.save(user);
+        // dirty checking으로 flush
     }
 
-    /** 인증 메일 재발송 */
-    public void resendVerification(String email) {
-        requireText(email, "이메일을 입력해주세요.");
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자가 없습니다."));
-
-        if (user.isEmailVerified()) return; // 이미 인증 완료
-
-        String token = UUID.randomUUID().toString().replace("-", "");
-        LocalDateTime expiresAt = LocalDateTime.now().plus(TOKEN_TTL);
-
-        user.setEmailVerificationToken(token);
-        user.setEmailVerificationExpiresAt(expiresAt);
-        userRepository.save(user);
-
-        String link = verificationUrl + "?token=" + token;
-        String subject = "[링고구마] 이메일 인증 재발송";
-        String body = """
-            <p>아래 링크를 클릭해 이메일 인증을 완료해주세요.</p>
-            <p><a href="%s">이메일 인증하기</a></p>
-            <p>유효기간: 24시간</p>
-            """.formatted(link);
-
-        emailSender.send(user.getEmail(), subject, body);
-    }
-
-    /** 로그인 (이메일 인증 여부 확인) */
-    public User login(String id, String password) {
-        requireText(id, "ID(로그인 아이디)를 입력해주세요.");
-        requireText(password, "비밀번호를 입력해주세요.");
-
-        User user = userRepository.findByLoginId(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID가 존재하지 않습니다."));
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+    /** 닉네임 변경 */
+    @Transactional
+    public void changeNickname(Long userIndex, String newNickname) {
+        if (newNickname == null || newNickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임이 비어있습니다.");
         }
-        if (!user.isEmailVerified()) {
-            throw new IllegalStateException("이메일 인증 후 로그인할 수 있습니다.");
-        }
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return user;
+        User user = getByIndex(userIndex);
+        user.setNickname(newNickname);
     }
 
-    // ----- util -----
-    private void requireText(String v, String msg) {
-        if (!StringUtils.hasText(v)) throw new IllegalArgumentException(msg);
+    /**
+     * 비밀번호 변경
+     * - newEncodedPassword는 인코딩된 비밀번호라고 가정.
+     *   (스프링 시큐리티 사용 시 Controller/Facade에서 PasswordEncoder로 인코딩 후 전달)
+     */
+    @Transactional
+    public void changePassword(Long userIndex, String newEncodedPassword) {
+        if (newEncodedPassword == null || newEncodedPassword.isBlank()) {
+            throw new IllegalArgumentException("비밀번호가 비어있습니다.");
+        }
+        User user = getByIndex(userIndex);
+        user.setPassword(newEncodedPassword);
+    }
+
+    /** 임시: 존재하지 않으면 생성(테스트/부트스트랩 용도) */
+    @Transactional
+    public User getOrCreate(String loginId,
+                            String email,
+                            String encodedPassword,
+                            String nickname,
+                            Role roleOrNull) {
+        return userRepository.findByLoginId(loginId).orElseGet(() ->
+                register(loginId, email, encodedPassword, nickname, roleOrNull)
+        );
     }
 }

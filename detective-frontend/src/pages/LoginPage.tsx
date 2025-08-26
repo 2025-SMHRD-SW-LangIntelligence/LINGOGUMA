@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css"; // ← 추가
 import lamp from "../assets/lamp.png";
 
+type Me = { nickname: string; id: string; index?: number };
+
 export default function LoginPage() {
   const nav = useNavigate();
   const set = useAuth((s) => s.set);
@@ -16,9 +18,21 @@ export default function LoginPage() {
     e.preventDefault();
     setErr("");
     try {
-      const { data } = await api.post("/users/login", { id, password });
-      set({ user: data }); // 세션 기반
-      nav("/scenarios", { replace: true });
+      // const { data } = await api.post("/users/login", { id, password });
+      // set({ user: data }); // 세션 기반
+      // nav("/scenarios", { replace: true });
+
+      // 1) 로그인: 세션 쿠키가 생성됨 (client.ts에 withCredentials=true 필요)
+      await api.post("/users/login", { id, password });
+
+      // 2) 내 정보 조회: { nickname, id, index } 형태여야 함
+      const { data } = await api.get<Me>("/users/me");
+
+      // 3) 전역 스토어에 저장 → 헤더에서 nickname(id)님 표시 가능
+      set({ user: data });
+
+      // 4) 이동
+      nav("/");
     } catch {
       setErr("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
