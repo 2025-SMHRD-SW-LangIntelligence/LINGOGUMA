@@ -26,6 +26,7 @@ import { useAuth } from "../../store/auth.store";
 import AdminUsersPage from "../../pages/AdminUsersPage";
 import AdminSubmittedDetailPage from "../../pages/AdminSubmittedDetailPage";
 import AdminAllScenariosPage from "../../pages/AdminAllScenariosPage";
+import AdminScenarioRegisterPage from "../../pages/AdminScenarioRegisterPage";
 
 // 보호 라우트 (두 이름 모두 지원: RequireAuth / RequirAuth)
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -128,6 +129,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGate allow={["ADMIN"]}>
             <AdminSubmittedDetailPage />
+          </RoleGate>
+        ),
+      },
+      {
+        path: "/admin/scenarios/register",
+        element: (
+          <RoleGate allow={["ADMIN"]}>
+            <AdminScenarioRegisterPage />
           </RoleGate>
         ),
       },

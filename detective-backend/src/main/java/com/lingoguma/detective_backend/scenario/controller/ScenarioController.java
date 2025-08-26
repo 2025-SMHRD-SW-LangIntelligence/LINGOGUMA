@@ -72,6 +72,12 @@ public class ScenarioController {
         return ResponseEntity.ok(ScenarioResponse.from(s));
     }
 
+    // ✅ 공개(등록됨) 목록: [{id, title}]
+    @GetMapping("/public")
+    public ResponseEntity<?> listPublic() {
+        return ResponseEntity.ok(scenarioService.listPublishedBrief());
+    }
+
     /** (REJECTED일 때만) 내 시나리오 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, HttpSession session) {

@@ -4,6 +4,7 @@ package com.lingoguma.detective_backend.scenario.controller;
 import com.lingoguma.detective_backend.scenario.dto.ModerationRequest;
 import com.lingoguma.detective_backend.scenario.dto.ScenarioResponse;
 import com.lingoguma.detective_backend.scenario.entity.Scenario;
+import com.lingoguma.detective_backend.scenario.entity.ScenarioStatus;
 import com.lingoguma.detective_backend.scenario.service.ScenarioService;
 import com.lingoguma.detective_backend.user.entity.User;
 import com.lingoguma.detective_backend.user.service.UserService;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -95,5 +97,35 @@ public class AdminScenarioController {
         User admin = requireAdmin(session);
         scenarioService.adminDelete(id, admin);
         return ResponseEntity.ok(Map.of("message", "삭제 완료"));
+    }
+
+    // ✅ 승인됨(등록 가능) 목록
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/approved")
+    public ResponseEntity<?> listApproved(@RequestParam(required = false) String q) {
+        return ResponseEntity.ok(scenarioService.listByStatus(ScenarioStatus.APPROVED, q));
+    }
+
+    // ✅ 등록됨(공개 중) 목록
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/published")
+    public ResponseEntity<?> listPublished(@RequestParam(required = false) String q) {
+        return ResponseEntity.ok(scenarioService.listByStatus(ScenarioStatus.PUBLISHED, q));
+    }
+
+    // ✅ 등록(퍼블리시)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<?> publish(@PathVariable Long id) {
+        scenarioService.publish(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 등록 해제(언퍼블리시)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<?> unpublish(@PathVariable Long id) {
+        scenarioService.unpublish(id);
+        return ResponseEntity.ok().build();
     }
 }
