@@ -3,15 +3,12 @@
    ========================= */
 :root {
   --ink: #fff;
-  --ink-dim: #dfe1e6;
   --panel: rgba(25, 25, 28, 0.65);
   --ring: #ff3b30;
-
-  /* 오른쪽 대화 패널 폭 */
-  --chatW: clamp(320px, 28vw, 420px);
+  --chatW: clamp(320px, 28vw, 420px); /* 오른쪽 대화 패널 폭 */
 }
 
-/* ---------- 전체 배경 ---------- */
+/* 전체 배경 */
 .play-root {
   position: relative;
   min-height: 100svh;
@@ -21,12 +18,10 @@
     #16171b 60%,
     #0f1013 100%
   );
-  background-size: cover;
-  background-position: center;
   overflow: hidden;
 }
 
-/* ---------- 상단 타이머(= 결과 페이지 이동 버튼) ---------- */
+/* 상단 타이머(결과로 이동 버튼) */
 .timer-badge {
   position: absolute;
   left: 28px;
@@ -45,7 +40,7 @@
   filter: brightness(1.06);
 }
 
-/* ---------- 좌측 도구 버튼 ---------- */
+/* 좌측 도구 */
 .tools {
   position: absolute;
   left: 28px;
@@ -68,7 +63,7 @@
   backdrop-filter: blur(4px);
 }
 
-/* ---------- 중앙 무대(캐릭터) ---------- */
+/* 중앙 무대(전신 이미지) */
 .stage {
   position: absolute;
   left: 50%;
@@ -81,9 +76,8 @@
   align-items: end;
   justify-items: center;
 }
-
 .actor-btn {
-  position: relative; /* 말풍선 기준 */
+  position: relative;
   width: 100%;
   background: transparent;
   border: none;
@@ -92,67 +86,38 @@
   justify-items: center;
   gap: 10px;
   cursor: pointer;
-  color: var(--ink);
-  pointer-events: auto;
 }
 .actor-full {
-  width: 70%;
+  width: clamp(160px, 22vw, 280px);
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
   transition: transform 0.18s ease;
 }
-.actor-avatar {
-  width: 130px;
-  height: 130px;
-  border-radius: 999px;
-  overflow: hidden;
-  border: 4px solid rgba(255, 255, 255, 0.35);
-  background: #bdbdbd;
-  display: grid;
-  place-items: center;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
-    transform 0.18s ease;
-}
-.actor-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.actor-name {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.actor-btn:hover .actor-avatar,
 .actor-btn:hover .actor-full {
   transform: translateY(-2px) scale(1.02);
 }
-.actor-btn.is-active .actor-avatar {
-  border-color: var(--ring);
-  box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.22);
-}
-.actor-btn.is-active .actor-full {
-  filter: drop-shadow(0 0 12px rgba(255, 59, 48, 0.22));
+.actor-name {
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.9;
 }
 
-/* ---------- 무대 말풍선(NPC 전용) ---------- */
+/* 무대 말풍선(NPC 전용) */
 .actor-bubble {
   position: absolute;
-  bottom: calc(100% + 10px); /* 아바타 위 */
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  max-width: 240px;
+  max-width: 260px;
   padding: 10px 12px;
-  font-size: 14px;
-  line-height: 1.35;
-  white-space: pre-wrap;
-  word-break: break-word;
-  z-index: 5;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   background: #fff;
   color: #151515;
   border-radius: 14px 14px 14px 4px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .actor-bubble::after {
   content: "";
@@ -163,7 +128,7 @@
   border-top-color: #fff;
 }
 
-/* ---------- 오른쪽 대화 패널(슬라이드) ---------- */
+/* 오른쪽 대화 패널 (기본 열림) */
 .chat-panel {
   position: absolute;
   top: 12px;
@@ -179,18 +144,14 @@
   grid-template-rows: auto 1fr;
   overflow: hidden;
   color: var(--ink);
-  /* transform 제거 */
   transition: transform 0.28s ease;
   z-index: 10;
-}
-.chat-panel.is-open {
-  transform: translateX(0);
 }
 .chat-panel.is-closed {
   transform: translateX(100%);
 }
 
-/* 패널 토글 둥근 버튼(FAB) */
+/* 패널 토글 FAB */
 .chat-fab {
   position: absolute;
   top: 50%;
@@ -216,7 +177,7 @@
   filter: brightness(1.1);
 }
 
-/* 상단 아바타 행(보기 대상 선택) */
+/* 상단 아바타(뷰 필터) */
 .chat-avatars {
   display: flex;
   gap: 10px;
@@ -232,8 +193,8 @@
   border: 3px solid rgba(255, 255, 255, 0.35);
   overflow: hidden;
   background: #aaa;
-  cursor: pointer; /* 클릭 가능 */
-  pointer-events: auto; /* 이벤트 허용 */
+  cursor: pointer;
+  pointer-events: auto;
 }
 .chat-ava.is-active {
   border-color: var(--ring);
@@ -245,13 +206,12 @@
   object-fit: cover;
 }
 
-/* ---------- 대화 리스트 & 말풍선 ---------- */
+/* 대화 리스트 & 말풍선 */
 .chat-list {
   position: relative;
   padding: 14px 16px 24px;
   overflow: auto;
 }
-
 .bubble {
   max-width: 80%;
   margin: 8px 0;
@@ -260,7 +220,6 @@
   margin: 0;
   line-height: 1.35;
 }
-
 .bubble.me {
   margin-left: auto;
   background: #4f87ff;
@@ -278,7 +237,7 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* ---------- 하단 입력 Dock ---------- */
+/* 하단 입력 Dock */
 .input-dock {
   position: absolute;
   left: 50%;
@@ -321,7 +280,7 @@
   filter: brightness(1.06);
 }
 
-/* ---------- 반응형 ---------- */
+/* 반응형 */
 @media (max-width: 980px) {
   .chat-panel {
     width: 44vw;
@@ -332,18 +291,16 @@
     row-gap: 20px;
   }
 }
-
 @media (max-width: 900px) {
   :root {
     --chatW: 86vw;
-  } /* 패널 폭 더 크게 */
+  }
 }
-
 @media (max-width: 720px) {
   .stage,
   .tools {
     display: none;
-  } /* 모바일: 화면 공간 확보 */
+  } /* 모바일: 공간 확보 */
   .input-dock {
     width: calc(100% - 20px);
     left: 10px;
