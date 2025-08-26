@@ -13,8 +13,8 @@ import SignupPage from "../../pages/SignupPage";
 import ScenarioSelectPage from "../../pages/ScenarioSelectPage";
 import GamePlayPage from "../../pages/GamePlayPage"; // ✅ 실페이지 유지
 import MyPage from "../../pages/MyPage";
-// import CaseSummaryRoute from "../../pages/CaseSummaryRoute";
 import CaseResultRoute from "../../pages/CaseResultRoute"; // ✅ 고정 결과 라우트
+import ScenarioSummaryPage from "../../pages/ScenarioSummaryPage";
 
 import AuthorNewScenarioPage from "../../pages/AuthorNewScenarioPage";
 import AuthorMyScenariosPage from "../../pages/AuthorMyScenarioPage";
@@ -41,7 +41,7 @@ export const router = createBrowserRouter([
       { path: "/", element: <LobbyPage /> },
       { path: "/scenarios", element: <ScenarioSelectPage /> }, // 메인 레이아웃에만 배치(중복 방지)
       { path: "/play/:scenarioId", element: <GamePlayPage /> },
-      // { path: "/play/:scenarioId/summary", element: <CaseSummaryRoute /> },
+      { path: "/play/:scenarioId/summary", element: <ScenarioSummaryPage /> },
       { path: "/result", element: <CaseResultRoute /> }, // ✅ 별도 고정 라우트 유지
 
       // 내 정보(로그인 필요)

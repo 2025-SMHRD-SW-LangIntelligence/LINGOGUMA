@@ -51,7 +51,7 @@ export default function ScenarioSelectPage() {
   const onClickCard = (s: Scenario, idx: number) => {
     if (idx < unlockedCount) {
       setCurrentScenarioId(s.id); // ✅ 전역 저장
-      nav(`/play/${s.id}`); // ✅ 플레이로 이동
+      nav(`/play/${s.id}/summary`); // ✅ 요약으로 이동
     } else {
       showHint("로그인하면 모든 사건을 플레이할 수 있어요.");
     }

@@ -1,0 +1,111 @@
+:root {
+  --ink: #fff;
+  --panel: rgba(25, 25, 28, 0.66);
+  --ring: #5a7bff;
+}
+
+.ov-root {
+  min-height: 100svh;
+  background: radial-gradient(
+    ellipse at center,
+    #2c2c31 0%,
+    #16171b 60%,
+    #0f1013 100%
+  );
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 36px);
+}
+
+.ov-panel {
+  width: min(980px, 92vw);
+  border-radius: 26px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: var(--panel);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 10px rgba(255, 255, 255, 0.06) inset;
+  color: var(--ink);
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.ov-title {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 3.2vw, 38px);
+  font-weight: 800;
+}
+
+.ov-prompt {
+  margin: 8px 0 18px;
+  line-height: 1.6;
+  color: #e9e9f0;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.ov-suspects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: clamp(12px, 2.4vw, 20px);
+  margin: 10px 0 8px;
+}
+.ov-suspect {
+  text-align: center;
+}
+.ov-ava {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  background: #bdbdbd;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+.ov-ava img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ov-name {
+  font-weight: 700;
+}
+
+.ov-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  opacity: 0.9;
+}
+
+.ov-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.ov-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.ov-btn.primary {
+  background: #5a7bff;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(90, 123, 255, 0.25);
+}
+.ov-btn.ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.ov-btn:hover {
+  filter: brightness(1.06);
+}
