@@ -11,11 +11,7 @@ export default function LobbyPage() {
   const { user } = useAuth(); // ✅ 로그인 여부 확인
 
   const handleStart = () => {
-    if (user) {
-      navigate("/scenarios"); // 로그인 → 시나리오 선택
-    } else {
-      navigate("/login"); // 비로그인 → 로그인 페이지
-    }
+    navigate("/scenarios"); // 로그인 → 시나리오 선택
   };
 
   return (
