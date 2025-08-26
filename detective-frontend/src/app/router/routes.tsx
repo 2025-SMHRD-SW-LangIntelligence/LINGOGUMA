@@ -8,7 +8,6 @@ import LobbyPage from "../../pages/LobbyPage";
 import LoginPage from "../../pages/LoginPage";
 import SignupPage from "../../pages/SignupPage";
 import ScenarioSelectPage from "../../pages/ScenarioSelectPage";
-import ScenarioIntroPage from "../../pages/ScenarioIntroPage";
 // import GamePlayPage from "../../pages/GamePlayPage";   // 있으면 import
 // import MyPage from "../../pages/MyPage";
 // import AdminDashboardPage from "../../pages/AdminDashboardPage";
@@ -29,12 +28,10 @@ const RequirAuth = ({ children }: { children: JSX.Element }) => {
 
 export const router = createBrowserRouter([
   {
-    path: "/",
     element: <MainLayout />,
     children: [
       { path: "/", element: <LobbyPage /> },
       { path: "/scenarios", element: <ScenarioSelectPage /> },
-      { path: "/scenarios/:scenarioId", element: <ScenarioIntroPage /> },
       { path: "/play/:scenarioId", element: <GamePlayPage /> },
       { path: "/play/:scenarioId/result", element: <CaseResultRoute /> },
 

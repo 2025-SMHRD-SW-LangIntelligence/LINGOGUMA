@@ -3,7 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth.store";
 import "./ScenarioSelectPage.css";
 import folder from "../assets/folder.png";
-import { SCENARIOS, Scenario } from "../shared/types/case"; // ✅ case.ts에서 불러오기
+
+type Scenario = { id: string; title: string };
+
+const SCENARIOS: Scenario[] = [
+  { id: "s1", title: "도서관에서 사라진 고서" },
+  { id: "s2", title: "밀실의 마지막 실험" },
+  { id: "s3", title: "사라진 연구 노트" },
+  { id: "s4", title: "새벽 3시의 전화" },
+  { id: "s5", title: "유리창에 남은 손자국" },
+  { id: "s6", title: "검은 봉투의 의뢰" },
+  { id: "s7", title: "25언어지능 대장의 비밀" },
+  { id: "s8", title: "아이스티 먹으면 꿀잠자는 그녀" },
+  { id: "s9", title: "큰언니의 반란" },
+  { id: "s10", title: "문세인업데 일해라" },
+];
 
 export default function ScenarioSelectPage() {
   const nav = useNavigate();
@@ -32,7 +46,7 @@ export default function ScenarioSelectPage() {
   };
 
   const onClickCard = (s: Scenario, idx: number) => {
-    if (idx < unlockedCount) nav(`/scenarios/${s.id}`); // ✅ 개요 페이지로 이동
+    if (idx < unlockedCount) nav(`/play/${s.id}`);
     else showHint("로그인하면 모든 사건을 플레이할 수 있어요.");
   };
 
