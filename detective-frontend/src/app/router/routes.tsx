@@ -12,8 +12,10 @@ import LoginPage from "../../pages/LoginPage";
 import SignupPage from "../../pages/SignupPage";
 import ScenarioSelectPage from "../../pages/ScenarioSelectPage";
 import GamePlayPage from "../../pages/GamePlayPage"; // ✅ 실페이지 유지
+import MyPage from "../../pages/MyPage";
 // import CaseSummaryRoute from "../../pages/CaseSummaryRoute";
 import CaseResultRoute from "../../pages/CaseResultRoute"; // ✅ 고정 결과 라우트
+
 import AuthorNewScenarioPage from "../../pages/AuthorNewScenarioPage";
 import AuthorMyScenariosPage from "../../pages/AuthorMyScenarioPage";
 import AdminSubmittedListPage from "../../pages/AdminSubmittedListPage";
@@ -40,14 +42,7 @@ export const router = createBrowserRouter([
       { path: "/result", element: <CaseResultRoute /> }, // ✅ 별도 고정 라우트 유지
 
       // 내 정보(로그인 필요)
-      {
-        path: "/me",
-        element: (
-          <RequirAuth>
-            <div>My Page</div>
-          </RequirAuth>
-        ),
-      },
+      { path: "/me", element: <MyPage /> },
 
       // 작가 전용
       {
