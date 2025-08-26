@@ -11,4 +11,7 @@ import java.util.List;
 public interface ScenarioRepository extends JpaRepository<Scenario, Long> {
     List<Scenario> findByAuthorOrderByCreatedAtDesc(User author);
     List<Scenario> findByStatusOrderBySubmittedAtAsc(ScenarioStatus status);
+
+    // 🔽 유저 삭제 전 시나리오 보유 여부 확인
+    long countByAuthor(User author);
 }

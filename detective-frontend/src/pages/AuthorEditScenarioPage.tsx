@@ -1,3 +1,4 @@
+// src/pages/AuthorEditScenarioPage.tsx
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -40,7 +41,6 @@ export default function AuthorEditScenarioPage() {
       return data;
     },
     onSuccess: () => {
-      // 상세/목록 갱신
       qc.invalidateQueries({ queryKey: ["scenario", id] });
       qc.invalidateQueries({ queryKey: ["my-scenarios"] });
       nav(`/author/scenarios/${id}`);
@@ -52,16 +52,15 @@ export default function AuthorEditScenarioPage() {
     return <p style={{ color: "crimson" }}>{(error as any)?.message}</p>;
   if (!data) return null;
 
-  // 백엔드에서 권한/상태 체크하지만, UX상 안내
-  const blocked = data.status !== "REJECTED";
+  const editable = data.status === "REJECTED" || data.status === "SUBMITTED";
 
   return (
     <div style={{ maxWidth: 720, margin: "24px auto" }}>
       <h2>시나리오 수정</h2>
-      {blocked && (
+      {!editable && (
         <p style={{ color: "#b36b00", marginTop: 0 }}>
-          현재 상태({data.status})에서는 수정이 제한될 수 있습니다. (반려
-          상태에서만 수정/삭제 가능)
+          현재 상태({data.status})에서는 수정이 제한됩니다. (REJECTED 또는
+          SUBMITTED 상태에서만 수정/삭제 가능)
         </p>
       )}
       <form
@@ -87,7 +86,7 @@ export default function AuthorEditScenarioPage() {
         <div style={{ display: "flex", gap: 8 }}>
           <button
             type="submit"
-            disabled={update.isPending}
+            disabled={update.isPending || !editable}
             style={{ padding: "8px 12px" }}
           >
             {update.isPending ? "저장 중..." : "저장"}

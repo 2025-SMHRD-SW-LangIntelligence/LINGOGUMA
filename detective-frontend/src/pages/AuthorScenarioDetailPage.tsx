@@ -1,3 +1,4 @@
+// src/pages/AuthorScenarioDetailPage.tsx
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../shared/api/client";
@@ -31,7 +32,6 @@ export default function AuthorScenarioDetailPage() {
       await api.delete(`/scenarios/${id}`);
     },
     onSuccess: () => {
-      // 목록 갱신 후 리스트로 이동
       qc.invalidateQueries({ queryKey: ["my-scenarios"] });
       nav("/author/scenarios");
     },
@@ -42,7 +42,7 @@ export default function AuthorScenarioDetailPage() {
     return <p style={{ color: "crimson" }}>{(error as any)?.message}</p>;
   if (!data) return null;
 
-  const canEdit = data.status === "REJECTED";
+  const canEdit = data.status === "REJECTED" || data.status === "SUBMITTED";
 
   return (
     <div style={{ maxWidth: 720, margin: "24px auto" }}>

@@ -53,12 +53,14 @@ public class ScenarioService {
         return s;
     }
 
-    /** (REJECTED일 때만) 수정 */
+    /** (REJECTED 또는 SUBMITTED일 때만) 수정 */
     @Transactional
     public Scenario updateIfRejected(Long scenarioId, User me, UpdateScenarioRequest req) {
         Scenario s = getOwned(scenarioId, me);
-        if (s.getStatus() != ScenarioStatus.REJECTED) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "REJECTED 상태에서만 수정할 수 있습니다.");
+        if (!(s.getStatus() == ScenarioStatus.REJECTED || s.getStatus() == ScenarioStatus.SUBMITTED)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.CONFLICT, "REJECTED 또는 SUBMITTED 상태에서만 수정할 수 있습니다."
+            );
         }
         if (req.getTitle() == null || req.getTitle().isBlank()
                 || req.getContent() == null || req.getContent().isBlank()) {
@@ -66,16 +68,17 @@ public class ScenarioService {
         }
         s.setTitle(req.getTitle());
         s.setContent(req.getContent());
-        // updatedAt은 @UpdateTimestamp로 자동 반영
         return s; // dirty checking
     }
 
-    /** (REJECTED일 때만) 삭제 */
+    /** (REJECTED 또는 SUBMITTED일 때만) 삭제 */
     @Transactional
     public void deleteIfRejected(Long scenarioId, User me) {
         Scenario s = getOwned(scenarioId, me);
-        if (s.getStatus() != ScenarioStatus.REJECTED) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "REJECTED 상태에서만 삭제할 수 있습니다.");
+        if (!(s.getStatus() == ScenarioStatus.REJECTED || s.getStatus() == ScenarioStatus.SUBMITTED)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.CONFLICT, "REJECTED 또는 SUBMITTED 상태에서만 삭제할 수 있습니다."
+            );
         }
         scenarioRepository.delete(s);
     }
@@ -107,6 +110,6 @@ public class ScenarioService {
             throw new IllegalStateException("SUBMITTED 상태만 반려할 수 있습니다.");
         }
         s.setStatus(ScenarioStatus.REJECTED);
-        // 필요 시 반려 사유를 저장하는 칼럼 추가하여 req.getReason() 기록
+        // 필요 시 반려 사유 기록
     }
 }
