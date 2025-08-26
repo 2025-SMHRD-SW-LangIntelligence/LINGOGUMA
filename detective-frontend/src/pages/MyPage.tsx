@@ -1,3 +1,4 @@
+// src/pages/MyPage.tsx
 import React from "react";
 import {
   Radar,
@@ -15,6 +16,8 @@ import "./MyPage.css";
 const MyPage: React.FC = () => {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+
+  const isAdmin = user?.role === "ADMIN" || user?.role === "ROLE_ADMIN";
 
   // 로그아웃 핸들러
   const handleLogout = async () => {
@@ -46,6 +49,42 @@ const MyPage: React.FC = () => {
           <ul>
             <li>계정관리</li>
             <li>플레이 이력</li>
+
+            {/* ✅ 관리자만 보이는 섹션 (로그아웃 위쪽) */}
+            {isAdmin && (
+              <>
+                <li
+                  style={{
+                    marginTop: 8,
+                    fontSize: 12,
+                    color: "#888",
+                    cursor: "default",
+                  }}
+                >
+                  관리자
+                </li>
+                <li
+                  onClick={() => nav("/admin/users")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  유저 관리
+                </li>
+                <li
+                  onClick={() => nav("/admin/scenarios")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  시나리오 관리
+                </li>
+                {/* 필요 시 제출됨 바로가기도 추가 가능 */}
+                <li
+                  onClick={() => nav("/admin/scenarios/submitted")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  제출된 시나리오
+                </li>
+              </>
+            )}
+
             <li
               onClick={handleLogout}
               style={{ cursor: "pointer", color: "#f39c12" }}
