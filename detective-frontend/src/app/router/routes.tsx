@@ -24,6 +24,8 @@ import AuthorEditScenarioPage from "../../pages/AuthorEditScenarioPage";
 import RoleGate from "../../components/RoleGate";
 import { useAuth } from "../../store/auth.store";
 import AdminUsersPage from "../../pages/AdminUsersPage";
+import AdminSubmittedDetailPage from "../../pages/AdminSubmittedDetailPage";
+import AdminAllScenariosPage from "../../pages/AdminAllScenariosPage";
 
 // 보호 라우트 (두 이름 모두 지원: RequireAuth / RequirAuth)
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -96,6 +98,15 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { path: "/admin", element: <div>Admin</div> }, // 기존 /admin 유지
+      // ✅ 전체 시나리오 관리
+      {
+        path: "/admin/scenarios",
+        element: (
+          <RoleGate allow={["ADMIN"]}>
+            <AdminAllScenariosPage />
+          </RoleGate>
+        ),
+      },
       {
         path: "/admin/scenarios/submitted",
         element: (
@@ -109,6 +120,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGate allow={["ADMIN"]}>
             <AdminUsersPage />
+          </RoleGate>
+        ),
+      },
+      {
+        path: "/admin/scenarios/submitted/:id",
+        element: (
+          <RoleGate allow={["ADMIN"]}>
+            <AdminSubmittedDetailPage />
           </RoleGate>
         ),
       },

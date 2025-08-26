@@ -3,6 +3,7 @@ package com.lingoguma.detective_backend.scenario.controller;
 
 import com.lingoguma.detective_backend.scenario.dto.ModerationRequest;
 import com.lingoguma.detective_backend.scenario.dto.ScenarioResponse;
+import com.lingoguma.detective_backend.scenario.entity.Scenario;
 import com.lingoguma.detective_backend.scenario.service.ScenarioService;
 import com.lingoguma.detective_backend.user.entity.User;
 import com.lingoguma.detective_backend.user.service.UserService;
@@ -23,14 +24,13 @@ public class AdminScenarioController {
     private final ScenarioService scenarioService;
     private final UserService userService;
 
-    /** 세션에서 ADMIN 검증 + User 재조회 */
     private User requireAdmin(HttpSession session) {
         String role = (String) session.getAttribute("ROLE");
         if (role == null) {
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         if (!"ADMIN".equals(role)) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "관리자만 접근 가능");
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
         }
         Long userIndex = (Long) session.getAttribute("userIndex");
         String loginId  = (String) session.getAttribute("LOGIN_ID");
@@ -39,11 +39,36 @@ public class AdminScenarioController {
         throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "세션이 유효하지 않습니다.");
     }
 
-    /** 제출됨 목록 */
+    /** 전체 목록 + 상태/검색 필터 */
+    @GetMapping
+    public ResponseEntity<List<ScenarioResponse>> listAll(@RequestParam(required = false) String status,
+                                                          @RequestParam(required = false) String q,
+                                                          HttpSession session) {
+        requireAdmin(session);
+        return ResponseEntity.ok(scenarioService.adminListAll(status, q));
+    }
+
+    /** 제출됨 목록 (기존) */
     @GetMapping("/submitted")
     public ResponseEntity<List<ScenarioResponse>> submitted(HttpSession session) {
         requireAdmin(session);
         return ResponseEntity.ok(scenarioService.listSubmitted());
+    }
+
+    /** 단건 조회(관리자) */
+    @GetMapping("/{id}")
+    public ResponseEntity<ScenarioResponse> getOne(@PathVariable Long id, HttpSession session) {
+        requireAdmin(session);
+        Scenario s = scenarioService.adminGet(id);
+        return ResponseEntity.ok(ScenarioResponse.from(s));
+    }
+
+    /** 검토 시작 */
+    @PostMapping("/{id}/review")
+    public ResponseEntity<?> review(@PathVariable Long id, HttpSession session) {
+        User admin = requireAdmin(session);
+        scenarioService.markReviewing(id, admin);
+        return ResponseEntity.ok(Map.of("message", "검토 상태로 전환"));
     }
 
     /** 승인 */
@@ -56,9 +81,19 @@ public class AdminScenarioController {
 
     /** 반려 */
     @PostMapping("/{id}/reject")
-    public ResponseEntity<?> reject(@PathVariable Long id, @RequestBody ModerationRequest req, HttpSession session) {
+    public ResponseEntity<?> reject(@PathVariable Long id,
+                                    @RequestBody ModerationRequest req,
+                                    HttpSession session) {
         User admin = requireAdmin(session);
         scenarioService.reject(id, req, admin);
         return ResponseEntity.ok(Map.of("message", "반려 처리"));
+    }
+
+    /** 삭제 */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, HttpSession session) {
+        User admin = requireAdmin(session);
+        scenarioService.adminDelete(id, admin);
+        return ResponseEntity.ok(Map.of("message", "삭제 완료"));
     }
 }
