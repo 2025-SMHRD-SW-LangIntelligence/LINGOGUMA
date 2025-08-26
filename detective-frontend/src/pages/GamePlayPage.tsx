@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../shared/api/client";
 import { useScenario } from "../store/scenario.store";
+import { useMemoStore } from "../store/memo.store";
 import "./GamePlayPage.css";
 
 /* ---------- 타입 ---------- */
@@ -156,7 +157,9 @@ export default function GamePlayPage() {
 
   // ✅ 메모 상태
   const [memoOpen, setMemoOpen] = useState(false);
-  const [memoText, setMemoText] = useState("");
+  const memoText = useMemoStore((s) => s.text);
+  const setMemoText = useMemoStore((s) => s.setText);
+  const clearMemo = useMemoStore((s) => s.clear);
 
   // 메모창 위치 상태
   const [memoPos, setMemoPos] = useState({ x: 20, y: 80 });
@@ -326,7 +329,6 @@ export default function GamePlayPage() {
           className="memo-popup"
           style={{ top: memoPos.y, left: memoPos.x }}
         >
-          {/* 드래그 핸들 영역 */}
           <div className="memo-header" onMouseDown={onDragStart}>
             📝 메모장
           </div>
@@ -337,7 +339,7 @@ export default function GamePlayPage() {
           />
           <div className="memo-actions">
             <button onClick={() => setMemoOpen(false)}>닫기</button>
-            <button onClick={() => setMemoText("")}>초기화</button>
+            <button onClick={clearMemo}>초기화</button>
           </div>
         </div>
       )}
