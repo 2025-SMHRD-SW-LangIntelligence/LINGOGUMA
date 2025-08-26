@@ -34,10 +34,22 @@ export default function AuthorScenarioListPage() {
             key={s.id}
             style={{ border: "1px solid #eee", padding: 12, borderRadius: 8 }}
           >
-            <div style={{ fontWeight: 700 }}>{s.title}</div>
-            <div style={{ fontSize: 13, color: "#666" }}>
-              상태: {s.status} · 생성: {new Date(s.createdAt).toLocaleString()}
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Link
+                to={`/author/scenarios/${s.id}`}
+                style={{
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  color: "#222",
+                }}
+              >
+                {s.title}
+              </Link>
+              <span style={{ fontSize: 12, color: "#666" }}>
+                {new Date(s.createdAt).toLocaleString()}
+              </span>
             </div>
+            <div style={{ fontSize: 13, color: "#666" }}>상태: {s.status}</div>
           </li>
         ))}
       </ul>

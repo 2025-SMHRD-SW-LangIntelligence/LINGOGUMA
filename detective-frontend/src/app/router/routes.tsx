@@ -17,7 +17,8 @@ import CaseResultRoute from "../../pages/CaseResultRoute"; // ✅ 고정 결과 
 import AuthorNewScenarioPage from "../../pages/AuthorNewScenarioPage";
 import AuthorMyScenariosPage from "../../pages/AuthorMyScenarioPage";
 import AdminSubmittedListPage from "../../pages/AdminSubmittedListPage";
-
+import AuthorScenarioDetailPage from "../../pages/AuthorScenarioDetailPage";
+import AuthorEditScenarioPage from "../../pages/AuthorEditScenarioPage";
 import RoleGate from "../../components/RoleGate";
 import { useAuth } from "../../store/auth.store";
 
@@ -62,6 +63,22 @@ export const router = createBrowserRouter([
         element: (
           <RoleGate allow={["EXPERT", "ADMIN"]}>
             <AuthorNewScenarioPage />
+          </RoleGate>
+        ),
+      },
+      {
+        path: "/author/scenarios/:id",
+        element: (
+          <RoleGate allow={["EXPERT", "ADMIN"]}>
+            <AuthorScenarioDetailPage />
+          </RoleGate>
+        ),
+      },
+      {
+        path: "/author/scenarios/:id/edit",
+        element: (
+          <RoleGate allow={["EXPERT", "ADMIN"]}>
+            <AuthorEditScenarioPage />
           </RoleGate>
         ),
       },
