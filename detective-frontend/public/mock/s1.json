@@ -3,9 +3,9 @@
   "prompt": "너는 탐정이다.",
   "suspectCount": 3,
   "suspects": [
-    { "id": 1, "name": "최연구원", "avatar": "/avatars/researcher.png" },
-    { "id": 2, "name": "김참가자", "avatar": "/avatars/participant.png" },
-    { "id": 3, "name": "양인턴", "avatar": "/avatars/intern.png" }
+    { "id": "1", "name": "최연구원", "avatar": "/avatars/researcher.png" },
+    { "id": "2", "name": "김참가자", "avatar": "/avatars/participant.png" },
+    { "id": "3", "name": "양인턴", "avatar": "/avatars/intern.png" }
   ],
   "resultQuestions": [
     {

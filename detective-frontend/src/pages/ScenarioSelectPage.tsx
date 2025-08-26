@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth.store";
+import { useScenario } from "../store/scenario.store";
 import "./ScenarioSelectPage.css";
 import folder from "../assets/folder.png";
 
@@ -25,6 +26,8 @@ export default function ScenarioSelectPage() {
   const isAuthed = !!user;
   const unlockedCount = isAuthed ? SCENARIOS.length : 1;
 
+  const setCurrentScenarioId = useScenario((s) => s.setCurrentScenarioId);
+
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
 
@@ -46,8 +49,12 @@ export default function ScenarioSelectPage() {
   };
 
   const onClickCard = (s: Scenario, idx: number) => {
-    if (idx < unlockedCount) nav(`/play/${s.id}`);
-    else showHint("로그인하면 모든 사건을 플레이할 수 있어요.");
+    if (idx < unlockedCount) {
+      setCurrentScenarioId(s.id); // ✅ 전역 저장
+      nav(`/play/${s.id}`); // ✅ 플레이로 이동
+    } else {
+      showHint("로그인하면 모든 사건을 플레이할 수 있어요.");
+    }
   };
 
   const onKeyPressCard = (

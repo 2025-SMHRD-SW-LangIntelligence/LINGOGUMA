@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import type { Suspect, Question } from "../shared/types/case";
 import "./CaseResultPage.css";
 
-/** 시나리오 JSON만 바꾸면 자동으로 맞춰지는 결과 입력 화면 */
 export default function CaseResultPage(props: {
   suspects?: Suspect[];
   questions?: Question[];
@@ -40,7 +39,6 @@ export default function CaseResultPage(props: {
       <div className="summary-panel">
         <h2 className="summary-title">사건의 전말</h2>
 
-        {/* 용의자 (단일 선택) */}
         <div className="suspects-row">
           {suspects.map((s) => {
             const sel = s.id === selectedId;
@@ -54,7 +52,13 @@ export default function CaseResultPage(props: {
                 title={`${s.name} 선택`}
               >
                 <div className="avatar-wrap">
-                  <img className="avatar" src={s.avatar} alt={s.name} />
+                  <img
+                    className="avatar"
+                    src={s.avatar}
+                    alt={s.name}
+                    loading="lazy" // ✅ 지연 로딩
+                    decoding="async" // ✅ 비동기 디코딩
+                  />
                   <div className="ring" />
                 </div>
                 <span className="suspect-name">{s.name}</span>
@@ -63,7 +67,6 @@ export default function CaseResultPage(props: {
           })}
         </div>
 
-        {/* 질문 폼 */}
         <form className="qa-form" onSubmit={submit}>
           {questions.map((q) => (
             <label key={q.id} className="q-label">
@@ -89,7 +92,6 @@ export default function CaseResultPage(props: {
             </label>
           ))}
 
-          {/* 폼 맨 아래, 가운데(스크롤 따라오지 않음) */}
           <div className="action-bar">
             <button className="submit-btn" type="submit">
               추리 결과 제출
