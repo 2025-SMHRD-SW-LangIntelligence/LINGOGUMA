@@ -89,18 +89,18 @@
 }
 .intro-suspects {
   display: flex;
-  gap: clamp(16px, 3vw, 36px);
-  align-items: center;
-  justify-content: center;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(14px, 2.4vw, 24px);
 }
 .intro-suspect {
+  flex: 0 1 clamp(140px, 18vw, 180px); /* 아이템 너비 가이드 */
   text-align: center;
   color: var(--ink-dim);
 }
 .intro-avatar {
-  width: 120px;
-  height: 120px;
+  width: clamp(108px, 10vw, 128px);
+  height: clamp(108px, 10vw, 128px);
   border-radius: 999px;
   overflow: hidden;
   background: #bdbdbd;
