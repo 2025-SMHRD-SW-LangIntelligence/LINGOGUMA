@@ -29,7 +29,7 @@ public class Scenario {
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)

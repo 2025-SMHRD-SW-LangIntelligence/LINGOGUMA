@@ -17,7 +17,10 @@ const MyPage: React.FC = () => {
   const { user, logout } = useAuth();
   const nav = useNavigate();
 
-  const isAdmin = user?.role === "ADMIN" || user?.role === "ROLE_ADMIN";
+  const role = user?.role ?? "";
+  const isAdmin = role === "ADMIN" || role === "ROLE_ADMIN";
+  const isExpert = role === "EXPERT" || role === "ROLE_EXPERT";
+  const isAuthor = isExpert || isAdmin; // 작가 권한: EXPERT 또는 ADMIN
 
   // 로그아웃 핸들러
   const handleLogout = async () => {
@@ -50,7 +53,35 @@ const MyPage: React.FC = () => {
             <li>계정관리</li>
             <li>플레이 이력</li>
 
-            {/* ✅ 관리자만 보이는 섹션 (로그아웃 위쪽) */}
+            {/* ✅ 작가 섹션 (EXPERT/ADMIN에게 노출) */}
+            {isAuthor && (
+              <>
+                <li
+                  style={{
+                    marginTop: 8,
+                    fontSize: 12,
+                    color: "#888",
+                    cursor: "default",
+                  }}
+                >
+                  작가
+                </li>
+                <li
+                  onClick={() => nav("/author/scenarios")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  내 시나리오
+                </li>
+                <li
+                  onClick={() => nav("/author/scenarios/new")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  새 초안 작성
+                </li>
+              </>
+            )}
+
+            {/* ✅ 관리자 섹션 (관리자 위에 작가 섹션이 오도록 유지) */}
             {isAdmin && (
               <>
                 <li
@@ -75,13 +106,13 @@ const MyPage: React.FC = () => {
                 >
                   시나리오 관리
                 </li>
-                {/* 필요 시 제출됨 바로가기도 추가 가능 */}
+                {/* 필요한 경우 제출됨 바로가기
                 <li
                   onClick={() => nav("/admin/scenarios/submitted")}
                   style={{ cursor: "pointer", color: "#3498db" }}
                 >
-                  제출된 시나리오
-                </li>
+                  제출됨 목록
+                </li> */}
               </>
             )}
 
