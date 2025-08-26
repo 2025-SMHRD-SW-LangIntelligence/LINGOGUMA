@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 @Builder
 @Table(name = "`user`") // 테이블명이 user면 백틱 권장
+@ToString(exclude = {"password", "emailVerificationToken"})
 public class User {
 
     @Id
@@ -44,14 +45,14 @@ public class User {
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (role == null) role = Role.MEMBER;
-        // 신규 유저 기본값
-        if (!this.emailVerified) this.emailVerified = false;
+        // // 신규 유저 기본값
+        // if (!this.emailVerified) this.emailVerified = false;
     }
 }
