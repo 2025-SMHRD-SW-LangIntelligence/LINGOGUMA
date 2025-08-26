@@ -1,0 +1,59 @@
+.mypage-container {
+  display: flex;
+  height: 100vh;
+  background: url("/src/assets/background.jpg") no-repeat center center;
+  background-size: cover;
+  color: white;
+  font-family: Pretendard, sans-serif;
+}
+
+/* 좌측 사이드바 */
+.mypage-sidebar {
+  width: 220px;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.profile {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.avatar {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.mypage-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.mypage-sidebar li {
+  margin: 20px 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.mypage-sidebar li::before {
+  content: "●";
+  position: absolute;
+  left: -15px;
+  color: #f39c12;
+}
+
+/* 메인 */
+.mypage-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.chart-container {
+  width: 500px;
+  height: 400px;
+}
