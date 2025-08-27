@@ -8,12 +8,22 @@ import { useMemoStore } from "../store/memo.store";
 import "./GamePlayPage.css";
 
 /* ---------- 타입 ---------- */
+type SpotlightCfg = {
+  top?: number; // -0.28 (버튼 높이 대비 시작 y 비율)
+  widthPct?: number; // 1.6  (버튼 폭 대비)
+  heightPct?: number; // 1.9  (버튼 높이 대비)
+  angleDeg?: number; // 18   (콘 각도)
+  opacity?: number; // 0~1  (투명도)
+};
+
 type PlaySuspect = {
   id: string;
   name: string;
   avatar: string;
   full?: string;
-  comment?: string; // ✅ 기본 말풍선/프리로드 메시지
+  comment?: string;
+  // 필요하면 시나리오별 개별 스케일도 지원 가능:
+  // scale?: number;
 };
 type ChatMessage = {
   id: string;
@@ -22,12 +32,13 @@ type ChatMessage = {
   text: string;
 };
 type PlayConfig = {
-  background?: string;
+  background?: string; // ✅ 시나리오별 배경
   suspects: PlaySuspect[];
   messages: ChatMessage[];
   timeLimitSec?: number;
-  intro?: string; // ✅ 개요
-  map?: string; // ✅ 지도
+  intro?: string;
+  map?: string;
+  spotlight?: SpotlightCfg; // 스포트라이트 튜닝
 };
 
 /* ---------- 이미지 경로 보정 ---------- */
@@ -59,7 +70,8 @@ function shapeSuspects(input: any[]): PlaySuspect[] {
     name: String(s?.name ?? ""),
     avatar: String(s?.avatar ?? ""),
     full: s?.full ? String(s.full) : undefined,
-    comment: s?.comment ? String(s.comment) : undefined, // ✅ comment 반영
+    comment: s?.comment ? String(s.comment) : undefined,
+    // scale: Number.isFinite(s?.scale) ? Number(s.scale) : undefined,
   }));
 }
 function shapeMessages(input: any[]): ChatMessage[] {
@@ -71,7 +83,7 @@ function shapeMessages(input: any[]): ChatMessage[] {
   }));
 }
 
-/** API → /mock/:id-play.json → /mock/:id.json(suspects,intro,map) → 폴백 */
+/** API → /mock/:id-play.json → /mock/:id.json → 폴백 */
 async function loadPlayConfig(id: string): Promise<PlayConfig> {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const join = (p: string) =>
@@ -92,6 +104,7 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
           : 10 * 60 + 36,
         intro: obj.intro ?? undefined,
         map: obj.map ?? undefined,
+        spotlight: obj.spotlight ?? undefined,
       };
     }
   } catch {}
@@ -110,6 +123,7 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
           : 10 * 60 + 36,
         intro: obj.intro ?? undefined,
         map: obj.map ?? undefined,
+        spotlight: obj.spotlight ?? undefined,
       };
     }
   } catch {}
@@ -120,19 +134,20 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
     if (r2.ok) {
       const baseObj = (await r2.json()) as any;
       return {
-        background: undefined,
+        background: baseObj?.background ?? "/assets/background.jpg", // ✅ 동적+기본
         suspects: shapeSuspects(baseObj?.suspects ?? []),
         messages: [],
         timeLimitSec: 10 * 60 + 36,
-        intro: baseObj?.intro ?? undefined, // ✅ intro 사용
-        map: baseObj?.map ?? undefined, // ✅ map 사용
+        intro: baseObj?.intro ?? undefined,
+        map: baseObj?.map ?? undefined,
+        spotlight: baseObj?.spotlight ?? undefined,
       };
     }
   } catch {}
 
   // 4) 폴백
   return {
-    background: undefined,
+    background: "/assets/background.jpg", // ✅ 기본
     suspects: [],
     messages: [],
     timeLimitSec: 10 * 60 + 36,
@@ -217,7 +232,7 @@ export default function GamePlayPage() {
     document.removeEventListener("mouseup", onDragEnd);
   };
 
-  // ✅ 데이터 세팅 + 모든 용의자 comment를 이력창에 프리로드
+  // ✅ comment 프리로드
   useEffect(() => {
     if (!data) return;
 
@@ -233,7 +248,7 @@ export default function GamePlayPage() {
       }
     }
 
-    setMsgs([...baseMsgs, ...(data.messages ?? [])]); // ✅ comment 먼저, 기존 메시지 뒤에
+    setMsgs([...baseMsgs, ...(data.messages ?? [])]);
     setActiveId((data.suspects && data.suspects[0]?.id) || null);
   }, [data]);
 
@@ -269,7 +284,7 @@ export default function GamePlayPage() {
   }, [msgs, filterId]);
 
   /* =========================
-     무대(중앙) 말풍선: NPC만 표시
+     무대(중앙) 말풍선 & 스포트라이트
      ========================= */
   const BUBBLE_MS = 2200;
   const [stageBubble, setStageBubble] = useState<{
@@ -332,12 +347,20 @@ export default function GamePlayPage() {
     );
   }
 
+  // 스포트라이트 변수 (A안)
+  const sp = data?.spotlight ?? {};
+  const w = (sp.widthPct ?? 1.6) * 100;
+  const h = (sp.heightPct ?? 1.9) * 100;
+  const topRatio = sp.top ?? -0.28;
+  const ang = sp.angleDeg ?? 18;
+  const op = sp.opacity ?? 0.9;
+
   return (
     <div
       className={`play-root ${chatOpen ? "has-chat-open" : ""}`}
-      /* ✅ 항상 고정 배경 사용 */
+      /* ✅ 시나리오별 배경 적용 + 기본값 */
       style={{
-        backgroundImage: `url("/src/assets/background.jpg")`,
+        backgroundImage: `url(${data?.background ?? "/assets/background.jpg"})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -349,7 +372,6 @@ export default function GamePlayPage() {
 
       {/* 좌측 도구 */}
       <div className="tools">
-        {/* 사건 개요 & 지도 버튼 */}
         <button
           className="tool-btn"
           title="사건 개요 & 지도"
@@ -357,8 +379,6 @@ export default function GamePlayPage() {
         >
           📜
         </button>
-
-        {/* 메모 버튼 */}
         <button
           className="tool-btn"
           title="메모 작성"
@@ -368,7 +388,7 @@ export default function GamePlayPage() {
         </button>
       </div>
 
-      {/* ✅ 사건 개요 팝업 */}
+      {/* 사건 개요 팝업 */}
       {overviewOpen && (
         <div className="overview-popup">
           <div className="overview-header">
@@ -395,7 +415,7 @@ export default function GamePlayPage() {
         </div>
       )}
 
-      {/* ✅ 메모 팝업 */}
+      {/* 메모 팝업 */}
       {memoOpen && (
         <div
           ref={memoRef}
@@ -422,6 +442,7 @@ export default function GamePlayPage() {
         {suspects.slice(0, 4).map((s) => {
           const sel = s.id === activeId;
           const last = lastById[s.id];
+
           return (
             <button
               key={s.id}
@@ -433,15 +454,34 @@ export default function GamePlayPage() {
                 const text =
                   last && last.from === "npc"
                     ? last.text
-                    : s.comment ?? "무엇을 물어볼까요?"; // ✅ 기본 말풍선에 comment 사용
+                    : s.comment ?? "무엇을 물어볼까요?";
                 showNpcBubble(s.id, text);
               }}
               aria-pressed={sel}
               title={`${s.name} 대화하기`}
             >
+              {/* ✅ CSS-only 스포트라이트 */}
+              {sel && (
+                <div
+                  className="spotlight-cone"
+                  aria-hidden
+                  style={
+                    {
+                      "--cone-w": `${w}%`,
+                      "--cone-h": `${h}%`,
+                      "--cone-top": `${topRatio * 100}%`,
+                      "--cone-angle": `${ang}deg`,
+                      "--cone-opacity": op,
+                    } as React.CSSProperties
+                  }
+                />
+              )}
+
+              {/* NPC 말풍선 */}
               {stageBubble && stageBubble.whoId === s.id && (
                 <div className="actor-bubble">{stageBubble.text}</div>
               )}
+
               {s.full ? (
                 <img
                   className="actor-full"
@@ -450,6 +490,7 @@ export default function GamePlayPage() {
                   onError={(e) =>
                     (e.currentTarget.src = resolveURL("placeholder-full.png")!)
                   }
+                  // style={{ transform: `scale(${s.scale ?? 1})` }}
                 />
               ) : (
                 <div className="actor-avatar">

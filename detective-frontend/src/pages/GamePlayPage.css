@@ -62,15 +62,16 @@
 .stage {
   position: absolute;
   left: 50%;
-  top: 56%;
+  top: 58%; /* 조금 더 아래로 */
   transform: translate(-50%, -50%);
-  width: min(1100px, 62vw);
-  height: min(520px, 55vh);
+  width: min(1000px, 60vw); /* 폭도 약간 줄임 */
+  height: min(460px, 50vh); /* ✅ 높이 줄여서 캐릭터가 상대적으로 작아짐 */
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   align-items: end;
   justify-items: center;
 }
+
 .actor-btn {
   position: relative;
   width: 100%;
@@ -83,8 +84,8 @@
   cursor: pointer;
 }
 .actor-full {
-  width: clamp(160px, 22vw, 280px);
-  height: auto;
+  width: clamp(120px, 16vw, 200px);
+  max-height: 70%;
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
   transition: transform 0.18s ease;
@@ -415,4 +416,140 @@
   margin: 12px 0 6px;
   font-size: 16px;
   color: #8ab4ff;
+}
+/* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
+.actor-btn.is-active::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 180%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 180, 0.55) 0%,
+    rgba(255, 255, 180, 0.2) 25%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: -1; /* 캐릭터 이미지 뒤로 */
+  filter: blur(40px);
+}
+
+/* 선택된 캐릭터의 이미지도 살짝 밝게 */
+.actor-btn.is-active img {
+  filter: brightness(1.15) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
+  transform: scale(1.05);
+  transition: all 0.25s ease;
+}
+/* ========= 스포트라이트(선택된 캐릭터) ========= */
+.spotlight-cone {
+  position: absolute;
+  pointer-events: none;
+  top: -55%; /* 빛의 시작점을 위쪽으로 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 210%; /* 무대 폭 대비 넉넉히 */
+  height: 220%; /* 캐릭터 발 아래까지 내려오게 */
+  background: url("/effects/spotlight.png") center top / contain no-repeat;
+  mix-blend-mode: screen; /* 배경/캐릭터와 자연스럽게 합성 */
+  opacity: 0.9;
+  filter: blur(0.2px); /* 가장자리 미세 소프트닝 */
+  animation: spotlight-breathe 2.4s ease-in-out infinite;
+  z-index: 0; /* 버블/이미지 뒤로 가고 싶다면 -1, 앞이면 0~1 */
+}
+
+/* 선택된 캐릭터 살짝 밝게 */
+.actor-btn.is-active .actor-full,
+.actor-btn.is-active .actor-avatar img {
+  filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+  transform: translateY(-2px) scale(1.03);
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+/* 선택되지 않은 캐릭터 약간 어둡게(선택) */
+.stage .actor-btn:not(.is-active) .actor-full,
+.stage .actor-btn:not(.is-active) .actor-avatar img {
+  filter: brightness(0.88);
+}
+
+/* 은은한 호흡 애니메이션 */
+@keyframes spotlight-breathe {
+  0% {
+    opacity: 0.85;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateX(-50%) scale(1.03);
+  }
+  100% {
+    opacity: 0.85;
+    transform: translateX(-50%) scale(1);
+  }
+  /* ========= CSS-only 스포트라이트 ========= */
+  .spotlight-cone {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--cone-top, -28%);
+    width: var(--cone-w, 160%);
+    height: var(--cone-h, 190%);
+    pointer-events: none;
+
+    background: radial-gradient(
+      closest-side at 50% 0%,
+      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9))) 0%,
+      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9) * 0.5)) 22%,
+      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9) * 0.2)) 55%,
+      rgba(255, 255, 220, 0) 85%
+    );
+
+    -webkit-mask: conic-gradient(
+        from 180deg at 50% 0%,
+        transparent 0deg,
+        #000 var(--cone-angle, 18deg),
+        #000 calc(180deg - var(--cone-angle, 18deg)),
+        transparent 180deg
+      ),
+      linear-gradient(#000, #000);
+    -webkit-mask-composite: source-in;
+    mask: conic-gradient(
+        from 180deg at 50% 0%,
+        transparent 0deg,
+        #000 var(--cone-angle, 18deg),
+        #000 calc(180deg - var(--cone-angle, 18deg)),
+        transparent 180deg
+      ),
+      linear-gradient(#000, #000);
+
+    mix-blend-mode: screen;
+    filter: blur(1px);
+    animation: spotlight-breathe 2.4s ease-in-out infinite;
+  }
+  @keyframes spotlight-breathe {
+    0%,
+    100% {
+      opacity: 0.86;
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      opacity: 0.95;
+      transform: translateX(-50%) scale(1.03);
+    }
+  }
+
+  /* 선택 강조/비강조 */
+  .actor-btn.is-active .actor-full,
+  .actor-btn.is-active .actor-avatar img {
+    filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+    transform: translateY(-2px) scale(1.03);
+    transition: transform 0.25s ease, filter 0.25s ease;
+  }
+  .stage .actor-btn:not(.is-active) .actor-full,
+  .stage .actor-btn:not(.is-active) .actor-avatar img {
+    filter: brightness(0.88);
+  }
 }
