@@ -184,7 +184,7 @@ export default function GamePlayPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
 
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);

@@ -1,22 +1,16 @@
-/* =========================
-   GamePlayPage.css (full)
-   ========================= */
+/* ========================= GamePlayPage.css (full) ========================= */
 :root {
   --ink: #fff;
   --panel: rgba(25, 25, 28, 0.65);
   --ring: #ff3b30;
   --chatW: clamp(320px, 28vw, 420px); /* 오른쪽 대화 패널 폭 */
-}
-
-/* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
+} /* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
 .play-root {
   position: relative;
   min-height: 100svh;
   background-color: #0f1013; /* 이미지 로드 실패 대비 */
   overflow: hidden;
-}
-
-/* 상단 타이머(결과로 이동 버튼) */
+} /* 상단 타이머(결과로 이동 버튼) */
 .timer-badge {
   position: absolute;
   left: 28px;
@@ -33,9 +27,7 @@
 }
 .timer-badge:hover {
   filter: brightness(1.06);
-}
-
-/* 좌측 도구 */
+} /* 좌측 도구 */
 .tools {
   position: absolute;
   left: 28px;
@@ -56,22 +48,25 @@
   place-items: center;
   cursor: pointer;
   backdrop-filter: blur(4px);
-}
-
-/* 중앙 무대(전신 이미지) */
+} /* 중앙 무대(전신 이미지) */ /* 중앙 무대(전신 이미지) */
 .stage {
   position: absolute;
   left: 50%;
-  top: 58%; /* 조금 더 아래로 */
-  transform: translate(-50%, -50%);
-  width: min(1000px, 60vw); /* 폭도 약간 줄임 */
-  height: min(460px, 50vh); /* ✅ 높이 줄여서 캐릭터가 상대적으로 작아짐 */
+  top: 58%;
+  transform: translate(
+    -50%,
+    -50%
+  ); /* 무대 박스 자체는 넉넉하되, 그리드는 '콘텐츠 크기'로 잡아 가운데 모으기 */
+  width: min(1000px, 60vw);
+  height: min(460px, 50vh);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, max-content); /* ← 1fr 대신 콘텐츠 폭 기준 */
+  justify-content: center; /* ← 그리드 블록 자체를 가운데 */
   align-items: end;
+  column-gap: clamp(12px, 3vw, 28px);
   justify-items: center;
-}
-
+  transition: transform 0.28s ease; /* 열고 닫을 때 부드럽게 이동 */
+} /* /* 오른쪽 패널이 열려 있으면, 그 패널 폭 만큼 무대를 왼쪽으로 반만큼 이동 .play-root.has-chat-open .stage { transform: translate(calc(-50% - (var(--chatW) / 2 + 24px)), -50%); /* +24px은 패널의 바깥 여백(오른쪽 12px) 등을 감안한 시각 보정치 } */
 .actor-btn {
   position: relative;
   width: 100%;
@@ -80,7 +75,7 @@
   padding: 0;
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 4px;
   cursor: pointer;
 }
 .actor-full {
@@ -92,14 +87,26 @@
 }
 .actor-btn:hover .actor-full {
   transform: translateY(-2px) scale(1.02);
-}
+} /* 캐릭터 이름표 — 발목 근처에 겹쳐 표시 */
 .actor-name {
-  font-size: 14px;
+  position: absolute;
+  bottom: var(
+    --name-bottom,
+    12%
+  ); /* ↑ 숫자를 키우면 더 위로 올라가요 (예: 14%, 16%) */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  opacity: 0.9;
-}
-
-/* 무대 말풍선(NPC 전용) */
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none; /* 클릭 방해 X */
+  z-index: 2; /* 스포트라이트/이미지 위에 노출 */
+  opacity: 0.95;
+} /* 무대 말풍선(NPC 전용) */
 .actor-bubble {
   position: absolute;
   bottom: calc(100% + 10px);
@@ -122,9 +129,7 @@
   left: 34px;
   border: 8px solid transparent;
   border-top-color: #fff;
-}
-
-/* 오른쪽 대화 패널 (기본 열림) */
+} /* 오른쪽 대화 패널 (기본 열림) */
 .chat-panel {
   position: absolute;
   top: 12px;
@@ -145,9 +150,7 @@
 }
 .chat-panel.is-closed {
   transform: translateX(100%);
-}
-
-/* 패널 토글 FAB */
+} /* 패널 토글 FAB */
 .chat-fab {
   position: absolute;
   top: 50%;
@@ -171,9 +174,7 @@
 }
 .chat-fab:hover {
   filter: brightness(1.1);
-}
-
-/* 상단 아바타(뷰 필터) — 이미지 + 이름 라벨 */
+} /* 상단 아바타(뷰 필터) — 이미지 + 이름 라벨 */
 .chat-avatars {
   display: flex;
   gap: 10px;
@@ -219,9 +220,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* 대화 리스트 & 말풍선 */
+} /* 대화 리스트 & 말풍선 */
 .chat-list {
   position: relative;
   padding: 14px 16px 24px;
@@ -250,9 +249,7 @@
   padding: 10px 14px;
   border-radius: 14px 14px 14px 4px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* 하단 입력 Dock */
+} /* 하단 입력 Dock */
 .input-dock {
   position: absolute;
   left: 50%;
@@ -293,17 +290,14 @@
 }
 .send-btn:hover {
   filter: brightness(1.06);
-}
-
-/* 반응형 */
+} /* 반응형 */
 @media (max-width: 980px) {
   .chat-panel {
     width: 44vw;
   }
   .stage {
-    width: 70vw;
-    grid-template-columns: repeat(2, 1fr);
-    row-gap: 20px;
+    width: var(--baseW);
+    grid-template-columns: repeat(4, max-content);
   }
 }
 @media (max-width: 900px) {
@@ -321,9 +315,7 @@
     left: 10px;
     transform: none;
   }
-}
-
-/* 메모 팝업 */
+} /* 메모 팝업 */
 .memo-popup {
   position: absolute;
   width: 400px;
@@ -378,9 +370,7 @@
 .memo-actions button:last-child {
   background: #e77a3e;
   color: #fff;
-}
-
-/* 사건 개요 & 지도 팝업 */
+} /* 사건 개요 & 지도 팝업 */
 .overview-popup {
   position: absolute;
   top: 80px;
@@ -416,8 +406,7 @@
   margin: 12px 0 6px;
   font-size: 16px;
   color: #8ab4ff;
-}
-/* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
+} /* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
 .actor-btn.is-active::before {
   content: "";
   position: absolute;
@@ -436,15 +425,12 @@
   border-radius: 50%;
   z-index: -1; /* 캐릭터 이미지 뒤로 */
   filter: blur(40px);
-}
-
-/* 선택된 캐릭터의 이미지도 살짝 밝게 */
+} /* 선택된 캐릭터의 이미지도 살짝 밝게 */
 .actor-btn.is-active img {
   filter: brightness(1.15) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
   transform: scale(1.05);
   transition: all 0.25s ease;
-}
-/* ========= 스포트라이트(선택된 캐릭터) ========= */
+} /* ========= 스포트라이트(선택된 캐릭터) ========= */
 .spotlight-cone {
   position: absolute;
   pointer-events: none;
@@ -459,97 +445,14 @@
   filter: blur(0.2px); /* 가장자리 미세 소프트닝 */
   animation: spotlight-breathe 2.4s ease-in-out infinite;
   z-index: 0; /* 버블/이미지 뒤로 가고 싶다면 -1, 앞이면 0~1 */
-}
-
-/* 선택된 캐릭터 살짝 밝게 */
+} /* 선택된 캐릭터 살짝 밝게 */
 .actor-btn.is-active .actor-full,
 .actor-btn.is-active .actor-avatar img {
   filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
   transform: translateY(-2px) scale(1.03);
   transition: transform 0.25s ease, filter 0.25s ease;
-}
-
-/* 선택되지 않은 캐릭터 약간 어둡게(선택) */
+} /* 선택되지 않은 캐릭터 약간 어둡게(선택) */
 .stage .actor-btn:not(.is-active) .actor-full,
 .stage .actor-btn:not(.is-active) .actor-avatar img {
   filter: brightness(0.88);
-}
-
-/* 은은한 호흡 애니메이션 */
-@keyframes spotlight-breathe {
-  0% {
-    opacity: 0.85;
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    opacity: 0.95;
-    transform: translateX(-50%) scale(1.03);
-  }
-  100% {
-    opacity: 0.85;
-    transform: translateX(-50%) scale(1);
-  }
-  /* ========= CSS-only 스포트라이트 ========= */
-  .spotlight-cone {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: var(--cone-top, -28%);
-    width: var(--cone-w, 160%);
-    height: var(--cone-h, 190%);
-    pointer-events: none;
-
-    background: radial-gradient(
-      closest-side at 50% 0%,
-      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9))) 0%,
-      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9) * 0.5)) 22%,
-      rgba(255, 255, 220, calc(var(--cone-opacity, 0.9) * 0.2)) 55%,
-      rgba(255, 255, 220, 0) 85%
-    );
-
-    -webkit-mask: conic-gradient(
-        from 180deg at 50% 0%,
-        transparent 0deg,
-        #000 var(--cone-angle, 18deg),
-        #000 calc(180deg - var(--cone-angle, 18deg)),
-        transparent 180deg
-      ),
-      linear-gradient(#000, #000);
-    -webkit-mask-composite: source-in;
-    mask: conic-gradient(
-        from 180deg at 50% 0%,
-        transparent 0deg,
-        #000 var(--cone-angle, 18deg),
-        #000 calc(180deg - var(--cone-angle, 18deg)),
-        transparent 180deg
-      ),
-      linear-gradient(#000, #000);
-
-    mix-blend-mode: screen;
-    filter: blur(1px);
-    animation: spotlight-breathe 2.4s ease-in-out infinite;
-  }
-  @keyframes spotlight-breathe {
-    0%,
-    100% {
-      opacity: 0.86;
-      transform: translateX(-50%) scale(1);
-    }
-    50% {
-      opacity: 0.95;
-      transform: translateX(-50%) scale(1.03);
-    }
-  }
-
-  /* 선택 강조/비강조 */
-  .actor-btn.is-active .actor-full,
-  .actor-btn.is-active .actor-avatar img {
-    filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
-    transform: translateY(-2px) scale(1.03);
-    transition: transform 0.25s ease, filter 0.25s ease;
-  }
-  .stage .actor-btn:not(.is-active) .actor-full,
-  .stage .actor-btn:not(.is-active) .actor-avatar img {
-    filter: brightness(0.88);
-  }
 }
