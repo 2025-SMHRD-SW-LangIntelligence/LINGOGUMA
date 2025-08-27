@@ -225,38 +225,7 @@
   filter: brightness(1.06);
 }
 
-/* 플로팅 버튼 */
-.memo-fab {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 1100;
-}
-
-.memo-fab button {
-  background: #e77a3e;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.memo-fab button:hover {
-  background: #ff914d;
-}
-
-/* 팝업 오버레이 */
-.memo-popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1200;
-}
-
-/* 팝업창 */
+/* 메모 팝업창 */
 .memo-popup {
   position: absolute;
   top: 120px;
@@ -272,6 +241,7 @@
   overflow: auto;
 }
 
+/* 드래그 헤더 */
 .memo-header {
   background: #e77a3e;
   color: #fff;
@@ -293,16 +263,24 @@
   cursor: pointer;
 }
 
-.memo-popup textarea {
-  flex: 1;
-  background: #2a2a2a;
-  color: #fff;
-  border: none;
+/* 읽기 전용 textarea */
+.memo-readonly {
+  width: 100%;
+  height: 200px;
   resize: none;
+  border: none;
+  border-radius: 6px;
   padding: 10px;
+  background: #2a2a2a;
+  color: #ddd;
   font-size: 14px;
+  cursor: default;
+}
+.memo-readonly:focus {
+  outline: none; /* ✅ focus 테두리 제거 */
 }
 
+/* 결과창 상단의 버튼 (네모박스 상단 배치용) */
 .summary-header {
   display: flex;
   justify-content: space-between;

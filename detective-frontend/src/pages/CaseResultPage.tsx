@@ -93,8 +93,9 @@ export default function CaseResultPage(props: {
             </div>
             <textarea
               value={memoText}
-              onChange={(e) => setMemoText(e.target.value)}
-              placeholder="메모를 입력하세요..."
+              readOnly
+              className="momo-readonly"
+              placeholder="플레이 도중 작성한 메모가 여기에 표시됩니다."
             />
           </div>
         )}
