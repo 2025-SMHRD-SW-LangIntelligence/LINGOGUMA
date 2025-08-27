@@ -19,20 +19,20 @@ type PlayConfig = {
   suspects: PlaySuspect[];
   messages: ChatMessage[];
   timeLimitSec?: number;
+  intro?: string;
+  map?: string;
 };
 
 /* ---------- 이미지 경로 보정 ---------- */
-/** public/avatars 에 넣었을 때도, 외부 URL일 때도, 상대경로일 때도 안전하게 */
-// 기존 resolveURL 함수 교체
 function resolveURL(p?: string): string | undefined {
   if (!p) return undefined;
-  if (/^https?:\/\//i.test(p)) return p; // 외부 URL
-  const base = (import.meta as any).env?.BASE_URL ?? "/"; // Vite base 지원
+  if (/^https?:\/\//i.test(p)) return p;
+  const base = (import.meta as any).env?.BASE_URL ?? "/";
   const normBase = base.endsWith("/") ? base.slice(0, -1) : base;
 
-  if (p.startsWith("/")) return `${normBase}${p}`; // "/avatars/a.png"
-  if (p.startsWith("avatars/")) return `${normBase}/${p}`; // "avatars/a.png"
-  return `${normBase}/avatars/${p}`; // "a.png" → "/avatars/a.png"
+  if (p.startsWith("/")) return `${normBase}${p}`;
+  if (p.startsWith("avatars/")) return `${normBase}/${p}`;
+  return `${normBase}/avatars/${p}`;
 }
 
 /* ---------- 유틸 ---------- */
@@ -65,6 +65,11 @@ function shapeMessages(input: any[]): ChatMessage[] {
 
 /** API → /mock/:id-play.json → /mock/:id.json(suspects만) → 폴백 */
 async function loadPlayConfig(id: string): Promise<PlayConfig> {
+  const base = (import.meta as any).env?.BASE_URL ?? "/";
+  const join = (p: string) =>
+    (base.endsWith("/") ? base.slice(0, -1) : base) +
+    (p.startsWith("/") ? p : `/${p}`);
+
   try {
     const res = await api.get(`/api/scenarios/${id}/play-config`);
     const obj = normalizeToObject(res.data) as any;
@@ -76,6 +81,8 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
         timeLimitSec: Number.isFinite(obj.timeLimitSec)
           ? obj.timeLimitSec
           : 10 * 60 + 36,
+        intro: obj.intro ?? undefined,
+        map: obj.map ?? undefined,
       };
     }
   } catch {}
@@ -90,6 +97,8 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
         timeLimitSec: Number.isFinite(obj.timeLimitSec)
           ? obj.timeLimitSec
           : 10 * 60 + 36,
+        intro: obj.intro ?? undefined,
+        map: obj.map ?? undefined,
       };
     }
   } catch {}
@@ -102,6 +111,8 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
         suspects: shapeSuspects(base?.suspects ?? []),
         messages: [],
         timeLimitSec: 10 * 60 + 36,
+        intro: base?.intro ?? undefined,
+        map: base?.map ?? undefined,
       };
     }
   } catch {}
@@ -110,6 +121,7 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
     suspects: [],
     messages: [],
     timeLimitSec: 10 * 60 + 36,
+    intro: "사건 개요를 불러올 수 없습니다.",
   };
 }
 
@@ -120,7 +132,6 @@ export default function GamePlayPage() {
   const currentScenarioId = useScenario((s) => s.currentScenarioId);
   const setCurrentScenarioId = useScenario((s) => s.setCurrentScenarioId);
 
-  // URL → store 1회 동기화(루프 방지)
   const syncedRef = useRef(false);
   useEffect(() => {
     if (!syncedRef.current && scenarioIdInUrl) {
@@ -138,9 +149,8 @@ export default function GamePlayPage() {
 
   const suspects = useMemo(() => data?.suspects ?? [], [data]);
 
-  /** ✅ 대화 ‘대상’(전송 타겟)과 ‘보기’(히스토리 필터) 분리 */
-  const [activeId, setActiveId] = useState<string | null>(null); // 중앙 아바타 클릭으로만 변경
-  const [viewId, setViewId] = useState<string | null>(null); // 우측 패널 아바타로만 변경
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [viewId, setViewId] = useState<string | null>(null);
 
   const [chatOpen, setChatOpen] = useState(true);
   const [elapsedSec, setElapsedSec] = useState(0);
@@ -161,12 +171,14 @@ export default function GamePlayPage() {
   const setMemoText = useMemoStore((s) => s.setText);
   const clearMemo = useMemoStore((s) => s.clear);
 
-  // 메모창 위치 상태
+  // ✅ 사건 개요 & 지도 상태
+  const [overviewOpen, setOverviewOpen] = useState(false);
+
+  // 메모창 위치
   const [memoPos, setMemoPos] = useState({ x: 20, y: 80 });
   const memoRef = useRef<HTMLDivElement | null>(null);
   const dragData = useRef<{ offsetX: number; offsetY: number } | null>(null);
 
-  // 메모창 드래그 이벤트 핸들러
   const onDragStart = (e: React.MouseEvent) => {
     if (!memoRef.current) return;
     dragData.current = {
@@ -176,7 +188,6 @@ export default function GamePlayPage() {
     document.addEventListener("mousemove", onDragging);
     document.addEventListener("mouseup", onDragEnd);
   };
-
   const onDragging = (e: MouseEvent) => {
     if (!dragData.current) return;
     setMemoPos({
@@ -184,21 +195,18 @@ export default function GamePlayPage() {
       y: e.clientY - dragData.current.offsetY,
     });
   };
-
   const onDragEnd = () => {
     dragData.current = null;
     document.removeEventListener("mousemove", onDragging);
     document.removeEventListener("mouseup", onDragEnd);
   };
 
-  // 데이터 세팅
   useEffect(() => {
     if (!data) return;
     setMsgs(data.messages ?? []);
     setActiveId((data.suspects && data.suspects[0]?.id) || null);
   }, [data]);
 
-  // 우측 리스트 스크롤
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -211,7 +219,6 @@ export default function GamePlayPage() {
       });
   }, [chatOpen]);
 
-  /** 최근 메시지(미리보기용) */
   const lastById = useMemo(() => {
     const map: Record<string, ChatMessage> = {};
     for (const m of msgs) {
@@ -222,16 +229,12 @@ export default function GamePlayPage() {
     return map;
   }, [msgs]);
 
-  // 현재 ‘보기’ 대상의 메시지들만(없으면 activeId)
   const filterId = viewId ?? activeId;
   const visibleMsgs = useMemo(() => {
     if (!filterId) return [];
     return msgs.filter((m) => !m.whoId || m.whoId === filterId);
   }, [msgs, filterId]);
 
-  /* =========================
-     무대(중앙) 말풍선: NPC만 표시
-     ========================= */
   const BUBBLE_MS = 2200;
   const [stageBubble, setStageBubble] = useState<{
     whoId: string;
@@ -253,7 +256,6 @@ export default function GamePlayPage() {
     []
   );
 
-  // 전송: 내 메시지는 무대 말풍선 X (오른쪽 패널만 기록), ‘대상’은 activeId
   const send = () => {
     const text = input.trim();
     if (!text) return;
@@ -265,7 +267,6 @@ export default function GamePlayPage() {
     ]);
     setInput("");
 
-    // 더미 NPC 응답 + 무대 말풍선(보이게)
     window.setTimeout(() => {
       const reply = "…계속 조사 중입니다.";
       setMsgs((prev) => [
@@ -282,7 +283,6 @@ export default function GamePlayPage() {
     }
   };
 
-  // 결과 입력 페이지로 이동
   const goToResult = () => nav("/result");
 
   if (!currentScenarioId) {
@@ -310,9 +310,16 @@ export default function GamePlayPage() {
 
       {/* 좌측 도구 */}
       <div className="tools">
-        <button className="tool-btn" title="증거 검색">
-          🔎
+        {/* 사건 개요 & 지도 버튼 */}
+        <button
+          className="tool-btn"
+          title="사건 개요 & 지도"
+          onClick={() => setOverviewOpen(true)}
+        >
+          📜
         </button>
+
+        {/* 메모 버튼 */}
         <button
           className="tool-btn"
           title="메모 작성"
@@ -321,6 +328,29 @@ export default function GamePlayPage() {
           ✍️
         </button>
       </div>
+
+      {/* ✅ 사건 개요 팝업 */}
+      {overviewOpen && (
+        <div className="overview-popup">
+          <div className="overview-header">
+            사건 개요 & 지도
+            <button onClick={() => setOverviewOpen(false)}>✖</button>
+          </div>
+          <div className="overview-body">
+            <h3>사건 개요</h3>
+            <p style={{ whiteSpace: "pre-wrap" }}>
+              {data?.intro ?? "시나리오 개요가 없습니다."}
+            </p>
+
+            <h3>지도</h3>
+            <img
+              src={data.map}
+              alt="시나리오 지도"
+              style={{ width: "100%", borderRadius: "8px" }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ✅ 메모 팝업 */}
       {memoOpen && (
@@ -344,20 +374,19 @@ export default function GamePlayPage() {
         </div>
       )}
 
-      {/* 중앙 무대: ‘대상 선택’은 여기서만 */}
+      {/* 중앙 무대 */}
       <div className="stage">
         {suspects.slice(0, 4).map((s) => {
           const sel = s.id === activeId;
           const last = lastById[s.id];
-
           return (
             <button
               key={s.id}
               type="button"
               className={`actor-btn ${sel ? "is-active" : ""}`}
               onClick={() => {
-                setActiveId(s.id); // ✅ 보내기 대상만 변경
-                if (viewId == null) setViewId(s.id); // 처음엔 보기 대상도 맞춰줌
+                setActiveId(s.id);
+                if (viewId == null) setViewId(s.id);
                 const text =
                   last && last.from === "npc"
                     ? last.text
@@ -367,11 +396,9 @@ export default function GamePlayPage() {
               aria-pressed={sel}
               title={`${s.name} 대화하기`}
             >
-              {/* 무대 말풍선: NPC 텍스트만 */}
               {stageBubble && stageBubble.whoId === s.id && (
                 <div className="actor-bubble">{stageBubble.text}</div>
               )}
-
               {s.full ? (
                 <img
                   className="actor-full"
@@ -398,7 +425,7 @@ export default function GamePlayPage() {
         })}
       </div>
 
-      {/* 오른쪽 대화 패널: ‘보기 대상’만 변경(보내기 대상은 영향 X) */}
+      {/* 오른쪽 대화 패널 */}
       <aside className={`chat-panel ${chatOpen ? "" : "is-closed"}`}>
         <div className="chat-avatars">
           {suspects.map((s) => {
@@ -407,7 +434,7 @@ export default function GamePlayPage() {
               <button
                 key={s.id}
                 className={`chat-ava ${viewing ? "is-active" : ""}`}
-                onClick={() => setViewId(s.id)} // ✅ 보기 필터만 변경
+                onClick={() => setViewId(s.id)}
                 title={`${s.name} 대화 내역 보기`}
               >
                 <img
@@ -430,7 +457,7 @@ export default function GamePlayPage() {
         </div>
       </aside>
 
-      {/* 패널 토글 버튼 */}
+      {/* 패널 토글 */}
       <button
         type="button"
         className="chat-fab"
@@ -442,7 +469,7 @@ export default function GamePlayPage() {
         {chatOpen ? "»" : "«"}
       </button>
 
-      {/* 하단 입력: 항상 activeId(중앙 선택 대상)에게 전송 */}
+      {/* 입력창 */}
       <div className="input-dock">
         <input
           className="input"

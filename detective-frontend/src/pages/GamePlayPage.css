@@ -369,3 +369,42 @@
   background: #e77a3e;
   color: #fff;
 }
+.overview-popup {
+  position: absolute;
+  top: 80px;
+  left: 120px;
+  width: 520px;
+  max-height: 480px;
+  background: #1e1e1e;
+  border: 2px solid #4f87ff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1100;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.overview-header {
+  background: #4f87ff;
+  color: #fff;
+  font-weight: bold;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overview-body {
+  flex: 1;
+  padding: 14px;
+  color: #fff;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.overview-body h3 {
+  margin: 12px 0 6px;
+  font-size: 16px;
+  color: #8ab4ff;
+}
