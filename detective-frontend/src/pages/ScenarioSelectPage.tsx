@@ -1,13 +1,18 @@
+// src/pages/ScenarioSelectPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth.store";
 import { useScenario } from "../store/scenario.store";
 import "./ScenarioSelectPage.css";
 import folder from "../assets/folder.png";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../shared/api/client";
 
-type Scenario = { id: string; title: string };
+type PublicScenario = { id: number; title: string };
+type UIItem = { key: string; routeId: string; title: string };
 
-const SCENARIOS: Scenario[] = [
+type StaticScenario = { id: string; title: string };
+const SCENARIOS: StaticScenario[] = [
   { id: "s1", title: "도서관에서 사라진 고서" },
   { id: "s2", title: "밀실의 마지막 실험" },
   { id: "s3", title: "사라진 연구 노트" },
@@ -23,13 +28,56 @@ const SCENARIOS: Scenario[] = [
 export default function ScenarioSelectPage() {
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
-  const isAuthed = !!user;
-  const unlockedCount = isAuthed ? SCENARIOS.length : 1;
-
   const setCurrentScenarioId = useScenario((s) => s.setCurrentScenarioId);
+
+  const isAuthed = !!user;
 
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
+
+  // 공개(등록됨) 목록
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["public-scenarios"],
+    queryFn: async () => {
+      const { data } = await api.get<PublicScenario[]>("/scenarios/public");
+      return data;
+    },
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
+  });
+
+  // 정적 → UIItem
+  const staticItems = useMemo<UIItem[]>(
+    () =>
+      SCENARIOS.map((s) => ({
+        key: `static-${s.id}`,
+        routeId: s.id,
+        title: s.title,
+      })),
+    []
+  );
+
+  // 동적 → UIItem
+  const dynamicItems = useMemo<UIItem[]>(
+    () =>
+      (data ?? []).map((d) => ({
+        key: `db-${d.id}`,
+        routeId: String(d.id), // 숫자 → 문자열
+        title: d.title,
+      })),
+    [data]
+  );
+
+  // ✅ 최종 표시 목록: 정적 + 동적
+  const items = useMemo<UIItem[]>(
+    () => [...staticItems, ...dynamicItems],
+    [staticItems, dynamicItems]
+  );
+
+  // 비로그인: 1개만 오픈
+  const unlockedCount = isAuthed ? items.length : Math.min(1, items.length);
 
   const showHint = (msg: string) => {
     setHint(msg);
@@ -48,10 +96,10 @@ export default function ScenarioSelectPage() {
     }
   };
 
-  const onClickCard = (s: Scenario, idx: number) => {
+  const onClickCard = (s: UIItem, idx: number) => {
     if (idx < unlockedCount) {
-      setCurrentScenarioId(s.id); // ✅ 전역 저장
-      nav(`/play/${s.id}/summary`); // ✅ 요약으로 이동
+      setCurrentScenarioId(s.routeId);
+      nav(`/play/${s.routeId}/summary`);
     } else {
       showHint("로그인하면 모든 사건을 플레이할 수 있어요.");
     }
@@ -59,7 +107,7 @@ export default function ScenarioSelectPage() {
 
   const onKeyPressCard = (
     e: React.KeyboardEvent<HTMLButtonElement>,
-    s: Scenario,
+    s: UIItem,
     i: number
   ) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -79,6 +127,23 @@ export default function ScenarioSelectPage() {
     },
     []
   );
+
+  // 상태 카드(그리드 내에서 카드 형태로만 표시) — items가 0개일 때만 노출
+  const statusCard =
+    items.length === 0 ? (
+      <div className="sc-card">
+        <button type="button" className="sc-card__btn" aria-disabled>
+          <img src={folder} alt="" aria-hidden="true" className="sc-card__bg" />
+          <span className="sc-card__title" style={{ opacity: 0.85 }}>
+            {isLoading
+              ? "목록 불러오는 중…"
+              : isError
+              ? "목록을 불러오지 못했습니다"
+              : "등록된 시나리오가 없습니다"}
+          </span>
+        </button>
+      </div>
+    ) : null;
 
   return (
     <div className="sc-root">
@@ -100,11 +165,12 @@ export default function ScenarioSelectPage() {
 
         <section className="sc-board" aria-label="사건 목록">
           <div className="sc-grid">
-            {SCENARIOS.map((s, i) => {
+            {/* 항상: 정적 + 동적 카드 */}
+            {items.map((s, i) => {
               const locked = i >= unlockedCount;
               return (
                 <div
-                  key={s.id}
+                  key={s.key}
                   className={`sc-card ${locked ? "is-locked" : ""}`}
                 >
                   <button
@@ -133,6 +199,9 @@ export default function ScenarioSelectPage() {
                 </div>
               );
             })}
+
+            {/* items가 0일 때만 상태 카드 표시 → 정적이 있으면 절대 안 보임 */}
+            {statusCard}
           </div>
         </section>
       </div>

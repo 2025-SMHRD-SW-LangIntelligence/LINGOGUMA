@@ -6,4 +6,5 @@ public enum ScenarioStatus {
     REVIEWING,    // 검토 중
     APPROVED,     // 승인됨
     REJECTED,     // 반려됨
+    PUBLISHED     // 발행됨
 }

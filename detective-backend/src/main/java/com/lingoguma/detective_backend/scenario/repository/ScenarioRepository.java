@@ -22,6 +22,9 @@ public interface ScenarioRepository extends JpaRepository<Scenario, Long> {
     List<Scenario> findAllByOrderByCreatedAtDesc();
     List<Scenario> findByStatusOrderByCreatedAtDesc(ScenarioStatus status);
 
+    // ✅ 관리자 검색(부분 일치, 최신수정순)
+    List<Scenario> findByStatusAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(ScenarioStatus status, String keyword);
+    
     @Query("""
            select s from Scenario s
            join s.author a

@@ -106,13 +106,19 @@ const MyPage: React.FC = () => {
                 >
                   시나리오 관리
                 </li>
-                {/* 필요한 경우 제출됨 바로가기
+                {/* 필요한 경우 제출됨 바로가기 */}
                 <li
                   onClick={() => nav("/admin/scenarios/submitted")}
                   style={{ cursor: "pointer", color: "#3498db" }}
                 >
-                  제출됨 목록
-                </li> */}
+                  제출된 시나리오 목록
+                </li>
+                <li
+                  onClick={() => nav("/admin/scenarios/register")}
+                  style={{ cursor: "pointer", color: "#3498db" }}
+                >
+                  시나리오 등록 관리
+                </li>
               </>
             )}
 
