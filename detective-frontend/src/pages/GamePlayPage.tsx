@@ -1,3 +1,4 @@
+// src/pages/GamePlayPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +8,13 @@ import { useMemoStore } from "../store/memo.store";
 import "./GamePlayPage.css";
 
 /* ---------- 타입 ---------- */
-type PlaySuspect = { id: string; name: string; avatar: string; full?: string };
+type PlaySuspect = {
+  id: string;
+  name: string;
+  avatar: string;
+  full?: string;
+  comment?: string; // ✅ 기본 말풍선/프리로드 메시지
+};
 type ChatMessage = {
   id: string;
   from: "me" | "npc";
@@ -19,8 +26,8 @@ type PlayConfig = {
   suspects: PlaySuspect[];
   messages: ChatMessage[];
   timeLimitSec?: number;
-  intro?: string;
-  map?: string;
+  intro?: string; // ✅ 개요
+  map?: string; // ✅ 지도
 };
 
 /* ---------- 이미지 경로 보정 ---------- */
@@ -30,9 +37,9 @@ function resolveURL(p?: string): string | undefined {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const normBase = base.endsWith("/") ? base.slice(0, -1) : base;
 
-  if (p.startsWith("/")) return `${normBase}${p}`;
-  if (p.startsWith("avatars/")) return `${normBase}/${p}`;
-  return `${normBase}/avatars/${p}`;
+  if (p.startsWith("/")) return `${normBase}${p}`; // "/avatars/a.png"
+  if (p.startsWith("avatars/")) return `${normBase}/${p}`; // "avatars/a.png"
+  return `${normBase}/avatars/${p}`; // "a.png" → "/avatars/a.png"
 }
 
 /* ---------- 유틸 ---------- */
@@ -52,6 +59,7 @@ function shapeSuspects(input: any[]): PlaySuspect[] {
     name: String(s?.name ?? ""),
     avatar: String(s?.avatar ?? ""),
     full: s?.full ? String(s.full) : undefined,
+    comment: s?.comment ? String(s.comment) : undefined, // ✅ comment 반영
   }));
 }
 function shapeMessages(input: any[]): ChatMessage[] {
@@ -63,13 +71,14 @@ function shapeMessages(input: any[]): ChatMessage[] {
   }));
 }
 
-/** API → /mock/:id-play.json → /mock/:id.json(suspects만) → 폴백 */
+/** API → /mock/:id-play.json → /mock/:id.json(suspects,intro,map) → 폴백 */
 async function loadPlayConfig(id: string): Promise<PlayConfig> {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const join = (p: string) =>
     (base.endsWith("/") ? base.slice(0, -1) : base) +
     (p.startsWith("/") ? p : `/${p}`);
 
+  // 1) 서버 API
   try {
     const res = await api.get(`/api/scenarios/${id}/play-config`);
     const obj = normalizeToObject(res.data) as any;
@@ -86,8 +95,10 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
       };
     }
   } catch {}
+
+  // 2) mock/:id-play.json
   try {
-    const r = await fetch(`/mock/${id}-play.json`, { cache: "no-store" });
+    const r = await fetch(join(`mock/${id}-play.json`), { cache: "no-store" });
     if (r.ok) {
       const obj = (await r.json()) as any;
       return {
@@ -102,20 +113,24 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
       };
     }
   } catch {}
+
+  // 3) mock/:id.json  ← s1.json 사용됨
   try {
-    const r2 = await fetch(`/mock/${id}.json`, { cache: "no-store" });
+    const r2 = await fetch(join(`mock/${id}.json`), { cache: "no-store" });
     if (r2.ok) {
-      const base = (await r2.json()) as any;
+      const baseObj = (await r2.json()) as any;
       return {
         background: undefined,
-        suspects: shapeSuspects(base?.suspects ?? []),
+        suspects: shapeSuspects(baseObj?.suspects ?? []),
         messages: [],
         timeLimitSec: 10 * 60 + 36,
-        intro: base?.intro ?? undefined,
-        map: base?.map ?? undefined,
+        intro: baseObj?.intro ?? undefined, // ✅ intro 사용
+        map: baseObj?.map ?? undefined, // ✅ map 사용
       };
     }
   } catch {}
+
+  // 4) 폴백
   return {
     background: undefined,
     suspects: [],
@@ -132,6 +147,7 @@ export default function GamePlayPage() {
   const currentScenarioId = useScenario((s) => s.currentScenarioId);
   const setCurrentScenarioId = useScenario((s) => s.setCurrentScenarioId);
 
+  // URL → store 1회 동기화
   const syncedRef = useRef(false);
   useEffect(() => {
     if (!syncedRef.current && scenarioIdInUrl) {
@@ -149,6 +165,7 @@ export default function GamePlayPage() {
 
   const suspects = useMemo(() => data?.suspects ?? [], [data]);
 
+  /** ‘대상(전송)’과 ‘보기(필터)’ 분리 */
   const [activeId, setActiveId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
 
@@ -165,20 +182,19 @@ export default function GamePlayPage() {
   const mm = String(Math.floor(elapsedSec / 60)).padStart(2, "0");
   const ss = String(elapsedSec % 60).padStart(2, "0");
 
-  // ✅ 메모 상태
+  // ✅ 메모
   const [memoOpen, setMemoOpen] = useState(false);
   const memoText = useMemoStore((s) => s.text);
   const setMemoText = useMemoStore((s) => s.setText);
   const clearMemo = useMemoStore((s) => s.clear);
 
-  // ✅ 사건 개요 & 지도 상태
+  // ✅ 사건 개요 & 지도 팝업
   const [overviewOpen, setOverviewOpen] = useState(false);
 
-  // 메모창 위치
+  // 메모창 드래그
   const [memoPos, setMemoPos] = useState({ x: 20, y: 80 });
   const memoRef = useRef<HTMLDivElement | null>(null);
   const dragData = useRef<{ offsetX: number; offsetY: number } | null>(null);
-
   const onDragStart = (e: React.MouseEvent) => {
     if (!memoRef.current) return;
     dragData.current = {
@@ -201,12 +217,27 @@ export default function GamePlayPage() {
     document.removeEventListener("mouseup", onDragEnd);
   };
 
+  // ✅ 데이터 세팅 + 모든 용의자 comment를 이력창에 프리로드
   useEffect(() => {
     if (!data) return;
-    setMsgs(data.messages ?? []);
+
+    const baseMsgs: ChatMessage[] = [];
+    for (const s of data.suspects ?? []) {
+      if (s.comment) {
+        baseMsgs.push({
+          id: `c-${s.id}`,
+          from: "npc",
+          whoId: s.id,
+          text: s.comment,
+        });
+      }
+    }
+
+    setMsgs([...baseMsgs, ...(data.messages ?? [])]); // ✅ comment 먼저, 기존 메시지 뒤에
     setActiveId((data.suspects && data.suspects[0]?.id) || null);
   }, [data]);
 
+  // 우측 리스트 스크롤
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -219,6 +250,7 @@ export default function GamePlayPage() {
       });
   }, [chatOpen]);
 
+  /** 최근 메시지 미리보기 */
   const lastById = useMemo(() => {
     const map: Record<string, ChatMessage> = {};
     for (const m of msgs) {
@@ -229,12 +261,16 @@ export default function GamePlayPage() {
     return map;
   }, [msgs]);
 
+  // 현재 보기 필터
   const filterId = viewId ?? activeId;
   const visibleMsgs = useMemo(() => {
     if (!filterId) return [];
     return msgs.filter((m) => !m.whoId || m.whoId === filterId);
   }, [msgs, filterId]);
 
+  /* =========================
+     무대(중앙) 말풍선: NPC만 표시
+     ========================= */
   const BUBBLE_MS = 2200;
   const [stageBubble, setStageBubble] = useState<{
     whoId: string;
@@ -256,6 +292,7 @@ export default function GamePlayPage() {
     []
   );
 
+  // 전송: 내 메시지는 무대 말풍선 X
   const send = () => {
     const text = input.trim();
     if (!text) return;
@@ -267,6 +304,7 @@ export default function GamePlayPage() {
     ]);
     setInput("");
 
+    // 더미 NPC 응답
     window.setTimeout(() => {
       const reply = "…계속 조사 중입니다.";
       setMsgs((prev) => [
@@ -297,6 +335,7 @@ export default function GamePlayPage() {
   return (
     <div
       className={`play-root ${chatOpen ? "has-chat-open" : ""}`}
+      /* ✅ 항상 고정 배경 사용 */
       style={{
         backgroundImage: `url("/src/assets/background.jpg")`,
         backgroundSize: "cover",
@@ -343,11 +382,15 @@ export default function GamePlayPage() {
             </p>
 
             <h3>지도</h3>
-            <img
-              src={data.map}
-              alt="시나리오 지도"
-              style={{ width: "100%", borderRadius: "8px" }}
-            />
+            {data?.map ? (
+              <img
+                src={data.map}
+                alt="시나리오 지도"
+                style={{ width: "100%", borderRadius: "8px" }}
+              />
+            ) : (
+              <p>시나리오 지도 없음</p>
+            )}
           </div>
         </div>
       )}
@@ -390,7 +433,7 @@ export default function GamePlayPage() {
                 const text =
                   last && last.from === "npc"
                     ? last.text
-                    : "무엇을 물어볼까요?";
+                    : s.comment ?? "무엇을 물어볼까요?"; // ✅ 기본 말풍선에 comment 사용
                 showNpcBubble(s.id, text);
               }}
               aria-pressed={sel}
@@ -451,7 +494,6 @@ export default function GamePlayPage() {
             );
           })}
         </div>
-
         <div id="chat-body" className="chat-list" ref={listRef}>
           {visibleMsgs.map((m) => (
             <div key={m.id} className={`bubble ${m.from}`}>

@@ -10,19 +10,22 @@
       "id": "1",
       "name": "최연구원",
       "avatar": "/avatars/s1_1.png",
-      "full": "/actors/s1_Full1.png"
+      "full": "/actors/s1_Full1.png",
+      "comment": "저는 제 자리에서 데이터 정리를 하고 있었습니다."
     },
     {
       "id": "2",
       "name": "김참가자",
       "avatar": "/avatars/s1_2.png",
-      "full": "/actors/s1_Full2.png"
+      "full": "/actors/s1_Full2.png",
+      "comment": "저는 대기실에서 동의서를 작성하고 휴대폰을 하고 있었습니다."
     },
     {
       "id": "3",
       "name": "양인턴",
       "avatar": "/avatars/s1_3.png",
-      "full": "/actors/s1_Full3.png"
+      "full": "/actors/s1_Full3.png",
+      "comment": "저는 참가자를 안내한 뒤, 실험실 안에서 장비 점검을 하고 있었습니다"
     }
   ],
   "resultQuestions": [
