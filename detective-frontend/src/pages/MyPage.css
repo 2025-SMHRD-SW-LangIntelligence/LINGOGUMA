@@ -1,59 +1,121 @@
+/* ===== 전체 레이아웃 ===== */
 .mypage-container {
   display: flex;
   height: 100vh;
-  background: url("/src/assets/background.jpg") no-repeat center center;
-  background-size: cover;
-  color: white;
-  font-family: Pretendard, sans-serif;
+  background: #111; /* 어두운 배경 */
+  color: #fff;
+  font-family: Pretendard, Arial, sans-serif;
 }
 
-/* 좌측 사이드바 */
+/* ===== 사이드바 ===== */
 .mypage-sidebar {
-  width: 220px;
-  background: rgba(0, 0, 0, 0.7);
+  width: 260px;
+  background: #1b1b1b;
   display: flex;
   flex-direction: column;
-  padding: 21px;
+  align-items: center;
+  padding: 20px 10px;
+  border-right: 1px solid #333;
 }
 
-.profile {
+/* 프로필 */
+.mypage-sidebar .profile {
   text-align: center;
   margin-bottom: 40px;
 }
-
-.avatar {
-  font-size: 40px;
-  margin-bottom: 10px;
+.mypage-sidebar .avatar {
+  font-size: 48px;
+  background: #333;
+  width: 70px;
+  height: 70px;
+  line-height: 70px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+}
+.mypage-sidebar h2 {
+  font-size: 30px;
+  margin: 0;
 }
 
-.mypage-sidebar ul {
+/* 메뉴 */
+.mypage-sidebar nav ul {
   list-style: none;
   padding: 0;
+  width: 100%;
 }
-
-.mypage-sidebar li {
-  margin: 20px 0;
+.mypage-sidebar nav li {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
   cursor: pointer;
-  position: relative;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+.mypage-sidebar nav li:hover {
+  background: #333;
+  color: #e77a3e;
 }
 
-.mypage-sidebar li::before {
-  content: "●";
-  position: absolute;
-  left: -15px;
-  color: #f39c12;
+/* 아이콘 강조형 스타일 */
+.mypage-sidebar nav li::before {
+  content: "•";
+  color: #e77a3e;
+  margin-right: 8px;
+  font-size: 18px;
+  line-height: 1;
 }
 
-/* 메인 */
+/* 소제목 (작가/관리자) */
+.mypage-sidebar nav li[style*="cursor: default"] {
+  pointer-events: none;
+  font-weight: bold;
+  opacity: 0.6;
+}
+.mypage-sidebar nav li[style*="cursor: default"]::before {
+  content: "";
+  margin-right: 0;
+}
+
+/* ===== 메인 컨텐츠 ===== */
 .mypage-main {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+.mypage-main h3 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  border-left: 4px solid #e77a3e;
+  padding-left: 10px;
 }
 
+/* 차트 영역 */
 .chart-container {
-  width: 500px;
+  width: 100%;
   height: 400px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* ===== PLAY 버튼 (우측 하단) ===== */
+.play-fab {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background: #e77a3e;
+  color: #fff;
+  font-size: 25px;
+  font-weight: bold;
+  border: none;
+  border-radius: 999px;
+  padding: 18px 40px;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s, transform 0.2s;
+}
+.play-fab:hover {
+  background: #ff914d;
+  transform: translateY(-2px);
 }
