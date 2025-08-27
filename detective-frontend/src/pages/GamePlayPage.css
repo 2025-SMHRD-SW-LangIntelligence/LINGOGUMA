@@ -8,16 +8,11 @@
   --chatW: clamp(320px, 28vw, 420px); /* 오른쪽 대화 패널 폭 */
 }
 
-/* 전체 배경 */
+/* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
 .play-root {
   position: relative;
   min-height: 100svh;
-  background: radial-gradient(
-    ellipse at center,
-    #2b2c31 0%,
-    #16171b 60%,
-    #0f1013 100%
-  );
+  background-color: #0f1013; /* 이미지 로드 실패 대비 */
   overflow: hidden;
 }
 
@@ -177,33 +172,52 @@
   filter: brightness(1.1);
 }
 
-/* 상단 아바타(뷰 필터) */
+/* 상단 아바타(뷰 필터) — 이미지 + 이름 라벨 */
 .chat-avatars {
   display: flex;
   gap: 10px;
   padding: 12px 14px;
   background: rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  overflow-x: auto;
 }
 .chat-ava {
-  --size: 44px;
+  --size: 56px; /* 썸네일 크기 */
+  width: auto;
+  min-width: var(--size);
+  display: grid;
+  grid-template-rows: var(--size) auto;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: transparent;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+}
+.chat-ava img {
   width: var(--size);
   height: var(--size);
   border-radius: 999px;
+  object-fit: cover;
   border: 3px solid rgba(255, 255, 255, 0.35);
-  overflow: hidden;
-  background: #aaa;
-  cursor: pointer;
-  pointer-events: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
-.chat-ava.is-active {
+.chat-ava.is-active img {
   border-color: var(--ring);
   box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.2);
 }
-.chat-ava img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.chat-ava-name {
+  max-width: 90px;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #fff;
+  opacity: 0.9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 대화 리스트 & 말풍선 */
@@ -299,8 +313,8 @@
 @media (max-width: 720px) {
   .stage,
   .tools {
-    display: none;
-  } /* 모바일: 공간 확보 */
+    display: none; /* 모바일: 공간 확보 */
+  }
   .input-dock {
     width: calc(100% - 20px);
     left: 10px;
@@ -308,6 +322,7 @@
   }
 }
 
+/* 메모 팝업 */
 .memo-popup {
   position: absolute;
   width: 400px;
@@ -321,7 +336,6 @@
   resize: both; /* 크기 조절 가능 */
   overflow: auto;
 }
-
 .memo-header {
   background: #e77a3e;
   color: #fff;
@@ -332,7 +346,6 @@
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
-
 .memo-popup textarea {
   flex: 1;
   resize: none;
@@ -344,7 +357,6 @@
   font-size: 15px;
   line-height: 1.4;
 }
-
 .memo-actions {
   margin-top: 8px;
   display: flex;
@@ -352,23 +364,22 @@
   gap: 8px;
   padding: 6px 10px;
 }
-
 .memo-actions button {
   padding: 4px 12px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
-
 .memo-actions button:first-child {
   background: #666;
   color: #fff;
 }
-
 .memo-actions button:last-child {
   background: #e77a3e;
   color: #fff;
 }
+
+/* 사건 개요 & 지도 팝업 */
 .overview-popup {
   position: absolute;
   top: 80px;
@@ -384,7 +395,6 @@
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
-
 .overview-header {
   background: #4f87ff;
   color: #fff;
@@ -394,7 +404,6 @@
   justify-content: space-between;
   align-items: center;
 }
-
 .overview-body {
   flex: 1;
   padding: 14px;
@@ -402,7 +411,6 @@
   overflow-y: auto;
   line-height: 1.5;
 }
-
 .overview-body h3 {
   margin: 12px 0 6px;
   font-size: 16px;

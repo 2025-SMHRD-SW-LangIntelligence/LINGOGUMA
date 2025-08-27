@@ -297,11 +297,11 @@ export default function GamePlayPage() {
   return (
     <div
       className={`play-root ${chatOpen ? "has-chat-open" : ""}`}
-      style={
-        data?.background
-          ? { backgroundImage: `url(${data.background})` }
-          : undefined
-      }
+      style={{
+        backgroundImage: `url("/src/assets/background.jpg")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
       {/* 좌상단 타이머 */}
       <button className="timer-badge" onClick={goToResult}>
@@ -436,6 +436,8 @@ export default function GamePlayPage() {
                 className={`chat-ava ${viewing ? "is-active" : ""}`}
                 onClick={() => setViewId(s.id)}
                 title={`${s.name} 대화 내역 보기`}
+                aria-pressed={viewing}
+                aria-label={`${s.name} 대화 내역 보기`}
               >
                 <img
                   src={resolveURL(s.avatar)}
@@ -444,10 +446,12 @@ export default function GamePlayPage() {
                     (e.currentTarget.src = resolveURL("placeholder.png")!)
                   }
                 />
+                <span className="chat-ava-name">{s.name}</span>
               </button>
             );
           })}
         </div>
+
         <div id="chat-body" className="chat-list" ref={listRef}>
           {visibleMsgs.map((m) => (
             <div key={m.id} className={`bubble ${m.from}`}>
