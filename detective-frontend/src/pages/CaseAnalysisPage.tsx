@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import {
   Radar,
   RadarChart,
@@ -10,13 +10,6 @@ import {
   Tooltip,
 } from "recharts";
 import "./CaseAnalysisPage.css";
-
-/**
- * 역할
- * - 결과 제출 시 전달된 state(payload)를 받아서 요약/시각화
- * - charts: 예제 레이더차트(카테고리/점수는 실제 서비스 규칙에 맞춰 교체)
- * - state가 없이 직접 접근하면 결과 페이지로 돌려보내는 가드(원치 않으면 제거)
- */
 
 type AnalysisState = {
   culpritId: string;
@@ -32,33 +25,30 @@ const categories = [
 ];
 
 /**
- * 아주 단순한 예시 스코어러:
- * - 답변 텍스트 길이/개수로 0~100 점수 근사치 생성
- * - 실제론 서버/알고리즘 점수를 받아와서 사용하세요.
+ * 임시 점수 계산 함수 (답변 글자수 기반)
+ * 실제 서비스에서는 서버/알고리즘 점수로 교체하면 됨
  */
 function naiveScoreFromAnswers(answers: Record<string, string>) {
   const vals = Object.values(answers ?? {});
   const totalLen = vals.reduce((acc, t) => acc + (t?.trim().length ?? 0), 0);
   const cnt = vals.length || 1;
-  const avgLen = totalLen / cnt; // 평균 글자 수
-
-  // 임의 규칙으로 0~100 스케일
+  const avgLen = totalLen / cnt;
   const base = Math.min(100, Math.round((avgLen / 120) * 100));
-  // 카테고리별 약간의 노이즈로 분산
-  const scores = categories.map((_, i) =>
+
+  return categories.map((_, i) =>
     Math.max(0, Math.min(100, base + ((i * 7) % 15) - 7))
   );
-  return scores; // 길이 5
 }
 
 export default function CaseAnalysisPage() {
   const location = useLocation();
+  const nav = useNavigate();
   const state = (location.state ?? null) as AnalysisState | null;
 
-  // 직접 접근 방지 (선택)
+  // state가 없으면 결과 페이지로 돌려보냄 (주소창 직접 접근 방지)
   if (!state) return <Navigate to="/result" replace />;
 
-  // 예시: 처음/최근 스코어 구분
+  // 점수 계산
   const recent = useMemo(
     () => naiveScoreFromAnswers(state.answers),
     [state.answers]
@@ -81,12 +71,14 @@ export default function CaseAnalysisPage() {
     [first, recent]
   );
 
+  // 평균/차이
   const avgFirst = Math.round(first.reduce((a, b) => a + b, 0) / first.length);
   const avgRecent = Math.round(
     recent.reduce((a, b) => a + b, 0) / recent.length
   );
   const avgDelta = avgRecent - avgFirst;
 
+  // 개선/약화 항목
   const deltas = categories.map((c, i) => ({
     name: c,
     diff: (recent[i] ?? 0) - (first[i] ?? 0),
@@ -167,7 +159,7 @@ export default function CaseAnalysisPage() {
           </article>
         </div>
 
-        {/* 인사이트 & 제출 답변 미리보기 */}
+        {/* 인사이트 */}
         <section className="cap-insights">
           <div className="cap-panel">
             <h3>개선이 큰 항목</h3>
@@ -191,6 +183,7 @@ export default function CaseAnalysisPage() {
           </div>
         </section>
 
+        {/* 권장 액션 */}
         <section className="cap-feedback">
           <h3>권장 액션</h3>
           <ul>
@@ -209,6 +202,7 @@ export default function CaseAnalysisPage() {
           </ul>
         </section>
 
+        {/* 제출 답변 미리보기 */}
         <section className="cap-feedback" style={{ marginTop: 12 }}>
           <h3>제출한 답변(미리보기)</h3>
           <ul>
@@ -219,6 +213,13 @@ export default function CaseAnalysisPage() {
             ))}
           </ul>
         </section>
+
+        {/* ✅ 종료하기 버튼 */}
+        <div className="cap-actions">
+          <button className="cap-exit-btn" onClick={() => nav("/scenarios")}>
+            종료하기
+          </button>
+        </div>
       </section>
     </div>
   );

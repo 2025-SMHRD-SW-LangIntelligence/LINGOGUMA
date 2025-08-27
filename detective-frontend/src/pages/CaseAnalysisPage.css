@@ -122,3 +122,23 @@
   padding-left: 18px;
   line-height: 1.7;
 }
+.cap-actions {
+  margin-top: 24px;
+  text-align: right;
+}
+
+.cap-exit-btn {
+  background: #ef4444; /* 빨간색 버튼 */
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.cap-exit-btn:hover {
+  background: #b91c1c;
+}
