@@ -22,7 +22,6 @@ type PlaySuspect = {
   avatar: string;
   full?: string;
   comment?: string;
-  // scale?: number;
 };
 
 type ChatMessage = {
@@ -40,6 +39,101 @@ type PlayConfig = {
   intro?: string;
   map?: string;
   spotlight?: SpotlightCfg; // 스포트라이트 튜닝
+};
+
+/* ---------- 아이콘(순수 SVG) ---------- */
+type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
+
+const IconScroll = ({ size = 26, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+    <path
+      d="M8 3h8a3 3 0 0 1 3 3v11a2 2 0 1 1-4 0V6H9a3 3 0 0 0-3 3v9a2 2 0 1 1-4 0V9a6 6 0 0 1 6-6Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8 8h6M8 12h6"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const IconMemo = ({ size = 26, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+    <path
+      d="M4 4h12a2 2 0 0 1 2 2v8l-6 6H6a2 2 0 0 1-2-2V4Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14 20v-4a2 2 0 0 1 2-2h4"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8 8h8M8 12h5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const IconChatLeft = ({ size = 28, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+    <path
+      d="M15 18l-6-6 6-6"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+const IconChatRight = ({ size = 28, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+    <path
+      d="M9 6l6 6-6 6"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconX = ({ size = 22, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+    <path
+      d="M18 6 6 18M6 6l12 12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+/* ---------- 아이콘 경로 & 폴백 유틸 ---------- */
+function iconSrc(name: string, ext: "svg" | "png" = "svg") {
+  const base = (import.meta as any).env?.BASE_URL ?? "/";
+  const norm = base.endsWith("/") ? base.slice(0, -1) : base;
+  return `${norm}/icons/${name}.${ext}`;
+}
+const onIconError: React.ReactEventHandler<HTMLImageElement> = (e) => {
+  const img = e.currentTarget;
+  if (img.src.endsWith(".svg")) {
+    img.src = img.src.replace(/\.svg$/, ".png"); // svg 실패 → png 폴백
+  } else {
+    img.style.visibility = "hidden"; // png도 실패 시 감춤
+  }
 };
 
 /* ---------- 이미지 경로 보정 ---------- */
@@ -187,10 +281,10 @@ export default function GamePlayPage() {
   // ✅ 입장(마운트) 시 딱 한 번만: 첫 번째 용의자를 대화 패널 기본 선택
   const viewInitRef = useRef(false);
   useEffect(() => {
-    if (viewInitRef.current) return; // 이미 설정했으면 실행 안 함
+    if (viewInitRef.current) return;
     if (suspects.length > 0) {
-      setViewId(suspects[0].id); // 첫 번째 용의자 선택
-      viewInitRef.current = true; // 이후엔 자동 변경 금지
+      setViewId(suspects[0].id);
+      viewInitRef.current = true;
     }
   }, [suspects]);
 
@@ -357,7 +451,7 @@ export default function GamePlayPage() {
     );
   }
 
-  // 스포트라이트 변수 (A안)
+  // 스포트라이트 변수
   const sp = data?.spotlight ?? {};
   const w = (sp.widthPct ?? 1.6) * 100;
   const h = (sp.heightPct ?? 1.9) * 100;
@@ -380,21 +474,36 @@ export default function GamePlayPage() {
         심문 종료 ({mm}:{ss})
       </button>
 
-      {/* 좌측 도구 */}
+      {/* 좌측 도구 (이미지 아이콘) */}
       <div className="tools">
         <button
-          className="tool-btn"
-          title="사건 개요 & 지도"
-          onClick={() => setOverviewOpen(true)}
+          className={`tool-btn ${overviewOpen ? "is-on" : ""}`}
+          title="사건 개요"
+          aria-pressed={overviewOpen}
+          onClick={() => setOverviewOpen((v) => !v)}
         >
-          📜
+          <img
+            className="icon"
+            src={iconSrc("summary", "svg")}
+            alt=""
+            aria-hidden="true"
+            onError={onIconError}
+          />
         </button>
+
         <button
-          className="tool-btn"
-          title="메모 작성"
+          className={`tool-btn ${memoOpen ? "is-on" : ""}`}
+          title="메모장"
+          aria-pressed={memoOpen}
           onClick={() => setMemoOpen((v) => !v)}
         >
-          ✍️
+          <img
+            className="icon"
+            src={iconSrc("memo", "svg")}
+            alt=""
+            aria-hidden="true"
+            onError={onIconError}
+          />
         </button>
       </div>
 
@@ -403,13 +512,25 @@ export default function GamePlayPage() {
         <div className="overview-popup">
           <div className="overview-header">
             사건 개요 & 지도
-            <button onClick={() => setOverviewOpen(false)}>✖</button>
+            <button
+              className="icon-close"
+              onClick={() => setOverviewOpen(false)}
+              aria-label="닫기"
+              title="닫기"
+            >
+              <img
+                className="icon"
+                src={iconSrc("close", "svg")}
+                alt=""
+                aria-hidden="true"
+                onError={onIconError}
+              />
+            </button>
           </div>
+
           <div className="overview-body">
             <h3>사건 개요</h3>
-            <p style={{ whiteSpace: "pre-wrap" }}>
-              {data?.intro ?? "시나리오 개요가 없습니다."}
-            </p>
+            <p>{data?.intro ?? "시나리오 개요가 없습니다."}</p>
 
             <h3>지도</h3>
             {data?.map ? (
@@ -460,7 +581,6 @@ export default function GamePlayPage() {
               className={`actor-btn ${sel ? "is-active" : ""}`}
               onClick={() => {
                 setActiveId(s.id);
-                // ❌ viewId는 따라가지 않음 (입장 초기화만 사용)
                 const text =
                   last && last.from === "npc"
                     ? last.text
@@ -553,16 +673,17 @@ export default function GamePlayPage() {
         </div>
       </aside>
 
-      {/* 패널 토글 */}
+      {/* 대화창 토글 FAB: 아이콘 */}
       <button
         type="button"
         className="chat-fab"
         onClick={() => setChatOpen((v) => !v)}
         aria-expanded={chatOpen}
         aria-controls="chat-body"
+        aria-label={chatOpen ? "대화창 닫기" : "대화창 열기"}
         title={chatOpen ? "대화창 닫기" : "대화창 열기"}
       >
-        {chatOpen ? "»" : "«"}
+        {chatOpen ? <IconChatRight /> : <IconChatLeft />}
       </button>
 
       {/* 입력창 */}

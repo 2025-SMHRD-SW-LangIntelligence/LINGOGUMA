@@ -4,13 +4,20 @@
   --panel: rgba(25, 25, 28, 0.65);
   --ring: #ff3b30;
   --chatW: clamp(320px, 28vw, 420px); /* 오른쪽 대화 패널 폭 */
-} /* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
+  --toolIconSize: clamp(30px, 3.2vw, 40px);
+  --closeIconSize: var(--toolIconSize);
+  --chevronSize: clamp(24px, 2.2vw, 30px);
+}
+
+/* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
 .play-root {
   position: relative;
   min-height: 100svh;
   background-color: #0f1013; /* 이미지 로드 실패 대비 */
   overflow: hidden;
-} /* 상단 타이머(결과로 이동 버튼) */
+}
+
+/* 상단 타이머(결과로 이동 버튼) */
 .timer-badge {
   position: absolute;
   left: 28px;
@@ -27,7 +34,9 @@
 }
 .timer-badge:hover {
   filter: brightness(1.06);
-} /* 좌측 도구 */
+}
+
+/* 좌측 도구 */
 .tools {
   position: absolute;
   left: 28px;
@@ -48,25 +57,48 @@
   place-items: center;
   cursor: pointer;
   backdrop-filter: blur(4px);
-} /* 중앙 무대(전신 이미지) */ /* 중앙 무대(전신 이미지) */
+}
+
+/* ========= 아이콘 버튼 스타일 보강 ========= */
+.tools .tool-btn {
+  font-size: 0;
+} /* 텍스트 여백 제거 */
+.tools .tool-btn svg {
+  width: 26px;
+  height: 26px;
+  color: #fff;
+  opacity: 0.92;
+}
+.tools .tool-btn:hover svg {
+  opacity: 1;
+  transform: translateY(-1px);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+/* 켜짐 상태 하이라이트 */
+.tools .tool-btn.is-on {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12) inset;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 중앙 무대(전신 이미지) */
 .stage {
   position: absolute;
   left: 50%;
   top: 58%;
-  transform: translate(
-    -50%,
-    -50%
-  ); /* 무대 박스 자체는 넉넉하되, 그리드는 '콘텐츠 크기'로 잡아 가운데 모으기 */
+  transform: translate(-50%, -50%);
   width: min(1000px, 60vw);
   height: min(460px, 50vh);
   display: grid;
-  grid-template-columns: repeat(4, max-content); /* ← 1fr 대신 콘텐츠 폭 기준 */
-  justify-content: center; /* ← 그리드 블록 자체를 가운데 */
+  grid-template-columns: repeat(4, max-content);
+  justify-content: center;
   align-items: end;
   column-gap: clamp(12px, 3vw, 28px);
   justify-items: center;
-  transition: transform 0.28s ease; /* 열고 닫을 때 부드럽게 이동 */
-} /* /* 오른쪽 패널이 열려 있으면, 그 패널 폭 만큼 무대를 왼쪽으로 반만큼 이동 .play-root.has-chat-open .stage { transform: translate(calc(-50% - (var(--chatW) / 2 + 24px)), -50%); /* +24px은 패널의 바깥 여백(오른쪽 12px) 등을 감안한 시각 보정치 } */
+  transition: transform 0.28s ease;
+}
+
+/* 배우 버튼 */
 .actor-btn {
   position: relative;
   width: 100%;
@@ -87,13 +119,12 @@
 }
 .actor-btn:hover .actor-full {
   transform: translateY(-2px) scale(1.02);
-} /* 캐릭터 이름표 — 발목 근처에 겹쳐 표시 */
+}
+
+/* 캐릭터 이름표 */
 .actor-name {
   position: absolute;
-  bottom: var(
-    --name-bottom,
-    12%
-  ); /* ↑ 숫자를 키우면 더 위로 올라가요 (예: 14%, 16%) */
+  bottom: var(--name-bottom, 12%);
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 8px;
@@ -103,10 +134,12 @@
   font-size: 13px;
   line-height: 1;
   white-space: nowrap;
-  pointer-events: none; /* 클릭 방해 X */
-  z-index: 2; /* 스포트라이트/이미지 위에 노출 */
+  pointer-events: none;
+  z-index: 2;
   opacity: 0.95;
-} /* 무대 말풍선(NPC 전용) */
+}
+
+/* 무대 말풍선(NPC 전용) — 가로로 넓게 + 한국어 줄바꿈 품질 */
 .actor-bubble {
   position: absolute;
   bottom: calc(100% + 10px);
@@ -120,9 +153,9 @@
   border-radius: 14px 14px 14px 4px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   line-height: 1.35;
-  white-space: pre-wrap;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
+  white-space: pre-wrap; /* \n 유지 */
+  word-break: keep-all; /* 한글 단어 중간 끊김 방지 */
+  overflow-wrap: anywhere; /* 긴 토큰(URL 등) 안전 줄바꿈 */
   text-align: left;
 }
 .actor-bubble::after {
@@ -133,7 +166,9 @@
   transform: translateX(-50%);
   border: 8px solid transparent;
   border-top-color: #fff;
-} /* 오른쪽 대화 패널 (기본 열림) */
+}
+
+/* 오른쪽 대화 패널 (기본 열림) */
 .chat-panel {
   position: absolute;
   top: 12px;
@@ -154,7 +189,9 @@
 }
 .chat-panel.is-closed {
   transform: translateX(100%);
-} /* 패널 토글 FAB */
+}
+
+/* 패널 토글 FAB (아이콘 전용) */
 .chat-fab {
   position: absolute;
   top: 50%;
@@ -166,19 +203,27 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  font-size: 22px;
-  line-height: 46px;
+  font-size: 0;
   text-align: center;
   cursor: pointer;
   z-index: 20;
   transition: right 0.28s ease, filter 0.2s ease;
+  display: grid;
+  place-items: center;
 }
 .play-root.has-chat-open .chat-fab {
   right: calc(var(--chatW) + 24px);
 }
 .chat-fab:hover {
   filter: brightness(1.1);
-} /* 상단 아바타(뷰 필터) — 이미지 + 이름 라벨 */
+}
+.chat-fab svg {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+/* 상단 아바타(뷰 필터) */
 .chat-avatars {
   display: flex;
   gap: 10px;
@@ -188,7 +233,7 @@
   overflow-x: auto;
 }
 .chat-ava {
-  --size: 56px; /* 썸네일 크기 */
+  --size: 56px;
   width: auto;
   min-width: var(--size);
   display: grid;
@@ -224,7 +269,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-} /* 대화 리스트 & 말풍선 */
+}
+
+/* 대화 리스트 & 말풍선 */
 .chat-list {
   position: relative;
   padding: 14px 16px 24px;
@@ -238,6 +285,14 @@
   margin: 0;
   line-height: 1.35;
 }
+/* 👉 한국어 단어 중간 분리 X + 긴 토큰 처리 */
+.chat-list .bubble p {
+  white-space: pre-wrap; /* \n 유지 */
+  word-break: keep-all; /* 한국어 단어 중간 끊김 방지 */
+  overflow-wrap: anywhere; /* 긴 토큰은 안전 줄바꿈 */
+  line-break: strict;
+}
+
 .bubble.me {
   margin-left: auto;
   background: #4f87ff;
@@ -253,7 +308,9 @@
   padding: 10px 14px;
   border-radius: 14px 14px 14px 4px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-} /* 하단 입력 Dock */
+}
+
+/* 하단 입력 Dock */
 .input-dock {
   position: absolute;
   left: 50%;
@@ -294,7 +351,9 @@
 }
 .send-btn:hover {
   filter: brightness(1.06);
-} /* 반응형 */
+}
+
+/* 반응형 */
 @media (max-width: 980px) {
   .chat-panel {
     width: 44vw;
@@ -312,14 +371,16 @@
 @media (max-width: 720px) {
   .stage,
   .tools {
-    display: none; /* 모바일: 공간 확보 */
-  }
+    display: none;
+  } /* 모바일: 공간 확보 */
   .input-dock {
     width: calc(100% - 20px);
     left: 10px;
     transform: none;
   }
-} /* 메모 팝업 */
+}
+
+/* 메모 팝업 */
 .memo-popup {
   position: absolute;
   width: 400px;
@@ -330,7 +391,7 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
-  resize: both; /* 크기 조절 가능 */
+  resize: both;
   overflow: auto;
 }
 .memo-header {
@@ -338,8 +399,8 @@
   color: #fff;
   font-weight: bold;
   padding: 6px 10px;
-  cursor: move; /* 마우스 커서 변경 */
-  user-select: none; /* 드래그 시 텍스트 선택 방지 */
+  cursor: move;
+  user-select: none;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
@@ -374,7 +435,9 @@
 .memo-actions button:last-child {
   background: #e77a3e;
   color: #fff;
-} /* 사건 개요 & 지도 팝업 */
+}
+
+/* 사건 개요 & 지도 팝업 */
 .overview-popup {
   position: absolute;
   top: 80px;
@@ -399,6 +462,21 @@
   justify-content: space-between;
   align-items: center;
 }
+/* 개요 팝업 닫기 아이콘 버튼 */
+.overview-header .icon-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.overview-header .icon-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
 .overview-body {
   flex: 1;
   padding: 14px;
@@ -410,7 +488,16 @@
   margin: 12px 0 6px;
   font-size: 16px;
   color: #8ab4ff;
-} /* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
+}
+/* 👉 사건 개요 텍스트: 한글 단어 중간 분리 X + 긴 토큰 처리 */
+.overview-body p {
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-break: strict;
+}
+
+/* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
 .actor-btn.is-active::before {
   content: "";
   position: absolute;
@@ -427,52 +514,120 @@
   );
   pointer-events: none;
   border-radius: 50%;
-  z-index: -1; /* 캐릭터 이미지 뒤로 */
+  z-index: -1;
   filter: blur(40px);
-} /* 선택된 캐릭터의 이미지도 살짝 밝게 */
+}
+/* 선택된 캐릭터의 이미지도 살짝 밝게 */
 .actor-btn.is-active img {
   filter: brightness(1.15) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
   transform: scale(1.05);
   transition: all 0.25s ease;
-} /* ========= 스포트라이트(선택된 캐릭터) ========= */
+}
+
+/* ========= 스포트라이트(선택된 캐릭터) ========= */
 .spotlight-cone {
   position: absolute;
   pointer-events: none;
-  top: -55%; /* 빛의 시작점을 위쪽으로 */
+  top: -55%;
   left: 50%;
   transform: translateX(-50%);
-  width: 210%; /* 무대 폭 대비 넉넉히 */
-  height: 220%; /* 캐릭터 발 아래까지 내려오게 */
+  width: 210%;
+  height: 220%;
   background: url("/effects/spotlight.png") center top / contain no-repeat;
-  mix-blend-mode: screen; /* 배경/캐릭터와 자연스럽게 합성 */
+  mix-blend-mode: screen;
   opacity: 0.9;
-  filter: blur(0.2px); /* 가장자리 미세 소프트닝 */
+  filter: blur(0.2px);
   animation: spotlight-breathe 2.4s ease-in-out infinite;
-  z-index: 0; /* 버블/이미지 뒤로 가고 싶다면 -1, 앞이면 0~1 */
-} /* 선택된 캐릭터 살짝 밝게 */
+  z-index: 0;
+}
+/* 선택된 캐릭터 살짝 밝게 */
 .actor-btn.is-active .actor-full,
 .actor-btn.is-active .actor-avatar img {
   filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
   transform: translateY(-2px) scale(1.03);
   transition: transform 0.25s ease, filter 0.25s ease;
-} /* 선택되지 않은 캐릭터 약간 어둡게(선택) */
+}
+/* 선택되지 않은 캐릭터 약간 어둡게(선택) */
 .stage .actor-btn:not(.is-active) .actor-full,
 .stage .actor-btn:not(.is-active) .actor-avatar img {
   filter: brightness(0.88);
 }
 
-/* 대화 이력창 텍스트: 한국어 단어 중간 분리 금지 + 자연스러운 줄바꿈 */
-.chat-list .bubble p {
-  white-space: pre-wrap; /* \n 개행 유지 */
-  word-break: keep-all; /* 한글 단어 중간 분리 X */
-  overflow-wrap: anywhere; /* 그래도 넘치면 적당히 끊기(긴 URL/영문 처리) */
-  line-break: strict; /* CJK 줄바꿈 품질 향상(지원 브라우저에서) */
-  /* word-wrap: break-word;  ← 구형 브라우저 호환 필요하면 주석 해제 */
+/* 이미지 아이콘 크기 */
+.tool-btn .icon {
+  width: 26px;
+  height: 26px;
+  display: block;
 }
-/* 사건 개요 팝업 텍스트: 개행 유지 + 한글 단어 중간 분리 X + 긴 토큰만 안전하게 줄바꿈 */
-.overview-body p {
-  white-space: pre-wrap; /* \n 개행 유지 */
-  word-break: keep-all; /* 한글 단어 중간 끊김 방지 */
-  overflow-wrap: anywhere; /* URL/영문 긴단어는 안전하게 줄바꿈 */
-  line-break: strict; /* CJK 줄바꿈 품질 향상(지원 브라우저에서) */
+.overview-header .icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+/* 개요 팝업 닫기(X) 버튼 가운데 정렬 + 미세 보정 가능 */
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 수직 가운데 보장 */
+}
+
+.overview-header .icon-close {
+  display: inline-flex; /* 컨텐츠 정렬 용이 */
+  align-items: center;
+  justify-content: center; /* 아이콘 정확히 중앙 */
+  width: 36px; /* 클릭 영역 살짝 넉넉하게 */
+  height: 36px;
+  padding: 0;
+  line-height: 0; /* 이미지 줄높이 영향 제거 */
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.overview-header .icon-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 아이콘 자체 크기 + 중앙 배치 + 미세 이동(필요시) */
+.overview-header .icon-close .icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  /* 아이콘이 살짝 치우쳐 보이면 아래 두 변수로 미세 조정 (px 단위) */
+  transform: translate(var(--icon-nudge-x, 0), var(--icon-nudge-y, 0));
+}
+/* 왼쪽 툴 버튼 아이콘 반응형 크기 */
+.tools .tool-btn .icon {
+  width: var(--toolIconSize);
+  height: var(--toolIconSize);
+}
+/* 닫기 버튼 크기(클릭 영역): 아이콘보다 약간 크게 */
+.overview-header .icon-close {
+  width: calc(var(--closeIconSize) + 12px);
+  height: calc(var(--closeIconSize) + 12px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
+}
+
+/* X 아이콘 이미지 반응형 크기 + (필요 시) 미세 보정 유지 */
+.overview-header .icon-close .icon {
+  width: var(--closeIconSize);
+  height: var(--closeIconSize);
+  object-fit: contain;
+  object-position: center;
+  transform: translate(
+    var(--icon-nudge-x, 0),
+    var(--icon-nudge-y, 0)
+  ); /* 기존 누드지 유지 */
+}
+/* FAB 안 화살표 크기 */
+.chat-fab svg {
+  width: var(--chevronSize);
+  height: var(--chevronSize);
 }
