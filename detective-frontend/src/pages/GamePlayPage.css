@@ -112,7 +112,8 @@
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  max-width: 260px;
+  max-width: clamp(360px, 52vw, 720px);
+  min-width: 320px;
   padding: 10px 12px;
   background: #fff;
   color: #151515;
@@ -120,13 +121,16 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   line-height: 1.35;
   white-space: pre-wrap;
-  word-break: break-word;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .actor-bubble::after {
   content: "";
   position: absolute;
   top: 100%;
-  left: 34px;
+  left: 50px;
+  transform: translateX(-50%);
   border: 8px solid transparent;
   border-top-color: #fff;
 } /* 오른쪽 대화 패널 (기본 열림) */
