@@ -311,6 +311,7 @@ const btn: React.CSSProperties = {
   border: "1px solid #ccc",
   background: "white",
   cursor: "pointer",
+  color: "#000",
 };
 const btnPrimary: React.CSSProperties = {
   ...btn,
