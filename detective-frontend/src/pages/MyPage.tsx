@@ -11,6 +11,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth.store";
 import { api } from "../shared/api/client";
+
+// ✅ 관리자 패널들 import
+import AdminUserPanel from "../pages/admin/AdminUserPanel";
+import AdminScenarioPanel from "../pages/admin/AdminScenarioPanel";
+import AdminSubmittedPanel from "../pages/admin/AdminSubmittedPanel";
+import AdminRegisterPanel from "../pages/admin/AdminRegisterPanel";
+
 import "./MyPage.css";
 
 const MyPage: React.FC = () => {
@@ -24,7 +31,13 @@ const MyPage: React.FC = () => {
 
   // ✅ 탭 상태
   const [activeTab, setActiveTab] = useState<
-    "account" | "history" | "analysis"
+    | "account"
+    | "history"
+    | "analysis"
+    | "admin-users"
+    | "admin-scenarios"
+    | "admin-submitted"
+    | "admin-register"
   >("analysis");
 
   // ✅ 닉네임 상태
@@ -96,11 +109,12 @@ const MyPage: React.FC = () => {
         </div>
         <nav>
           <ul>
+            {/* 내 정보 */}
             <li
               style={{
                 marginTop: 8,
                 fontSize: 20,
-                color: "#fff",
+                color: "#aaa",
                 cursor: "default",
               }}
             >
@@ -141,7 +155,7 @@ const MyPage: React.FC = () => {
                   style={{
                     marginTop: 8,
                     fontSize: 20,
-                    color: "#fff",
+                    color: "#aaa",
                     cursor: "default",
                   }}
                 >
@@ -169,33 +183,45 @@ const MyPage: React.FC = () => {
                   style={{
                     marginTop: 8,
                     fontSize: 20,
-                    color: "#fff",
+                    color: "#aaa",
                     cursor: "default",
                   }}
                 >
                   관리자
                 </li>
                 <li
-                  onClick={() => nav("/admin/users")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => setActiveTab("admin-users")}
+                  style={{
+                    cursor: "pointer",
+                    color: activeTab === "admin-users" ? "#e77a3e" : "#fff",
+                  }}
                 >
                   유저 관리
                 </li>
                 <li
-                  onClick={() => nav("/admin/scenarios")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => setActiveTab("admin-scenarios")}
+                  style={{
+                    cursor: "pointer",
+                    color: activeTab === "admin-scenarios" ? "#e77a3e" : "#fff",
+                  }}
                 >
-                  시나리오 관리
+                  전체 시나리오 관리
                 </li>
                 <li
-                  onClick={() => nav("/admin/scenarios/submitted")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => setActiveTab("admin-submitted")}
+                  style={{
+                    cursor: "pointer",
+                    color: activeTab === "admin-submitted" ? "#e77a3e" : "#fff",
+                  }}
                 >
-                  제출된 시나리오
+                  제출된 시나리오 관리
                 </li>
                 <li
-                  onClick={() => nav("/admin/scenarios/register")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => setActiveTab("admin-register")}
+                  style={{
+                    cursor: "pointer",
+                    color: activeTab === "admin-register" ? "#e77a3e" : "#fff",
+                  }}
                 >
                   시나리오 등록 관리
                 </li>
@@ -237,7 +263,6 @@ const MyPage: React.FC = () => {
                 />
               </div>
               <div className="profile-info">
-                <p>{/* <strong>이메일:</strong> {user?.email} */}</p>
                 <label>
                   닉네임:
                   <input
@@ -280,6 +305,12 @@ const MyPage: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* ✅ 관리자 패널 */}
+        {isAdmin && activeTab === "admin-users" && <AdminUserPanel />}
+        {isAdmin && activeTab === "admin-scenarios" && <AdminScenarioPanel />}
+        {isAdmin && activeTab === "admin-submitted" && <AdminSubmittedPanel />}
+        {isAdmin && activeTab === "admin-register" && <AdminRegisterPanel />}
       </main>
 
       {/* ✅ PLAY 버튼 */}

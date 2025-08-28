@@ -1,0 +1,60 @@
+.admin-panel {
+  color: #f5f5f5; /* 페이지 기본 글씨색 (다크배경 대비용) */
+}
+
+.admin-panel h2 {
+  color: #4da3ff; /* 큰 제목: 파란색 */
+}
+
+.admin-panel h3 {
+  color: #f39c12; /* 섹션 제목: 오렌지 */
+  margin-bottom: 8px;
+}
+
+/* ✅ 라이트 테이블 */
+.light-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff; /* 흰색 박스 */
+  color: #111; /* 글씨는 검정 */
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.light-table th {
+  background: #f5f5f5;
+  color: #111;
+  padding: 8px;
+  border-bottom: 2px solid #ddd;
+  text-align: left;
+}
+
+.light-table td {
+  background: #fff;
+  color: #222;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.light-table tr:hover td {
+  background: #f9f9f9;
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #2d6cdf;
+  background: #2d6cdf;
+  color: #fff;
+}
+
+.btn-danger {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #e33;
+  background: #e33;
+  color: #fff;
+}
