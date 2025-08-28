@@ -460,3 +460,19 @@
 .stage .actor-btn:not(.is-active) .actor-avatar img {
   filter: brightness(0.88);
 }
+
+/* 대화 이력창 텍스트: 한국어 단어 중간 분리 금지 + 자연스러운 줄바꿈 */
+.chat-list .bubble p {
+  white-space: pre-wrap; /* \n 개행 유지 */
+  word-break: keep-all; /* 한글 단어 중간 분리 X */
+  overflow-wrap: anywhere; /* 그래도 넘치면 적당히 끊기(긴 URL/영문 처리) */
+  line-break: strict; /* CJK 줄바꿈 품질 향상(지원 브라우저에서) */
+  /* word-wrap: break-word;  ← 구형 브라우저 호환 필요하면 주석 해제 */
+}
+/* 사건 개요 팝업 텍스트: 개행 유지 + 한글 단어 중간 분리 X + 긴 토큰만 안전하게 줄바꿈 */
+.overview-body p {
+  white-space: pre-wrap; /* \n 개행 유지 */
+  word-break: keep-all; /* 한글 단어 중간 끊김 방지 */
+  overflow-wrap: anywhere; /* URL/영문 긴단어는 안전하게 줄바꿈 */
+  line-break: strict; /* CJK 줄바꿈 품질 향상(지원 브라우저에서) */
+}

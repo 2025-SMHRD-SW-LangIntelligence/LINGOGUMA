@@ -22,15 +22,16 @@ type PlaySuspect = {
   avatar: string;
   full?: string;
   comment?: string;
-  // 필요하면 시나리오별 개별 스케일도 지원 가능:
   // scale?: number;
 };
+
 type ChatMessage = {
   id: string;
   from: "me" | "npc";
   whoId?: string;
   text: string;
 };
+
 type PlayConfig = {
   background?: string; // ✅ 시나리오별 배경
   suspects: PlaySuspect[];
@@ -71,7 +72,6 @@ function shapeSuspects(input: any[]): PlaySuspect[] {
     avatar: String(s?.avatar ?? ""),
     full: s?.full ? String(s.full) : undefined,
     comment: s?.comment ? String(s.comment) : undefined,
-    // scale: Number.isFinite(s?.scale) ? Number(s.scale) : undefined,
   }));
 }
 function shapeMessages(input: any[]): ChatMessage[] {
@@ -184,6 +184,16 @@ export default function GamePlayPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
 
+  // ✅ 입장(마운트) 시 딱 한 번만: 첫 번째 용의자를 대화 패널 기본 선택
+  const viewInitRef = useRef(false);
+  useEffect(() => {
+    if (viewInitRef.current) return; // 이미 설정했으면 실행 안 함
+    if (suspects.length > 0) {
+      setViewId(suspects[0].id); // 첫 번째 용의자 선택
+      viewInitRef.current = true; // 이후엔 자동 변경 금지
+    }
+  }, [suspects]);
+
   const [chatOpen, setChatOpen] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [input, setInput] = useState("");
@@ -276,10 +286,10 @@ export default function GamePlayPage() {
     return map;
   }, [msgs]);
 
-  // 현재 보기 필터
-  const filterId = viewId ?? activeId;
+  // 현재 보기 필터: 오직 viewId만 사용(없으면 전체 보기)
+  const filterId = viewId;
   const visibleMsgs = useMemo(() => {
-    if (!filterId) return [];
+    if (!filterId) return msgs;
     return msgs.filter((m) => !m.whoId || m.whoId === filterId);
   }, [msgs, filterId]);
 
@@ -450,7 +460,7 @@ export default function GamePlayPage() {
               className={`actor-btn ${sel ? "is-active" : ""}`}
               onClick={() => {
                 setActiveId(s.id);
-                if (viewId == null) setViewId(s.id);
+                // ❌ viewId는 따라가지 않음 (입장 초기화만 사용)
                 const text =
                   last && last.from === "npc"
                     ? last.text
@@ -490,7 +500,6 @@ export default function GamePlayPage() {
                   onError={(e) =>
                     (e.currentTarget.src = resolveURL("placeholder-full.png")!)
                   }
-                  // style={{ transform: `scale(${s.scale ?? 1})` }}
                 />
               ) : (
                 <div className="actor-avatar">
@@ -513,7 +522,7 @@ export default function GamePlayPage() {
       <aside className={`chat-panel ${chatOpen ? "" : "is-closed"}`}>
         <div className="chat-avatars">
           {suspects.map((s) => {
-            const viewing = s.id === (viewId ?? activeId);
+            const viewing = viewId != null && s.id === viewId;
             return (
               <button
                 key={s.id}

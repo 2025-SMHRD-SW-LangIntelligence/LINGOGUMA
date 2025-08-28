@@ -145,7 +145,6 @@ export default function ScenarioSummaryPage() {
                 </figure>
               ))}
             </div>
-            <div className="intro-count">용의자 수 : {suspects.length}명</div>
           </>
         )}
 

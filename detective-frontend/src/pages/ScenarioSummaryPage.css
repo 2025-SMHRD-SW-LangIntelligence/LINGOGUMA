@@ -167,3 +167,11 @@
   font-size: 18px;
   padding: 24px;
 }
+
+/* 사건 개요(설명) 텍스트: 개행 유지 + 한글 단어 중간 분리 금지 + 긴 토큰만 안전하게 줄바꿈 */
+.intro-desc p {
+  white-space: pre-wrap; /* \n 개행 유지 */
+  word-break: keep-all; /* 한글 단어 중간 끊김 방지 */
+  overflow-wrap: anywhere; /* URL/영문 긴단어는 안전하게 줄바꿈 */
+  line-break: strict; /* CJK 줄바꿈 품질 향상(지원 브라우저에서) */
+}
