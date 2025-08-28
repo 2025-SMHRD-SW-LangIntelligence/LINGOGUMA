@@ -12,11 +12,17 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth.store";
 import { api } from "../shared/api/client";
 
-// ✅ 관리자 패널들 import
-import AdminUserPanel from "../pages/admin/AdminUserPanel";
-import AdminScenarioPanel from "../pages/admin/AdminScenarioPanel";
-import AdminSubmittedPanel from "../pages/admin/AdminSubmittedPanel";
-import AdminRegisterPanel from "../pages/admin/AdminRegisterPanel";
+// ✅ 관리자 패널
+import AdminUserPanel from "./admin/AdminUserPanel";
+import AdminScenarioPanel from "./admin/AdminScenarioPanel";
+import AdminSubmittedPanel from "./admin/AdminSubmittedPanel";
+import AdminRegisterPanel from "./admin/AdminRegisterPanel";
+
+// ✅ 작가 패널
+import AuthorMyScenarioPanel from "./author/AuthorMyScenarioPanel";
+import AuthorNewScenarioPanel from "./author/AuthorNewScenarioPanel";
+import AuthorScenarioDetailPanel from "./author/AuthorScenarioDetailPanel";
+import AuthorEditScenarioPanel from "./author/AuthorEditScenarioPanel";
 
 import "./MyPage.css";
 
@@ -38,7 +44,16 @@ const MyPage: React.FC = () => {
     | "admin-scenarios"
     | "admin-submitted"
     | "admin-register"
+    | "author-scenarios"
+    | "author-new"
+    | "author-detail"
+    | "author-edit"
   >("analysis");
+
+  // ✅ 선택된 시나리오 ID
+  const [selectedScenarioId, setSelectedScenarioId] = useState<number | null>(
+    null
+  );
 
   // ✅ 닉네임 상태
   const [nickname, setNickname] = useState(user?.nickname || "");
@@ -162,14 +177,24 @@ const MyPage: React.FC = () => {
                   작가
                 </li>
                 <li
-                  onClick={() => nav("/author/scenarios")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => {
+                    setActiveTab("author-scenarios");
+                    setSelectedScenarioId(null);
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    color:
+                      activeTab === "author-scenarios" ? "#e77a3e" : "#fff",
+                  }}
                 >
                   내 시나리오
                 </li>
                 <li
-                  onClick={() => nav("/author/scenarios/new")}
-                  style={{ cursor: "pointer", color: "#fff" }}
+                  onClick={() => setActiveTab("author-new")}
+                  style={{
+                    cursor: "pointer",
+                    color: activeTab === "author-new" ? "#e77a3e" : "#fff",
+                  }}
                 >
                   새 초안 작성
                 </li>
@@ -305,6 +330,50 @@ const MyPage: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* ✅ 작가 패널 */}
+        {isAuthor && activeTab === "author-scenarios" && (
+          <AuthorMyScenarioPanel
+            onNewScenario={() => setActiveTab("author-new")}
+            onSelectScenario={(id) => {
+              setSelectedScenarioId(id);
+              setActiveTab("author-detail");
+            }}
+          />
+        )}
+
+        {isAuthor && activeTab === "author-new" && (
+          <AuthorNewScenarioPanel
+            onCancel={() => setActiveTab("author-scenarios")}
+          />
+        )}
+
+        {isAuthor &&
+          activeTab === "author-detail" &&
+          selectedScenarioId != null && (
+            <AuthorScenarioDetailPanel
+              scenarioId={selectedScenarioId}
+              onBack={() => setActiveTab("author-scenarios")}
+              onEdit={(id) => {
+                setSelectedScenarioId(id);
+                setActiveTab("author-edit");
+              }}
+              onDeleted={() => setActiveTab("author-scenarios")}
+            />
+          )}
+
+        {isAuthor &&
+          activeTab === "author-edit" &&
+          selectedScenarioId != null && (
+            <AuthorEditScenarioPanel
+              scenarioId={selectedScenarioId}
+              onCancel={() => setActiveTab("author-detail")}
+              onSaved={(id) => {
+                setSelectedScenarioId(id);
+                setActiveTab("author-detail");
+              }}
+            />
+          )}
 
         {/* ✅ 관리자 패널 */}
         {isAdmin && activeTab === "admin-users" && <AdminUserPanel />}
