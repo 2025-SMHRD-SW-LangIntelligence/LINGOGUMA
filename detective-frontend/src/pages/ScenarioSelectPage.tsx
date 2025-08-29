@@ -138,11 +138,11 @@ export default function ScenarioSelectPage() {
     []
   );
 
-  // Esc / Enter / Space 로 모달 닫기
+  // Esc로만 모달 닫기 (Enter/Space 제거)
   useEffect(() => {
     if (!howtoOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+      if (e.key === "Escape") {
         e.preventDefault();
         setHowtoOpen(false);
       }
@@ -183,10 +183,9 @@ export default function ScenarioSelectPage() {
   };
 
   const onOverlayWheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
-    // 모달 안에서는 페이지 스크롤/줌 방지하고, 이미지만 확대/축소
     e.preventDefault();
-    const delta = -e.deltaY; // 위로 밀면 확대(+)
-    const factor = Math.exp(delta * 0.0015); // 부드럽게
+    const delta = -e.deltaY;
+    const factor = Math.exp(delta * 0.0015);
     setZoom((z) => clamp(z * factor, 1, 4));
   };
 
@@ -301,17 +300,15 @@ export default function ScenarioSelectPage() {
             inset: 0,
             background: "rgba(0,0,0,0.92)",
             zIndex: 9999,
-            overflow: "hidden", // 이미지 확대 시 잘리는 영역 관리
-            touchAction: "none", // 터치 제스처 기본 동작 방지
+            overflow: "hidden",
+            touchAction: "none",
           }}
-          // 이미지 전용 확대/축소/이동 핸들링
           onWheel={onOverlayWheel}
           onDoubleClick={onOverlayDblClick}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUpOrLeave}
           onMouseLeave={onMouseUpOrLeave}
-          // 모바일 드래그 대비(간단 처리: pointer 이벤트도 마우스 핸들러로 들어옴)
         >
           {/* 확대/이동은 img에만 적용 */}
           <img
@@ -341,24 +338,16 @@ export default function ScenarioSelectPage() {
             }}
           />
 
-          {/* 우상단 'ESC 로 닫기' 배너 (클릭/Enter/Space로 닫힘) — 이미지 줌과 무관 */}
+          {/* 우상단 'ESC 로 닫기' 배너 — 클릭으로만 닫힘 (Enter/Space 제거) */}
           <div
-            role="button"
-            tabIndex={0}
             onClick={() => setHowtoOpen(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setHowtoOpen(false);
-              }
-            }}
             style={{
               position: "fixed",
               top: "clamp(12px, 2.5vh, 28px)",
               right: "clamp(12px, 2.5vw, 28px)",
               color: "#fff",
               fontWeight: 900,
-              fontSize: 24, // 내부 줌과 독립적이도록 px 고정
+              fontSize: 24,
               letterSpacing: 0.5,
               padding: "10px 14px",
               borderRadius: 14,
@@ -369,9 +358,10 @@ export default function ScenarioSelectPage() {
               display: "flex",
               alignItems: "center",
               gap: 8,
+              userSelect: "none",
             }}
-            title="닫기 (Esc / Enter / Space)"
-            aria-label="닫기 (Esc / Enter / Space)"
+            title="닫기 (Esc)"
+            aria-label="닫기 (Esc)"
           >
             <span
               style={{
