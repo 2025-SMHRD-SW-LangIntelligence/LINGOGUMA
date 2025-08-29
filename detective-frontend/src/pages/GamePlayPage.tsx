@@ -467,7 +467,7 @@ export default function GamePlayPage() {
           aria-modal="true"
           aria-label="용의자 설명"
         >
-          <div className="brief-dim" onClick={closeBrief} />
+          <div className="brief-dim" />
 
           <div className="brief-panel">
             <div
