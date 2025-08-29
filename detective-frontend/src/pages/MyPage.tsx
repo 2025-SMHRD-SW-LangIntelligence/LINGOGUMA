@@ -345,6 +345,10 @@ const MyPage: React.FC = () => {
         {isAuthor && activeTab === "author-new" && (
           <AuthorNewScenarioPanel
             onCancel={() => setActiveTab("author-scenarios")}
+            onCreated={(id) => {
+              setSelectedScenarioId(id);
+              setActiveTab("author-detail");
+            }}
           />
         )}
 

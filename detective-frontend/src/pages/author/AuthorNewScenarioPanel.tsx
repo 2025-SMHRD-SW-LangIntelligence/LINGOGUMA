@@ -13,16 +13,16 @@ type Suspect = {
   movements: string;
   notes: string;
 };
-
 type Clue = { title: string; description: string };
 type Relation = { a: string; b: string; relation: string };
 
 interface Props {
-  onCancel: () => void; // 취소 시 부모에서 탭 이동
+  onCancel: () => void;
+  onCreated: (id: number) => void;
 }
 
-export default function AuthorNewScenarioPanel({ onCancel }: Props) {
-  // 기본 폼 상태
+export default function AuthorNewScenarioPanel({ onCancel, onCreated }: Props) {
+  // 기본 상태
   const [title, setTitle] = useState("");
   const [overview, setOverview] = useState("");
 
@@ -71,66 +71,39 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
     const culprit = suspects.find((s) => s.isCulprit)?.name ?? "";
     return {
       format: "scenario-json-v1",
-      title: title.trim(),
-      overview: overview.trim(),
+      title,
+      overview,
       victim: {
-        name: victimName.trim(),
-        profile: victimProfile.trim(),
-        personality: victimPersonality.trim(),
-        foundState: victimFoundState.trim(),
+        name: victimName,
+        profile: victimProfile,
+        personality: victimPersonality,
+        foundState: victimFoundState,
       },
-      suspects: suspects.map((s) => ({
-        name: s.name.trim(),
-        profile: s.profile.trim(),
-        isCulprit: !!s.isCulprit,
-        personality: s.personality.trim(),
-        background: s.background.trim(),
-        alibi: s.alibi.trim(),
-        movements: s.movements.trim(),
-        notes: s.notes.trim(),
-      })),
-      clues: clues
-        .filter((c) => c.title.trim() || c.description.trim())
-        .map((c) => ({
-          title: c.title.trim(),
-          description: c.description.trim(),
-        })),
-      relations: relations
-        .filter((r) => r.a.trim() && r.b.trim() && r.relation.trim())
-        .map((r) => ({
-          a: r.a.trim(),
-          b: r.b.trim(),
-          relation: r.relation.trim(),
-        })),
-      conclusion: {
-        culprit,
-        method: method.trim(),
-        keyEvidence: keyEvidence.trim(),
-        motive: motive.trim(),
-      },
+      suspects,
+      clues: clues.filter((c) => c.title || c.description),
+      relations: relations.filter((r) => r.a && r.b && r.relation),
+      conclusion: { culprit, method, keyEvidence, motive },
     };
   };
 
+  // 제출
   const createScenario = useMutation({
     mutationFn: async () => {
       const msg = validate();
       if (msg) throw new Error(msg);
       const json = composeJson();
-      await api.post("/scenarios", {
+      const { data } = await api.post("/scenarios", {
         title,
         content: JSON.stringify(json),
       });
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       alert("초안이 제출되었습니다.");
-      onCancel();
+      onCreated(res.id);
     },
     onError: (e: any) => {
-      const msg =
-        e?.response?.data?.message ||
-        e?.message ||
-        "제출 중 오류가 발생했습니다.";
-      alert(msg);
+      alert(e?.response?.data?.message || e?.message || "제출 중 오류 발생");
     },
   });
 
@@ -139,31 +112,34 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
     createScenario.mutate();
   };
 
-  // --- 유틸 함수들 (add/remove)
+  // 유틸
   const addSuspect = () =>
     setSuspects((prev) => [
       ...prev,
-      { ...prev[0], name: "", profile: "", isCulprit: false },
+      {
+        name: "",
+        profile: "",
+        isCulprit: false,
+        personality: "",
+        background: "",
+        alibi: "",
+        movements: "",
+        notes: "",
+      },
     ]);
-  const removeSuspect = (idx: number) =>
-    setSuspects((prev) =>
-      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-    );
+  const removeSuspect = (i: number) =>
+    setSuspects((p) => (p.length > 1 ? p.filter((_, idx) => idx !== i) : p));
 
-  const addClue = () =>
-    setClues((prev) => [...prev, { title: "", description: "" }]);
-  const removeClue = (idx: number) =>
-    setClues((prev) =>
-      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-    );
+  const addClue = () => setClues((p) => [...p, { title: "", description: "" }]);
+  const removeClue = (i: number) =>
+    setClues((p) => (p.length > 1 ? p.filter((_, idx) => idx !== i) : p));
 
   const addRelation = () =>
-    setRelations((prev) => [...prev, { a: "", b: "", relation: "" }]);
-  const removeRelation = (idx: number) =>
-    setRelations((prev) =>
-      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-    );
+    setRelations((p) => [...p, { a: "", b: "", relation: "" }]);
+  const removeRelation = (i: number) =>
+    setRelations((p) => (p.length > 1 ? p.filter((_, idx) => idx !== i) : p));
 
+  // 렌더링
   return (
     <div style={{ maxWidth: 980, margin: "24px auto" }}>
       <h2>새 시나리오 작성 (JSON 템플릿)</h2>
@@ -174,8 +150,8 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="예) 도서관의 고요한 살인"
             style={input}
+            placeholder="예) 도서관의 고요한 살인"
           />
         </Section>
 
@@ -184,7 +160,6 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
           <textarea
             value={overview}
             onChange={(e) => setOverview(e.target.value)}
-            placeholder="사건 장소/시간대, 개요, 수사 포인트 등을 요약"
             style={textareaTall}
           />
         </Section>
@@ -229,17 +204,292 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
           </div>
         </Section>
 
-        {/* ... (용의자 / 단서 / 관계 / 결론 요약 부분 동일) ... */}
+        {/* 용의자 */}
+        <Section
+          title={`용의자 (${suspects.length}명)`}
+          action={
+            <button type="button" onClick={addSuspect}>
+              + 추가
+            </button>
+          }
+        >
+          {suspects.map((s, idx) => (
+            <div key={idx} style={card}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <strong>용의자 #{idx + 1}</strong>
+                <label style={{ fontSize: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={s.isCulprit}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx
+                            ? { ...it, isCulprit: e.target.checked }
+                            : it
+                        )
+                      )
+                    }
+                  />
+                  범인 표시
+                </label>
+                <button
+                  type="button"
+                  onClick={() => removeSuspect(idx)}
+                  disabled={suspects.length === 1}
+                  style={{
+                    background: "#e33",
+                    color: "white", // ✅ 텍스트 색상 흰색
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "6px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+
+              <div style={grid2}>
+                <div>
+                  <label style={label}>이름</label>
+                  <input
+                    value={s.name}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, name: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={input}
+                  />
+                </div>
+                <div>
+                  <label style={label}>프로필</label>
+                  <input
+                    value={s.profile}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, profile: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={input}
+                  />
+                </div>
+              </div>
+
+              <div style={grid3}>
+                <div>
+                  <label style={label}>성격</label>
+                  <textarea
+                    value={s.personality}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx
+                            ? { ...it, personality: e.target.value }
+                            : it
+                        )
+                      )
+                    }
+                    style={textarea}
+                  />
+                </div>
+                <div>
+                  <label style={label}>배경/갈등</label>
+                  <textarea
+                    value={s.background}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, background: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={textarea}
+                  />
+                </div>
+                <div>
+                  <label style={label}>진술/알리바이</label>
+                  <textarea
+                    value={s.alibi}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, alibi: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={textarea}
+                  />
+                </div>
+              </div>
+
+              <div style={grid2}>
+                <div>
+                  <label style={label}>행적</label>
+                  <textarea
+                    value={s.movements}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, movements: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={textarea}
+                  />
+                </div>
+                <div>
+                  <label style={label}>단서/메모</label>
+                  <textarea
+                    value={s.notes}
+                    onChange={(e) =>
+                      setSuspects((prev) =>
+                        prev.map((it, i) =>
+                          i === idx ? { ...it, notes: e.target.value } : it
+                        )
+                      )
+                    }
+                    style={textarea}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </Section>
+
+        {/* 핵심 단서 */}
+        <Section
+          title={`핵심 단서 (${clues.length}개)`}
+          action={
+            <button type="button" onClick={addClue}>
+              + 추가
+            </button>
+          }
+        >
+          {clues.map((c, idx) => (
+            <div key={idx} style={row}>
+              <input
+                value={c.title}
+                onChange={(e) =>
+                  setClues((p) =>
+                    p.map((it, i) =>
+                      i === idx ? { ...it, title: e.target.value } : it
+                    )
+                  )
+                }
+                style={{ ...input, flex: 1 }}
+                placeholder="단서명"
+              />
+              <input
+                value={c.description}
+                onChange={(e) =>
+                  setClues((p) =>
+                    p.map((it, i) =>
+                      i === idx ? { ...it, description: e.target.value } : it
+                    )
+                  )
+                }
+                style={{ ...input, flex: 3 }}
+                placeholder="설명"
+              />
+              <button type="button" onClick={() => removeClue(idx)}>
+                삭제
+              </button>
+            </div>
+          ))}
+        </Section>
+
+        {/* 용의자 간 관계 */}
+        <Section
+          title={`용의자 간 관계 (${relations.length}개)`}
+          action={
+            <button type="button" onClick={addRelation}>
+              + 추가
+            </button>
+          }
+        >
+          {relations.map((r, idx) => (
+            <div key={idx} style={row}>
+              <input
+                value={r.a}
+                onChange={(e) =>
+                  setRelations((p) =>
+                    p.map((it, i) =>
+                      i === idx ? { ...it, a: e.target.value } : it
+                    )
+                  )
+                }
+                style={{ ...input, flex: 1 }}
+                placeholder="인물 A"
+              />
+              <input
+                value={r.b}
+                onChange={(e) =>
+                  setRelations((p) =>
+                    p.map((it, i) =>
+                      i === idx ? { ...it, b: e.target.value } : it
+                    )
+                  )
+                }
+                style={{ ...input, flex: 1 }}
+                placeholder="인물 B"
+              />
+              <input
+                value={r.relation}
+                onChange={(e) =>
+                  setRelations((p) =>
+                    p.map((it, i) =>
+                      i === idx ? { ...it, relation: e.target.value } : it
+                    )
+                  )
+                }
+                style={{ ...input, flex: 3 }}
+                placeholder="관계 설명"
+              />
+              <button type="button" onClick={() => removeRelation(idx)}>
+                삭제
+              </button>
+            </div>
+          ))}
+        </Section>
+
+        {/* 결론 요약 */}
+        <Section title="결론 요약">
+          <div style={grid3}>
+            <textarea
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              style={textarea}
+              placeholder="수법"
+            />
+            <textarea
+              value={keyEvidence}
+              onChange={(e) => setKeyEvidence(e.target.value)}
+              style={textarea}
+              placeholder="핵심 단서"
+            />
+            <textarea
+              value={motive}
+              onChange={(e) => setMotive(e.target.value)}
+              style={textarea}
+              placeholder="동기"
+            />
+          </div>
+        </Section>
 
         {/* 액션 */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            marginTop: 16,
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button
             type="submit"
             disabled={createScenario.isPending}
@@ -267,7 +517,7 @@ export default function AuthorNewScenarioPanel({ onCancel }: Props) {
   );
 }
 
-/* ---------- 스타일 & 섹션 ---------- */
+/* ---------- 스타일 ---------- */
 const label: React.CSSProperties = {
   display: "block",
   fontSize: 12,
@@ -276,23 +526,45 @@ const label: React.CSSProperties = {
 };
 const input: React.CSSProperties = {
   width: "100%",
+  maxWidth: "100%", // ✅ 부모 영역 넘지 않도록
   padding: 8,
   border: "1px solid #ddd",
   borderRadius: 6,
+  boxSizing: "border-box", // ✅ border + padding 포함 크기 조절
 };
 const textarea: React.CSSProperties = {
   width: "100%",
+  maxWidth: "100%", // ✅ 부모 영역 넘지 않도록
   minHeight: 90,
   padding: 8,
   border: "1px solid #ddd",
   borderRadius: 6,
+  boxSizing: "border-box",
 };
 const textareaTall: React.CSSProperties = { ...textarea, minHeight: 140 };
+const row: React.CSSProperties = {
+  display: "flex",
+  gap: 8,
+  marginBottom: 8,
+  alignItems: "center",
+};
 const grid2: React.CSSProperties = {
   display: "grid",
   gap: 12,
   gridTemplateColumns: "1fr 1fr",
-  marginTop: 6,
+};
+const grid3: React.CSSProperties = {
+  display: "grid",
+  gap: 12,
+  gridTemplateColumns: "1fr 1fr 1fr",
+};
+const card: React.CSSProperties = {
+  border: "1px solid #eee",
+  borderRadius: 8,
+  padding: 12,
+  marginBottom: 12,
+  background: "#fafafa",
+  color: "#000",
 };
 const preview: React.CSSProperties = {
   marginTop: 12,
@@ -300,18 +572,12 @@ const preview: React.CSSProperties = {
   color: "#c8e1ff",
   padding: 12,
   borderRadius: 8,
-  border: "1px solid #223",
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-word",
 };
-
 const btn: React.CSSProperties = {
   padding: "8px 12px",
   borderRadius: 6,
   border: "1px solid #ccc",
-  background: "white",
   cursor: "pointer",
-  color: "#000",
 };
 const btnPrimary: React.CSSProperties = {
   ...btn,
@@ -319,7 +585,7 @@ const btnPrimary: React.CSSProperties = {
   borderColor: "#2d6cdf",
   color: "white",
 };
-const btnGhost: React.CSSProperties = { ...btn, background: "white" };
+const btnGhost: React.CSSProperties = { ...btn };
 
 function Section({
   title,
@@ -339,7 +605,7 @@ function Section({
           alignItems: "baseline",
         }}
       >
-        <h3 style={{ margin: "0 0 6px" }}>{title}</h3>
+        <h3>{title}</h3>
         {action}
       </div>
       {children}
