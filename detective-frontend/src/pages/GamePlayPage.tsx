@@ -9,11 +9,11 @@ import "./GamePlayPage.css";
 
 /* ---------- 타입 ---------- */
 type SpotlightCfg = {
-  top?: number; // -0.28 (버튼 높이 대비 시작 y 비율)
-  widthPct?: number; // 1.6  (버튼 폭 대비)
-  heightPct?: number; // 1.9  (버튼 높이 대비)
-  angleDeg?: number; // 18   (콘 각도)
-  opacity?: number; // 0~1  (투명도)
+  top?: number;
+  widthPct?: number;
+  heightPct?: number;
+  angleDeg?: number;
+  opacity?: number;
 };
 
 type PlaySuspect = {
@@ -22,6 +22,7 @@ type PlaySuspect = {
   avatar: string;
   full?: string;
   comment?: string;
+  facts?: string[]; // ✅ 추가
 };
 
 type ChatMessage = {
@@ -32,96 +33,48 @@ type ChatMessage = {
 };
 
 type PlayConfig = {
-  background?: string; // ✅ 시나리오별 배경
+  background?: string;
   suspects: PlaySuspect[];
   messages: ChatMessage[];
   timeLimitSec?: number;
   intro?: string;
   map?: string;
-  spotlight?: SpotlightCfg; // 스포트라이트 튜닝
+  spotlight?: SpotlightCfg;
 };
 
-/* ---------- 아이콘(순수 SVG) ---------- */
+/* ---------- 브리핑 전용 ---------- */
+type BriefItem = PlaySuspect & {
+  facts: string[];
+  quote?: string;
+};
+
+/* ---------- 아이콘 ---------- */
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
 
-const IconScroll = ({ size = 26, ...p }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
-    <path
-      d="M8 3h8a3 3 0 0 1 3 3v11a2 2 0 1 1-4 0V6H9a3 3 0 0 0-3 3v9a2 2 0 1 1-4 0V9a6 6 0 0 1 6-6Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8 8h6M8 12h6"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const IconMemo = ({ size = 26, ...p }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
-    <path
-      d="M4 4h12a2 2 0 0 1 2 2v8l-6 6H6a2 2 0 0 1-2-2V4Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M14 20v-4a2 2 0 0 1 2-2h4"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8 8h8M8 12h5"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const IconChatLeft = ({ size = 28, ...p }: IconProps) => (
+const IconChatLeft = ({ size = 32, ...p }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
     <path
       d="M15 18l-6-6 6-6"
       stroke="currentColor"
-      strokeWidth="2.6"
+      strokeWidth="2.8"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
   </svg>
 );
-const IconChatRight = ({ size = 28, ...p }: IconProps) => (
+const IconChatRight = ({ size = 32, ...p }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
     <path
       d="M9 6l6 6-6 6"
       stroke="currentColor"
-      strokeWidth="2.6"
+      strokeWidth="2.8"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
   </svg>
 );
 
-const IconX = ({ size = 22, ...p }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
-    <path
-      d="M18 6 6 18M6 6l12 12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-/* ---------- 아이콘 경로 & 폴백 유틸 ---------- */
+/* ---------- 아이콘 경로 & 폴백 ---------- */
 function iconSrc(name: string, ext: "svg" | "png" = "svg") {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const norm = base.endsWith("/") ? base.slice(0, -1) : base;
@@ -130,9 +83,9 @@ function iconSrc(name: string, ext: "svg" | "png" = "svg") {
 const onIconError: React.ReactEventHandler<HTMLImageElement> = (e) => {
   const img = e.currentTarget;
   if (img.src.endsWith(".svg")) {
-    img.src = img.src.replace(/\.svg$/, ".png"); // svg 실패 → png 폴백
+    img.src = img.src.replace(/\.svg$/, ".png");
   } else {
-    img.style.visibility = "hidden"; // png도 실패 시 감춤
+    img.style.visibility = "hidden";
   }
 };
 
@@ -143,9 +96,9 @@ function resolveURL(p?: string): string | undefined {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const normBase = base.endsWith("/") ? base.slice(0, -1) : base;
 
-  if (p.startsWith("/")) return `${normBase}${p}`; // "/avatars/a.png"
-  if (p.startsWith("avatars/")) return `${normBase}/${p}`; // "avatars/a.png"
-  return `${normBase}/avatars/${p}`; // "a.png" → "/avatars/a.png"
+  if (p.startsWith("/")) return `${normBase}${p}`;
+  if (p.startsWith("avatars/")) return `${normBase}/${p}`;
+  return `${normBase}/avatars/${p}`;
 }
 
 /* ---------- 유틸 ---------- */
@@ -166,6 +119,9 @@ function shapeSuspects(input: any[]): PlaySuspect[] {
     avatar: String(s?.avatar ?? ""),
     full: s?.full ? String(s.full) : undefined,
     comment: s?.comment ? String(s.comment) : undefined,
+    facts: Array.isArray(s?.facts)
+      ? (s.facts as any[]).map((x) => String(x))
+      : undefined, // ✅ JSON facts 반영
   }));
 }
 function shapeMessages(input: any[]): ChatMessage[] {
@@ -184,7 +140,6 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
     (base.endsWith("/") ? base.slice(0, -1) : base) +
     (p.startsWith("/") ? p : `/${p}`);
 
-  // 1) 서버 API
   try {
     const res = await api.get(`/api/scenarios/${id}/play-config`);
     const obj = normalizeToObject(res.data) as any;
@@ -202,8 +157,6 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
       };
     }
   } catch {}
-
-  // 2) mock/:id-play.json
   try {
     const r = await fetch(join(`mock/${id}-play.json`), { cache: "no-store" });
     if (r.ok) {
@@ -221,14 +174,12 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
       };
     }
   } catch {}
-
-  // 3) mock/:id.json  ← s1.json 사용됨
   try {
     const r2 = await fetch(join(`mock/${id}.json`), { cache: "no-store" });
     if (r2.ok) {
       const baseObj = (await r2.json()) as any;
       return {
-        background: baseObj?.background ?? "/assets/background.jpg", // ✅ 동적+기본
+        background: baseObj?.background ?? "/assets/background.jpg",
         suspects: shapeSuspects(baseObj?.suspects ?? []),
         messages: [],
         timeLimitSec: 10 * 60 + 36,
@@ -238,10 +189,8 @@ async function loadPlayConfig(id: string): Promise<PlayConfig> {
       };
     }
   } catch {}
-
-  // 4) 폴백
   return {
-    background: "/assets/background.jpg", // ✅ 기본
+    background: "/assets/background.jpg",
     suspects: [],
     messages: [],
     timeLimitSec: 10 * 60 + 36,
@@ -278,7 +227,7 @@ export default function GamePlayPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
 
-  // ✅ 입장(마운트) 시 딱 한 번만: 첫 번째 용의자를 대화 패널 기본 선택
+  // 입장 시 1회: 첫 번째 용의자 필터
   const viewInitRef = useRef(false);
   useEffect(() => {
     if (viewInitRef.current) return;
@@ -293,7 +242,7 @@ export default function GamePlayPage() {
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
 
-  // ⏳ 타이머
+  // 타이머
   useEffect(() => {
     const t = window.setInterval(() => setElapsedSec((x) => x + 1), 1000);
     return () => window.clearInterval(t);
@@ -301,13 +250,13 @@ export default function GamePlayPage() {
   const mm = String(Math.floor(elapsedSec / 60)).padStart(2, "0");
   const ss = String(elapsedSec % 60).padStart(2, "0");
 
-  // ✅ 메모
+  // 메모
   const [memoOpen, setMemoOpen] = useState(false);
   const memoText = useMemoStore((s) => s.text);
   const setMemoText = useMemoStore((s) => s.setText);
   const clearMemo = useMemoStore((s) => s.clear);
 
-  // ✅ 사건 개요 & 지도 팝업
+  // 사건 개요
   const [overviewOpen, setOverviewOpen] = useState(false);
 
   // 메모창 드래그
@@ -336,10 +285,9 @@ export default function GamePlayPage() {
     document.removeEventListener("mouseup", onDragEnd);
   };
 
-  // ✅ comment 프리로드
+  // comment 프리로드
   useEffect(() => {
     if (!data) return;
-
     const baseMsgs: ChatMessage[] = [];
     for (const s of data.suspects ?? []) {
       if (s.comment) {
@@ -351,7 +299,6 @@ export default function GamePlayPage() {
         });
       }
     }
-
     setMsgs([...baseMsgs, ...(data.messages ?? [])]);
     setActiveId((data.suspects && data.suspects[0]?.id) || null);
   }, [data]);
@@ -369,7 +316,7 @@ export default function GamePlayPage() {
       });
   }, [chatOpen]);
 
-  /** 최근 메시지 미리보기 */
+  // 최근 메시지 맵
   const lastById = useMemo(() => {
     const map: Record<string, ChatMessage> = {};
     for (const m of msgs) {
@@ -380,16 +327,14 @@ export default function GamePlayPage() {
     return map;
   }, [msgs]);
 
-  // 현재 보기 필터: 오직 viewId만 사용(없으면 전체 보기)
+  // 필터링된 메시지
   const filterId = viewId;
   const visibleMsgs = useMemo(() => {
     if (!filterId) return msgs;
     return msgs.filter((m) => !m.whoId || m.whoId === filterId);
   }, [msgs, filterId]);
 
-  /* =========================
-     무대(중앙) 말풍선 & 스포트라이트
-     ========================= */
+  /* ========================= 무대 말풍선 ========================= */
   const BUBBLE_MS = 2200;
   const [stageBubble, setStageBubble] = useState<{
     whoId: string;
@@ -411,7 +356,7 @@ export default function GamePlayPage() {
     []
   );
 
-  // 전송: 내 메시지는 무대 말풍선 X
+  // 전송
   const send = () => {
     const text = input.trim();
     if (!text) return;
@@ -423,7 +368,6 @@ export default function GamePlayPage() {
     ]);
     setInput("");
 
-    // 더미 NPC 응답
     window.setTimeout(() => {
       const reply = "…계속 조사 중입니다.";
       setMsgs((prev) => [
@@ -459,10 +403,51 @@ export default function GamePlayPage() {
   const ang = sp.angleDeg ?? 18;
   const op = sp.opacity ?? 0.9;
 
+  /* ========================= 브리핑(입장 1회) ========================= */
+  const briefList: BriefItem[] = useMemo(() => {
+    return (suspects ?? [])
+      .map((s) => {
+        const facts = Array.isArray(s.facts)
+          ? s.facts.map((x) => String(x))
+          : [];
+        const quote = (s.comment ?? "").trim();
+        return { ...s, facts, quote };
+      })
+      .filter((b) => b.quote || b.facts.length > 0);
+  }, [suspects]);
+
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [briefIdx, setBriefIdx] = useState(0);
+  const briefInitRef = useRef(false);
+
+  useEffect(() => {
+    if (briefInitRef.current) return;
+    if (briefList.length > 0) {
+      setBriefOpen(true);
+      setBriefIdx(0);
+      briefInitRef.current = true;
+    }
+  }, [briefList]);
+
+  const currentBrief = briefList[briefIdx];
+  const briefFacts = currentBrief?.facts ?? [];
+  const briefQuote = currentBrief?.quote ?? "";
+  const briefImgSrc =
+    resolveURL(currentBrief?.full ?? currentBrief?.avatar) ||
+    resolveURL("placeholder-full.png")!;
+
+  const closeBrief = () => setBriefOpen(false);
+  const nextBrief = () => {
+    if (briefIdx < briefList.length - 1) setBriefIdx((i) => i + 1);
+    else closeBrief();
+  };
+  const prevBrief = () => {
+    if (briefIdx > 0) setBriefIdx((i) => i - 1);
+  };
+
   return (
     <div
       className={`play-root ${chatOpen ? "has-chat-open" : ""}`}
-      /* ✅ 시나리오별 배경 적용 + 기본값 */
       style={{
         backgroundImage: `url(${data?.background ?? "/assets/background.jpg"})`,
         backgroundSize: "cover",
@@ -473,6 +458,71 @@ export default function GamePlayPage() {
       <button className="timer-badge" onClick={goToResult}>
         심문 종료 ({mm}:{ss})
       </button>
+
+      {/* 브리핑 오버레이 */}
+      {briefOpen && currentBrief && (
+        <div
+          className="brief-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="용의자 설명"
+        >
+          <div className="brief-dim" onClick={closeBrief} />
+
+          <div className="brief-panel">
+            <div
+              className="brief-figure"
+              style={{ ["--brief-img" as any]: `url(${briefImgSrc})` }}
+            >
+              <img
+                src={briefImgSrc}
+                alt={currentBrief.name}
+                onError={(e) =>
+                  (e.currentTarget.src = resolveURL("placeholder-full.png")!)
+                }
+              />
+            </div>
+
+            <div className="brief-text">
+              <h2 className="brief-title">{currentBrief.name}</h2>
+
+              {briefFacts.length > 0 && (
+                <ul className="brief-facts">
+                  {briefFacts.map((line, i) => (
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
+              )}
+
+              {briefQuote && <p className="brief-quote">{briefQuote}</p>}
+            </div>
+          </div>
+
+          {/* 오른쪽 아래 내비 */}
+          <div className="brief-navs">
+            {/* 좌우 사이드 내비 (가운데 높이에 배치) */}
+            <button
+              type="button"
+              className="brief-sidenav prev fab-like"
+              onClick={prevBrief}
+              aria-label="이전"
+              title="이전"
+            >
+              <IconChatLeft />
+            </button>
+
+            <button
+              type="button"
+              className="brief-sidenav next fab-like"
+              onClick={nextBrief}
+              aria-label="다음"
+              title="다음"
+            >
+              <IconChatRight />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 좌측 도구 (이미지 아이콘) */}
       <div className="tools">
@@ -514,16 +564,16 @@ export default function GamePlayPage() {
             사건 개요 & 지도
             <button
               className="icon-close"
-              onClick={() => setOverviewOpen(false)}
+              onClick={() => setOverviewOpen(false)} // ← 클릭 시 팝업 닫힘
               aria-label="닫기"
               title="닫기"
             >
               <img
                 className="icon"
-                src={iconSrc("close", "svg")}
+                src={iconSrc("close", "svg")} // ← /icons/close.svg 아이콘 사용
                 alt=""
                 aria-hidden="true"
-                onError={onIconError}
+                onError={onIconError} // ← svg 실패 시 png로 폴백
               />
             </button>
           </div>
@@ -590,7 +640,6 @@ export default function GamePlayPage() {
               aria-pressed={sel}
               title={`${s.name} 대화하기`}
             >
-              {/* ✅ CSS-only 스포트라이트 */}
               {sel && (
                 <div
                   className="spotlight-cone"
@@ -607,7 +656,6 @@ export default function GamePlayPage() {
                 />
               )}
 
-              {/* NPC 말풍선 */}
               {stageBubble && stageBubble.whoId === s.id && (
                 <div className="actor-bubble">{stageBubble.text}</div>
               )}
@@ -640,6 +688,7 @@ export default function GamePlayPage() {
 
       {/* 오른쪽 대화 패널 */}
       <aside className={`chat-panel ${chatOpen ? "" : "is-closed"}`}>
+        {/* 1) 용의자 선택(아바타) */}
         <div className="chat-avatars">
           {suspects.map((s) => {
             const viewing = viewId != null && s.id === viewId;
@@ -664,6 +713,24 @@ export default function GamePlayPage() {
             );
           })}
         </div>
+
+        {/* 2) 선택된 용의자의 FACTS (없으면 섹션 자체 미노출) */}
+        {(() => {
+          const selected = suspects.find((s) => s.id === viewId);
+          const facts = selected?.facts?.filter(Boolean) ?? [];
+          if (facts.length === 0) return null;
+          return (
+            <div className="chat-facts" aria-live="polite">
+              <ul>
+                {facts.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
+
+        {/* 3) 대화 내역 */}
         <div id="chat-body" className="chat-list" ref={listRef}>
           {visibleMsgs.map((m) => (
             <div key={m.id} className={`bubble ${m.from}`}>
@@ -673,7 +740,7 @@ export default function GamePlayPage() {
         </div>
       </aside>
 
-      {/* 대화창 토글 FAB: 아이콘 */}
+      {/* 대화창 토글 FAB */}
       <button
         type="button"
         className="chat-fab"

@@ -3,26 +3,33 @@
   --ink: #fff;
   --panel: rgba(25, 25, 28, 0.65);
   --ring: #ff3b30;
-  --chatW: clamp(320px, 28vw, 420px); /* 오른쪽 대화 패널 폭 */
-  --toolIconSize: clamp(30px, 3.2vw, 40px);
-  --closeIconSize: var(--toolIconSize);
-  --chevronSize: clamp(24px, 2.2vw, 30px);
+  --chatW: clamp(320px, 28vw, 420px);
+
+  /* 반응형 크기 변수 */
+  --toolIconSize: clamp(30px, 3.2vw, 40px); /* 툴바 아이콘 기준 */
+  --closeIconSize: var(--toolIconSize); /* 닫기 아이콘도 동일 기준 */
+  --chevronSize: clamp(24px, 2.2vw, 30px); /* 브리핑 내비 화살표 */
+  --briefFabSize: clamp(40px, 4.2vw, 46px); /* 브리핑 좌/우 FAB 크기 */
   --fabMin: 32px; /* 최소 버튼 크기 */
   --fabMax: 46px; /* 최대 버튼 크기(현재 디자인 값) */
   --fabGap: 8px; /* 패널 왼쪽 가장자리와 FAB 사이 간격 */
   --panelRight: 12px; /* chat-panel의 right 값과 반드시 동일 */
   --panelBorder: 2px; /* chat-panel의 border와 동일 */
+
+  --fabMin: 32px;
+  --fabMax: 46px;
+  --fabGap: 8px;
+  --panelRight: 12px;
 }
 
-/* 전체 배경: 실제 이미지는 TSX의 inline-style에서 고정 적용됨 */
 .play-root {
   position: relative;
   min-height: 100svh;
-  background-color: #0f1013; /* 이미지 로드 실패 대비 */
+  background-color: #0f1013;
   overflow: hidden;
 }
 
-/* 상단 타이머(결과로 이동 버튼) */
+/* timer */
 .timer-badge {
   position: absolute;
   left: 28px;
@@ -41,7 +48,7 @@
   filter: brightness(1.06);
 }
 
-/* 좌측 도구 */
+/* tools */
 .tools {
   position: absolute;
   left: 28px;
@@ -49,10 +56,12 @@
   display: grid;
   gap: 18px;
   opacity: 0.9;
+
+  /* ✅ 반응형: 아이콘/버튼 크기를 변수로 계산 */
+  --tool-icn: var(--toolIconSize); /* 아이콘 실제 크기 */
+  --tool-btn: calc(var(--tool-icn) + 20px); /* 버튼(히트영역) = 아이콘 + 여백 */
 }
 .tool-btn {
-  width: 62px;
-  height: 62px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.07);
   color: #fff;
@@ -63,30 +72,25 @@
   cursor: pointer;
   backdrop-filter: blur(4px);
 }
-
-/* ========= 아이콘 버튼 스타일 보강 ========= */
 .tools .tool-btn {
-  font-size: 0;
-} /* 텍스트 여백 제거 */
-.tools .tool-btn svg {
-  width: 26px;
-  height: 26px;
-  color: #fff;
-  opacity: 0.92;
+  width: var(--tool-btn);
+  height: var(--tool-btn);
+  padding: 0; /* 아이콘이 꽉 차게 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.tools .tool-btn:hover svg {
-  opacity: 1;
-  transform: translateY(-1px);
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-/* 켜짐 상태 하이라이트 */
 .tools .tool-btn.is-on {
   border-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12) inset;
   background: rgba(255, 255, 255, 0.12);
 }
+.tools .tool-btn .icon {
+  width: var(--tool-icn);
+  height: var(--tool-icn);
+}
 
-/* 중앙 무대(전신 이미지) */
+/* stage */
 .stage {
   position: absolute;
   left: 50%;
@@ -102,8 +106,6 @@
   justify-items: center;
   transition: transform 0.28s ease;
 }
-
-/* 배우 버튼 */
 .actor-btn {
   position: relative;
   width: 100%;
@@ -125,8 +127,6 @@
 .actor-btn:hover .actor-full {
   transform: translateY(-2px) scale(1.02);
 }
-
-/* 캐릭터 이름표 */
 .actor-name {
   position: absolute;
   bottom: var(--name-bottom, 12%);
@@ -144,7 +144,7 @@
   opacity: 0.95;
 }
 
-/* 무대 말풍선(NPC 전용) — 가로로 넓게 + 한국어 줄바꿈 품질 */
+/* stage bubble */
 .actor-bubble {
   position: absolute;
   bottom: calc(100% + 10px);
@@ -158,9 +158,9 @@
   border-radius: 14px 14px 14px 4px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   line-height: 1.35;
-  white-space: pre-wrap; /* \n 유지 */
-  word-break: keep-all; /* 한글 단어 중간 끊김 방지 */
-  overflow-wrap: anywhere; /* 긴 토큰(URL 등) 안전 줄바꿈 */
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   text-align: left;
 }
 .actor-bubble::after {
@@ -173,7 +173,7 @@
   border-top-color: #fff;
 }
 
-/* 오른쪽 대화 패널 (기본 열림) */
+/* chat panel */
 .chat-panel {
   position: absolute;
   top: 12px;
@@ -191,12 +191,13 @@
   color: var(--ink);
   transition: transform 0.28s ease;
   z-index: 10;
+  grid-template-rows: auto auto 1fr;
 }
 .chat-panel.is-closed {
   transform: translateX(100%);
 }
 
-/* 패널 토글 FAB (아이콘 전용) */
+/* chat fab */
 .chat-fab {
   position: absolute;
   top: 50%;
@@ -216,7 +217,6 @@
   display: grid;
   place-items: center;
 }
-/* 패널 열렸을 때 FAB를 패널 '왼쪽 바깥'으로 정확히 */
 .play-root.has-chat-open .chat-fab {
   right: calc(
     var(--chatW) + var(--panelRight) + var(--panelBorder) + var(--fabGap)
@@ -225,8 +225,13 @@
 .chat-fab:hover {
   filter: brightness(1.1);
 }
+.chat-fab svg {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
 
-/* 상단 아바타(뷰 필터) */
+/* avatars */
 .chat-avatars {
   display: flex;
   gap: 10px;
@@ -274,7 +279,7 @@
   text-overflow: ellipsis;
 }
 
-/* 대화 리스트 & 말풍선 */
+/* chat list */
 .chat-list {
   position: relative;
   padding: 14px 16px 24px;
@@ -288,14 +293,12 @@
   margin: 0;
   line-height: 1.35;
 }
-/* 👉 한국어 단어 중간 분리 X + 긴 토큰 처리 */
 .chat-list .bubble p {
-  white-space: pre-wrap; /* \n 유지 */
-  word-break: keep-all; /* 한국어 단어 중간 끊김 방지 */
-  overflow-wrap: anywhere; /* 긴 토큰은 안전 줄바꿈 */
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   line-break: strict;
 }
-
 .bubble.me {
   margin-left: auto;
   background: #4f87ff;
@@ -313,7 +316,7 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* 하단 입력 Dock */
+/* input */
 .input-dock {
   position: absolute;
   left: 50%;
@@ -356,7 +359,7 @@
   filter: brightness(1.06);
 }
 
-/* 반응형 */
+/* responsive */
 @media (max-width: 980px) {
   .chat-panel {
     width: 44vw;
@@ -366,26 +369,16 @@
     grid-template-columns: repeat(4, max-content);
   }
 }
-@media (max-width: 980px) {
-  :root {
-    --chatW: 44vw;
-  }
-  .stage {
-    width: var(--baseW);
-    grid-template-columns: repeat(4, max-content);
-  }
-}
-
 @media (max-width: 900px) {
   :root {
     --chatW: 86vw;
-  } /* 기존 값 유지 */
+  }
 }
 @media (max-width: 720px) {
   .stage,
   .tools {
     display: none;
-  } /* 모바일: 공간 확보 */
+  } /* 모바일에서는 툴바 숨김(기존 유지) */
   .input-dock {
     width: calc(100% - 20px);
     left: 10px;
@@ -393,7 +386,7 @@
   }
 }
 
-/* 메모 팝업 */
+/* memo */
 .memo-popup {
   position: absolute;
   width: 400px;
@@ -450,7 +443,7 @@
   color: #fff;
 }
 
-/* 사건 개요 & 지도 팝업 */
+/* overview */
 .overview-popup {
   position: absolute;
   top: 80px;
@@ -475,20 +468,24 @@
   justify-content: space-between;
   align-items: center;
 }
-/* 개요 팝업 닫기 아이콘 버튼 */
 .overview-header .icon-close {
+  border: 0;
   background: transparent;
-  border: none;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
   cursor: pointer;
+  margin-left: auto; /* 헤더 오른쪽 끝으로 */
+
+  /* ✅ 반응형 버튼 히트영역 */
+  width: calc(var(--closeIconSize) + 8px);
+  height: calc(var(--closeIconSize) + 8px);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.overview-header .icon-close:hover {
-  background: rgba(255, 255, 255, 0.12);
+.overview-header .icon-close .icon {
+  /* ✅ 반응형 아이콘 크기 */
+  width: var(--closeIconSize);
+  height: var(--closeIconSize);
 }
 .overview-body {
   flex: 1;
@@ -502,7 +499,6 @@
   font-size: 16px;
   color: #8ab4ff;
 }
-/* 👉 사건 개요 텍스트: 한글 단어 중간 분리 X + 긴 토큰 처리 */
 .overview-body p {
   white-space: pre-wrap;
   word-break: keep-all;
@@ -510,7 +506,7 @@
   line-break: strict;
 }
 
-/* ===== 선택된 캐릭터 스포트라이트 효과 ===== */
+/* spotlight */
 .actor-btn.is-active::before {
   content: "";
   position: absolute;
@@ -530,14 +526,11 @@
   z-index: -1;
   filter: blur(40px);
 }
-/* 선택된 캐릭터의 이미지도 살짝 밝게 */
 .actor-btn.is-active img {
   filter: brightness(1.15) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
   transform: scale(1.05);
   transition: all 0.25s ease;
 }
-
-/* ========= 스포트라이트(선택된 캐릭터) ========= */
 .spotlight-cone {
   position: absolute;
   pointer-events: none;
@@ -546,101 +539,463 @@
   transform: translateX(-50%);
   width: 210%;
   height: 220%;
-  background: url("/effects/spotlight.png") center top / contain no-repeat;
+  background: url("/effects/spotlight.png") center top/contain no-repeat;
   mix-blend-mode: screen;
   opacity: 0.9;
   filter: blur(0.2px);
   animation: spotlight-breathe 2.4s ease-in-out infinite;
   z-index: 0;
 }
-/* 선택된 캐릭터 살짝 밝게 */
-.actor-btn.is-active .actor-full,
-.actor-btn.is-active .actor-avatar img {
-  filter: brightness(1.1) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
-  transform: translateY(-2px) scale(1.03);
-  transition: transform 0.25s ease, filter 0.25s ease;
-}
-/* 선택되지 않은 캐릭터 약간 어둡게(선택) */
 .stage .actor-btn:not(.is-active) .actor-full,
 .stage .actor-btn:not(.is-active) .actor-avatar img {
   filter: brightness(0.88);
 }
 
-/* 이미지 아이콘 크기 */
-.tool-btn .icon {
-  width: 26px;
-  height: 26px;
-  display: block;
+/* ========================= 브리핑 오버레이 ========================= */
+.brief-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
 }
-.overview-header .icon {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-/* 개요 팝업 닫기(X) 버튼 가운데 정렬 + 미세 보정 가능 */
-.overview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* 수직 가운데 보장 */
+.brief-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(1px);
 }
 
-.overview-header .icon-close {
-  display: inline-flex; /* 컨텐츠 정렬 용이 */
+/* 패널 폭을 더 넓히고, 텍스트 칼럼 최소폭을 키움 */
+.brief-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  width: min(1280px, 96vw);
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 28vw)
+    minmax(560px, 1fr);
   align-items: center;
-  justify-content: center; /* 아이콘 정확히 중앙 */
-  width: 36px; /* 클릭 영역 살짝 넉넉하게 */
-  height: 36px;
-  padding: 0;
-  line-height: 0; /* 이미지 줄높이 영향 제거 */
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  gap: clamp(16px, 3vw, 40px);
+  padding: clamp(8px, 2vw, 12px) 0;
+  color: #fff;
 }
 
-.overview-header .icon-close:hover {
-  background: rgba(255, 255, 255, 0.12);
+/* 캐릭터를 왼쪽으로 조금 이동 */
+.brief-figure {
+  position: relative;
+  align-self: end;
+  margin-left: clamp(-48px, -5vw, -24px);
 }
-
-/* 아이콘 자체 크기 + 중앙 배치 + 미세 이동(필요시) */
-.overview-header .icon-close .icon {
-  width: 20px;
-  height: 20px;
-  display: block;
+.brief-figure::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--brief-img) center top / contain no-repeat;
+  /* 캐릭터 모양 '흰 그림자' */
+  filter: grayscale(1) brightness(10) contrast(0.9) blur(0px);
+  opacity: 0.9;
+  transform: translate(var(--brief-shiftX, -15px), var(--brief-shiftY, -0px))
+    scale(1.04);
+  z-index: -1;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 35%,
+    rgba(0, 0, 0, 0) 85%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 35%,
+    rgba(0, 0, 0, 0) 85%
+  );
+}
+.brief-figure img {
+  width: 100%;
+  max-height: 70vh;
   object-fit: contain;
-  object-position: center;
-  /* 아이콘이 살짝 치우쳐 보이면 아래 두 변수로 미세 조정 (px 단위) */
-  transform: translate(var(--icon-nudge-x, 0), var(--icon-nudge-y, 0));
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
 }
-/* 왼쪽 툴 버튼 아이콘 반응형 크기 */
-.tools .tool-btn .icon {
-  width: var(--toolIconSize);
-  height: var(--toolIconSize);
+
+/* 텍스트 영역 가로 여유 증가 */
+.brief-text {
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  padding-right: clamp(8px, 2vw, 24px);
 }
-/* 닫기 버튼 크기(클릭 영역): 아이콘보다 약간 크게 */
-.overview-header .icon-close {
-  width: calc(var(--closeIconSize) + 12px);
-  height: calc(var(--closeIconSize) + 12px);
-  display: inline-flex;
+.brief-title {
+  margin: 0 0 8px;
+  font-size: clamp(20px, 2.6vw, 32px);
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+.brief-facts {
+  list-style: none;
+  margin: 10px 0 14px;
+  padding: 0;
+}
+.brief-facts li {
+  margin: 6px 0;
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 600;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.brief-quote {
+  margin: 8px 0 0;
+  font-size: clamp(22px, 3.2vw, 36px);
+  font-weight: 900;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* ===== 좌/우 사이드 내비(FAB 룩) ===== */
+.fab-like {
+  width: var(--briefFabSize);
+  height: var(--briefFabSize);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  line-height: 0;
+  transition: filter 0.2s ease;
+}
+.fab-like:hover {
+  filter: brightness(1.1);
+}
+
+.brief-sidenav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2100; /* dim/패널 위 */
+}
+.brief-sidenav.prev {
+  left: clamp(10px, 2vw, 24px);
+}
+.brief-sidenav.next {
+  right: clamp(10px, 2vw, 24px);
+}
+.brief-sidenav svg {
+  width: var(--chevronSize);
+  height: var(--chevronSize);
+  display: block;
+}
+
+/* 모바일에서 아래로 이동 */
+@media (max-width: 760px) {
+  .brief-panel {
+    grid-template-columns: 1fr;
+    transform: translate(-50%, -50%);
+    gap: 10px;
+    width: min(1000px, 96vw);
+  }
+  .brief-figure {
+    margin-left: 0;
+  }
+
+  .brief-sidenav {
+    top: auto;
+    bottom: 12px;
+    transform: none;
+  }
+  .brief-sidenav.prev {
+    left: 10px;
+  }
+  .brief-sidenav.next {
+    right: 10px;
+  }
+}
+
+/* 브리핑: 코멘트(이름, FACTS 다음) */
+.brief-comment {
+  margin: 10px 0 0;
+  font-size: clamp(24px, 3.6vw, 44px);
+  font-weight: 900;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.brief-comment::before,
+.brief-quote::before {
+  content: "“";
+  margin-right: 2px;
+}
+.brief-comment::after,
+.brief-quote::after {
+  content: "”";
+  margin-left: 2px;
+}
+
+/* facts 섹션 스타일 */
+.chat-facts {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+.chat-facts ul {
+  margin: 0;
+  padding-left: 18px; /* 점 목록 들여쓰기 */
+}
+.chat-facts li {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: normal;
+  word-break: keep-all; /* 한글 단어 중간 분리 X */
+  overflow-wrap: anywhere; /* 긴 토큰 대비 */
+}
+
+/* 추가 미세 튜닝: 아주 큰 화면/아주 작은 화면에서 아이콘 감성 조정 */
+@media (min-width: 1200px) {
+  .tools {
+    --tool-icn: max(var(--toolIconSize), 30px);
+    --tool-btn: calc(var(--tool-icn) + 22px);
+  }
+}
+@media (max-width: 480px) {
+  .tools {
+    --tool-icn: 22px; /* clamp 최소보다 더 줄이고 싶을 때 */
+    --tool-btn: calc(var(--tool-icn) + 16px);
+  }
+}
+
+/* --- 브리핑 좌/우 버튼을 안쪽으로, 아이콘을 원 중앙에 정렬 --- */
+
+/* 1) 화면 폭에 비례해 좌우에서 살짝 안쪽으로 */
+:root {
+  --briefSideInset: clamp(32px, 6vw, 72px);
+}
+
+.brief-sidenav.prev {
+  left: var(--briefSideInset);
+}
+.brief-sidenav.next {
+  right: var(--briefSideInset);
+}
+
+/* 2) 아이콘 정확히 원 중앙 */
+.fab-like {
+  display: inline-flex; /* grid → flex로 전환해 정밀 중앙 정렬 */
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* 내부 여백 제거 */
+  line-height: 0; /* 수직 정렬 영향을 주는 라인 높이 제거 */
+}
+.fab-like > svg {
+  width: var(--chevronSize);
+  height: var(--chevronSize);
+  display: block; /* 인라인 svg 여백 제거 */
+  margin: 0; /* 혹시 모를 여백 제거 */
+}
+
+/* 3) 모바일에서는 과도하게 안쪽으로 들어오지 않게 조금만 */
+@media (max-width: 760px) {
+  :root {
+    --briefSideInset: 16px;
+  }
+}
+/* === 브리핑 FAB 버튼 크게 (아이콘도 함께 확대) === */
+:root {
+  /* 버튼 지름(원 크기) ↑ */
+  --briefFabSize: clamp(64px, 6.4vw, 80px);
+  /* 화살표 아이콘 크기 ↑ */
+  --chevronSize: clamp(32px, 3.2vw, 40px);
+}
+
+/* 모바일에서 과하게 커지지 않게 적당히 캡 */
+@media (max-width: 760px) {
+  :root {
+    --briefFabSize: 56px;
+    --chevronSize: 28px;
+  }
+}
+/* === A. 용의자(무대) 반응형: 모바일에서 가로 스크롤 + 스냅 === */
+/* 기존 @media (max-width: 720px)에서 .stage가 display:none 되던 걸 뒤에서 덮어씀 */
+@media (max-width: 720px) {
+  .play-root .stage {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(env(safe-area-inset-bottom) + 96px); /* 입력창 위에 떠있게 */
+    top: auto;
+    transform: none;
+
+    display: flex; /* grid → flex: 가로 리스트 */
+    gap: 12px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory; /* 카드 스냅 */
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0));
+    z-index: 9; /* chat-panel(10)보다 낮게 */
+  }
+
+  .play-root .actor-btn {
+    flex: 0 0 auto; /* 가로 스크롤 카드 */
+    scroll-snap-align: center;
+    min-width: clamp(120px, 42vw, 240px);
+  }
+
+  .play-root .actor-full {
+    width: clamp(120px, 42vw, 220px);
+    max-height: 56vh;
+  }
+
+  .play-root .actor-name {
+    font-size: clamp(12px, 3.6vw, 16px);
+    bottom: 10%;
+  }
+
+  .play-root .actor-bubble {
+    max-width: 86vw;
+    min-width: 60vw;
+    font-size: clamp(13px, 3.4vw, 16px);
+  }
+
+  /* 입력창이 노치·홈버튼 영역과 겹치지 않도록 */
+  .play-root .input-dock {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* 태블릿에서도 좀 더 유연하게: 카드가 꽉 차지 않도록 기본 그리드 개선 */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .stage {
+    width: min(1100px, 74vw);
+    grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+  }
+  .actor-full {
+    width: clamp(140px, 18vw, 220px);
+  }
+  .actor-name {
+    font-size: clamp(12px, 1.4vw, 14px);
+  }
+}
+
+/* 데스크톱(넓은 화면)에서 살짝 키워주기 */
+@media (min-width: 1400px) {
+  .actor-full {
+    width: clamp(180px, 14vw, 260px);
+  }
+  .actor-name {
+    font-size: 14px;
+  }
+}
+
+/* === B. 브리핑(소개글) 텍스트 가독성 향상 & 반응형 === */
+.brief-text {
+  max-width: 70ch; /* 데스크톱에서 한 줄 길이 제한(가독성↑) */
+}
+@media (max-width: 760px) {
+  .brief-text {
+    max-width: none; /* 모바일은 가로 폭 꽉 채움 */
+    padding: 0 12px;
+  }
+  .brief-title {
+    /* 제목 크기 살짝 더 유연하게 */
+    font-size: clamp(20px, 6vw, 28px);
+  }
+  .brief-quote {
+    /* 인용문/소개 핵심 문장 */
+    font-size: clamp(18px, 6vw, 26px);
+    line-height: 1.45;
+  }
+  .brief-facts li {
+    /* 사실 목록도 살짝 키워서 터치 가독성↑ */
+    font-size: clamp(13px, 3.6vw, 16px);
+  }
+}
+
+/* === C. 좌/우 브리핑 버튼 위치·중앙정렬(이전 답변과 합쳐서 사용) === */
+/* 화면 가장자리에서 살짝 안쪽으로 */
+:root {
+  --briefSideInset: clamp(32px, 6vw, 72px);
+}
+.brief-sidenav.prev {
+  left: var(--briefSideInset);
+}
+.brief-sidenav.next {
+  right: var(--briefSideInset);
+}
+
+/* 아이콘을 원 한가운데 정확히 */
+.fab-like {
+  display: inline-flex; /* 정확한 중앙정렬 */
   align-items: center;
   justify-content: center;
   padding: 0;
   line-height: 0;
 }
-
-/* X 아이콘 이미지 반응형 크기 + (필요 시) 미세 보정 유지 */
-.overview-header .icon-close .icon {
-  width: var(--closeIconSize);
-  height: var(--closeIconSize);
-  object-fit: contain;
-  object-position: center;
-  transform: translate(
-    var(--icon-nudge-x, 0),
-    var(--icon-nudge-y, 0)
-  ); /* 기존 누드지 유지 */
-}
-/* FAB 안 화살표 크기 */
-.chat-fab svg {
+.fab-like > svg {
   width: var(--chevronSize);
   height: var(--chevronSize);
+  display: block;
+  margin: 0;
+}
+
+/* 모바일에서는 과하게 안쪽으로 들어오지 않게 */
+@media (max-width: 760px) {
+  :root {
+    --briefSideInset: 16px;
+  }
+}
+
+/* === D. (옵션) 채팅 사실 카드 글씨도 반응형으로 살짝 조정 === */
+@media (max-width: 980px) {
+  .chat-facts li {
+    font-size: clamp(12px, 1.6vw, 14px);
+  }
+}
+/* === [FIX] chat-panel 폭과 --chatW를 브레이크포인트별로 동기화 === */
+
+/* 기본: 이미 .chat-panel { width: var(--chatW); } 이므로 유지 */
+
+/* 980px 이하에서는 패널을 44vw로 – 변수만 바꿔 FAB도 함께 이동 */
+@media (max-width: 980px) {
+  :root {
+    --chatW: 44vw;
+  }
+  .chat-panel {
+    width: var(--chatW);
+  } /* 44vw 적용(명시 재지정) */
+}
+
+/* 900px 이하에서는 패널을 86vw로 – 변수와 패널 폭 둘 다 재지정 */
+@media (max-width: 900px) {
+  :root {
+    --chatW: 86vw;
+  }
+  .chat-panel {
+    width: var(--chatW);
+  } /* 86vw 적용 */
+}
+
+/* 560px 이하(아주 좁은 화면)에서는 조금 더 넓게 */
+@media (max-width: 560px) {
+  :root {
+    --chatW: 92vw;
+  }
+  .chat-panel {
+    width: var(--chatW);
+  } /* 92vw 적용 */
+}
+
+/* 보너스: FAB가 패널과 살짝 더 떨어지게 여유를 주고 싶다면 간격만 조절 */
+:root {
+  --fabGap: 10px; /* 기존 8px → 10px */
+  /* 필요하면 패널 오른쪽 여백/보더값도 여기서 관리 */
+  /* --panelRight: 12px; */
+  /* --panelBorder: 2px;  */
+}
+@media (max-width: 980px) {
+  .chat-panel {
+    width: 44vw;
+  }
 }
