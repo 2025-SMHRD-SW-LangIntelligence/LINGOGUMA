@@ -25,6 +25,13 @@ const SCENARIOS: StaticScenario[] = [
   { id: "s10", title: "문세인업데 일해라" },
 ];
 
+/** BASE_URL 고려해서 public 경로 안전하게 만들기 */
+function publicURL(p: string) {
+  const base = (import.meta as any).env?.BASE_URL ?? "/";
+  const norm = base.endsWith("/") ? base.slice(0, -1) : base;
+  return p.startsWith("/") ? `${norm}${p}` : `${norm}/${p}`;
+}
+
 export default function ScenarioSelectPage() {
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
@@ -34,6 +41,9 @@ export default function ScenarioSelectPage() {
 
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
+
+  // ▶ 게임 방법 모달
+  const [howtoOpen, setHowtoOpen] = useState(false);
 
   // 공개(등록됨) 목록
   const { data, isLoading, isError } = useQuery({
@@ -128,7 +138,20 @@ export default function ScenarioSelectPage() {
     []
   );
 
-  // 상태 카드(그리드 내에서 카드 형태로만 표시) — items가 0개일 때만 노출
+  // Esc / Enter / Space 로 모달 닫기
+  useEffect(() => {
+    if (!howtoOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setHowtoOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [howtoOpen]);
+
+  // 상태 카드(그리드 내에서 카드 형태로만 표시)
   const statusCard =
     items.length === 0 ? (
       <div className="sc-card">
@@ -159,9 +182,23 @@ export default function ScenarioSelectPage() {
         <span className="sc-avatar__name">{nickname}</span>
       </button>
 
-      {/* 제목 + 보드 */}
+      {/* 제목 + 툴바 + 보드 */}
       <div className="sc-wrap">
         <h1 className="sc-title">사건 의뢰서</h1>
+
+        {/* ▶ 박스 위 툴바: 게임 방법 버튼 */}
+        <div className="sc-toolbar">
+          <button
+            type="button"
+            className="sc-howto-btn"
+            onClick={() => setHowtoOpen(true)}
+            aria-haspopup="dialog"
+            aria-controls="howto-dialog"
+            title="게임 방법"
+          >
+            게임 방법
+          </button>
+        </div>
 
         <section className="sc-board" aria-label="사건 목록">
           <div className="sc-grid">
@@ -205,6 +242,89 @@ export default function ScenarioSelectPage() {
           </div>
         </section>
       </div>
+
+      {/* ▶ 게임 방법: 풀스크린 이미지 뷰어 (X 버튼 없음) */}
+      {howtoOpen && (
+        <div
+          className="howto-overlay"
+          role="dialog"
+          aria-modal="true"
+          id="howto-dialog"
+          aria-label="게임 방법"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            zIndex: 9999,
+          }}
+        >
+          <img
+            src={publicURL("/effects/tuto.png")}
+            alt="게임 방법 튜토리얼"
+            style={{
+              position: "fixed",
+              inset: 0,
+              width: "100vw",
+              height: "100vh",
+              objectFit: "contain", // 가득 채우되 비율 유지
+              display: "block",
+              userSelect: "none",
+            }}
+            draggable={false}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+
+          {/* 우상단 'ESC 로 닫기' 배너 (클릭/Enter/Space로 닫힘) */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setHowtoOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setHowtoOpen(false);
+              }
+            }}
+            style={{
+              position: "fixed",
+              top: "clamp(12px, 2.5vh, 28px)",
+              right: "clamp(12px, 2.5vw, 28px)",
+              color: "#fff",
+              fontWeight: 900,
+              fontSize: "clamp(18px, 3.2vw, 36px)",
+              letterSpacing: 0.5,
+              padding: "10px 14px",
+              borderRadius: 14,
+              background: "rgba(0,0,0,0.45)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              textShadow: "0 2px 8px rgba(0,0,0,0.65)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+            title="닫기 (Esc / Enter / Space)"
+            aria-label="닫기 (Esc / Enter / Space)"
+          >
+            <span
+              style={{
+                display: "inline-block",
+                padding: "6px 10px",
+                marginRight: 8,
+                borderRadius: 8,
+                background: "rgba(255,255,255,0.12)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                fontWeight: 800,
+              }}
+            >
+              닫기
+            </span>
+            (ESC)
+          </div>
+        </div>
+      )}
 
       {hint && (
         <div className="sc-hint" role="status" aria-live="polite">

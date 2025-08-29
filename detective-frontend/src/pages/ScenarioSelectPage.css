@@ -220,3 +220,107 @@
     height: calc(100dvh - clamp(150px, 34vh, 230px));
   }
 }
+/* ==== 상단 툴바 & 버튼 ==== */
+.sc-toolbar {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px; /* 타이틀과 보드 사이 여백 */
+}
+
+.sc-howto-btn {
+  background: #4f87ff;
+  color: #fff;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.sc-howto-btn:hover {
+  filter: brightness(1.06);
+}
+.sc-howto-btn:active {
+  transform: translateY(0.5px);
+}
+
+/* 모바일에서 버튼 가독성 유지 */
+@media (max-width: 560px) {
+  .sc-howto-btn {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+}
+
+/* ==== 게임 방법 모달 ==== */
+.howto-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 3000; /* 페이지 내 어떤 요소보다 위 */
+  display: grid;
+  place-items: center;
+}
+
+.howto-panel {
+  width: min(680px, 92vw);
+  max-height: min(70vh, 86svh);
+  background: #1e1e1e;
+  color: #fff;
+  border: 2px solid #4f87ff;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.howto-header {
+  background: #4f87ff;
+  color: #fff;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 900;
+}
+
+.howto-close {
+  background: transparent;
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 22px;
+  line-height: 1;
+}
+.howto-close:hover {
+  filter: brightness(1.08);
+}
+
+.howto-body {
+  padding: 14px 16px;
+  overflow: auto;
+  line-height: 1.55;
+}
+.howto-body ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.howto-body li {
+  margin: 6px 0;
+}
+
+@media (max-width: 480px) {
+  .howto-panel {
+    width: 94vw;
+  }
+  .howto-body {
+    padding: 12px;
+  }
+}
