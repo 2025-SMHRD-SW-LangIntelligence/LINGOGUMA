@@ -168,6 +168,48 @@ export default function ScenarioSelectPage() {
       </div>
     ) : null;
 
+  // ====== 이미지 전용 확대/이동 상태 ======
+  const [zoom, setZoom] = useState(1); // 1 ~ 4
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const isPanning = useRef(false);
+  const panStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
+
+  const clamp = (v: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, v));
+
+  const resetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const onOverlayWheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
+    // 모달 안에서는 페이지 스크롤/줌 방지하고, 이미지만 확대/축소
+    e.preventDefault();
+    const delta = -e.deltaY; // 위로 밀면 확대(+)
+    const factor = Math.exp(delta * 0.0015); // 부드럽게
+    setZoom((z) => clamp(z * factor, 1, 4));
+  };
+
+  const onOverlayDblClick = () => {
+    setZoom((z) => (z > 1 ? 1 : 2));
+    setPan({ x: 0, y: 0 });
+  };
+
+  const onMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (zoom <= 1) return;
+    isPanning.current = true;
+    panStart.current = { x: e.clientX, y: e.clientY, ox: pan.x, oy: pan.y };
+  };
+  const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (!isPanning.current) return;
+    const dx = e.clientX - panStart.current.x;
+    const dy = e.clientY - panStart.current.y;
+    setPan({ x: panStart.current.ox + dx, y: panStart.current.oy + dy });
+  };
+  const onMouseUpOrLeave = () => {
+    isPanning.current = false;
+  };
+
   return (
     <div className="sc-root">
       {/* 우상단 고정 아바타 버튼 */}
@@ -191,7 +233,10 @@ export default function ScenarioSelectPage() {
           <button
             type="button"
             className="sc-howto-btn"
-            onClick={() => setHowtoOpen(true)}
+            onClick={() => {
+              setHowtoOpen(true);
+              resetZoom();
+            }}
             aria-haspopup="dialog"
             aria-controls="howto-dialog"
             title="게임 방법"
@@ -256,19 +301,39 @@ export default function ScenarioSelectPage() {
             inset: 0,
             background: "rgba(0,0,0,0.92)",
             zIndex: 9999,
+            overflow: "hidden", // 이미지 확대 시 잘리는 영역 관리
+            touchAction: "none", // 터치 제스처 기본 동작 방지
           }}
+          // 이미지 전용 확대/축소/이동 핸들링
+          onWheel={onOverlayWheel}
+          onDoubleClick={onOverlayDblClick}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUpOrLeave}
+          onMouseLeave={onMouseUpOrLeave}
+          // 모바일 드래그 대비(간단 처리: pointer 이벤트도 마우스 핸들러로 들어옴)
         >
+          {/* 확대/이동은 img에만 적용 */}
           <img
             src={publicURL("/effects/tuto.png")}
             alt="게임 방법 튜토리얼"
             style={{
-              position: "fixed",
-              inset: 0,
-              width: "100vw",
-              height: "100vh",
-              objectFit: "contain", // 가득 채우되 비율 유지
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin: "center center",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
               display: "block",
               userSelect: "none",
+              cursor:
+                zoom > 1
+                  ? isPanning.current
+                    ? "grabbing"
+                    : "grab"
+                  : "zoom-in",
             }}
             draggable={false}
             onError={(e) => {
@@ -276,7 +341,7 @@ export default function ScenarioSelectPage() {
             }}
           />
 
-          {/* 우상단 'ESC 로 닫기' 배너 (클릭/Enter/Space로 닫힘) */}
+          {/* 우상단 'ESC 로 닫기' 배너 (클릭/Enter/Space로 닫힘) — 이미지 줌과 무관 */}
           <div
             role="button"
             tabIndex={0}
@@ -293,7 +358,7 @@ export default function ScenarioSelectPage() {
               right: "clamp(12px, 2.5vw, 28px)",
               color: "#fff",
               fontWeight: 900,
-              fontSize: "clamp(18px, 3.2vw, 36px)",
+              fontSize: 24, // 내부 줌과 독립적이도록 px 고정
               letterSpacing: 0.5,
               padding: "10px 14px",
               borderRadius: 14,
@@ -319,9 +384,9 @@ export default function ScenarioSelectPage() {
                 fontWeight: 800,
               }}
             >
-              닫기
+              ESC
             </span>
-            (ESC)
+            로 닫기
           </div>
         </div>
       )}
