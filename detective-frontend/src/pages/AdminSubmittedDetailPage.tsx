@@ -92,7 +92,6 @@ export default function AdminSubmittedDetailPage() {
         <h2 style={{ margin: 0 }}>{data.title}</h2>
         <span style={{ fontSize: 13, color: "#666" }}>상태: {data.status}</span>
       </div>
-
       <div style={{ fontSize: 13, color: "#666", marginTop: 6 }}>
         작성자: {data.authorId} ({data.authorEmail}) · 생성:{" "}
         {new Date(data.createdAt).toLocaleString()}
@@ -103,9 +102,8 @@ export default function AdminSubmittedDetailPage() {
           <> · 수정: {new Date(data.updatedAt).toLocaleString()}</>
         )}
       </div>
-
       <hr style={{ margin: "16px 0" }} />
-
+      // AdminSubmittedDetailPage.tsx (변경 부분만)
       <pre
         style={{
           whiteSpace: "pre-wrap",
@@ -115,11 +113,11 @@ export default function AdminSubmittedDetailPage() {
           borderRadius: 8,
           border: "1px solid #eee",
           minHeight: 160,
+          color: "#111 !important", // ✅ 글자색 강제 지정
         }}
       >
         {data.content}
       </pre>
-
       <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <Link to="/admin/scenarios/submitted">← 목록으로</Link>
 

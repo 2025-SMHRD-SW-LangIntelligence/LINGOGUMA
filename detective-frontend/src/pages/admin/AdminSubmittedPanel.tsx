@@ -188,6 +188,7 @@ export default function AdminSubmittedPanel() {
           border: "1px solid #eee",
           minHeight: 160,
           marginTop: 12,
+          color: "#111",
         }}
       >
         {detail.content}
