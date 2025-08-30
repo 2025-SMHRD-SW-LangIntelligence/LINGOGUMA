@@ -160,7 +160,7 @@ const MyPage: React.FC = () => {
                 color: activeTab === "analysis" ? "#e77a3e" : "#fff",
               }}
             >
-              성향 분석
+              플레이 분석
             </li>
 
             {/* 작가 메뉴 */}
@@ -187,7 +187,7 @@ const MyPage: React.FC = () => {
                       activeTab === "author-scenarios" ? "#e77a3e" : "#fff",
                   }}
                 >
-                  내 시나리오
+                  내 시나리오 관리
                 </li>
                 <li
                   onClick={() => setActiveTab("author-new")}
@@ -196,7 +196,7 @@ const MyPage: React.FC = () => {
                     color: activeTab === "author-new" ? "#e77a3e" : "#fff",
                   }}
                 >
-                  새 초안 작성
+                  새 시나리오 작성
                 </li>
               </>
             )}
@@ -239,7 +239,7 @@ const MyPage: React.FC = () => {
                     color: activeTab === "admin-submitted" ? "#e77a3e" : "#fff",
                   }}
                 >
-                  제출된 시나리오 관리
+                  신규 시나리오 관리
                 </li>
                 <li
                   onClick={() => setActiveTab("admin-register")}
@@ -248,7 +248,7 @@ const MyPage: React.FC = () => {
                     color: activeTab === "admin-register" ? "#e77a3e" : "#fff",
                   }}
                 >
-                  시나리오 등록 관리
+                  시나리오 발행 관리
                 </li>
               </>
             )}
@@ -311,7 +311,7 @@ const MyPage: React.FC = () => {
 
         {activeTab === "analysis" && (
           <section>
-            <h3>플레이 성향 분석</h3>
+            <h3>플레이 분석</h3>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart outerRadius="70%" data={data}>

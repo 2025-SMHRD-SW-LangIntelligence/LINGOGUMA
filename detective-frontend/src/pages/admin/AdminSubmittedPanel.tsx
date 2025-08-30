@@ -117,7 +117,7 @@ export default function AdminSubmittedPanel() {
         className="admin-panel"
         style={{ maxWidth: 960, margin: "24px auto" }}
       >
-        <h2>제출된 시나리오 관리</h2>
+        <h2>신규 시나리오 관리</h2>
         <table className="light-table">
           <thead>
             <tr>

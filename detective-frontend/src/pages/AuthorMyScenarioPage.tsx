@@ -24,7 +24,7 @@ export default function AuthorScenarioListPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "24px auto" }}>
-      <h2>내 시나리오</h2>
+      <h2>내 시나리오 관리</h2>
       <div style={{ marginBottom: 12 }}>
         <Link to="/author/scenarios/new">+ 새 초안</Link>
       </div>

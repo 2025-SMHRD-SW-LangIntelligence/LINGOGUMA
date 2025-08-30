@@ -92,7 +92,7 @@ export default function AdminRegisterPanel() {
       className="admin-panel"
       style={{ maxWidth: 1100, margin: "24px auto" }}
     >
-      <h2>시나리오 등록 관리</h2>
+      <h2>시나리오 발행 관리</h2>
 
       {/* 검색 */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -115,7 +115,7 @@ export default function AdminRegisterPanel() {
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "1fr 1fr" }}>
         {/* 승인됨(등록 가능) */}
         <section>
-          <h3>승인됨 (등록 가능)</h3>
+          <h3>게시 대기/보류</h3>
           <table className="light-table">
             <thead>
               <tr>
@@ -160,7 +160,7 @@ export default function AdminRegisterPanel() {
 
         {/* 등록됨(공개 중) */}
         <section>
-          <h3>등록됨 (공개 중)</h3>
+          <h3>게시</h3>
           <table className="light-table">
             <thead>
               <tr>

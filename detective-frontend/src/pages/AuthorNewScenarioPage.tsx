@@ -177,7 +177,7 @@ export default function AuthorNewScenarioPage() {
 
   return (
     <div style={{ maxWidth: 980, margin: "24px auto" }}>
-      <h2>새 시나리오 작성 (JSON 템플릿)</h2>
+      <h2>새 시나리오 작성</h2>
 
       <form onSubmit={onSubmit}>
         {/* 제목 */}
