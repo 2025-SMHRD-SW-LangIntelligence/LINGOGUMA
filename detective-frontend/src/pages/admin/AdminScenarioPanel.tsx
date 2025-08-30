@@ -1,3 +1,4 @@
+// 전체 시나리오 관리
 import React, { useMemo, useState, useEffect } from "react";
 import {
   useMutation,
@@ -244,16 +245,19 @@ export default function AdminAllScenariosPanel({ onClose }: Props) {
 }
 
 const th: React.CSSProperties = {
+  // 표 구분선 (첫번째칸 아래)
   textAlign: "left",
   padding: 8,
   borderBottom: "1px solid #eee",
 };
 const td: React.CSSProperties = {
+  // 표 구분선
   padding: 8,
   borderBottom: "1px solid #f1f1f1",
   verticalAlign: "top",
 };
 const pill: React.CSSProperties = {
+  // 현재 상태 버튼
   fontSize: 12,
   padding: "2px 8px",
   borderRadius: 999,
@@ -404,6 +408,7 @@ function RowFragment(props: {
                 </div>
                 <pre
                   style={{
+                    // json 미리보기
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                     background: "white",
@@ -411,6 +416,7 @@ function RowFragment(props: {
                     borderRadius: 8,
                     border: "1px solid #eee",
                     margin: 0,
+                    color: "black",
                   }}
                 >
                   {detail.content}

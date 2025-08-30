@@ -1,3 +1,4 @@
+// 내 시나리오 관리
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../shared/api/client";
 
@@ -31,7 +32,7 @@ export default function AuthorMyScenarioPanel({
 
   return (
     <div style={{ maxWidth: 720, margin: "24px auto" }}>
-      <h2>내 시나리오</h2>
+      <h2>내 시나리오 관리</h2>
       <div style={{ marginBottom: 12 }}>
         <button
           onClick={onNewScenario}
@@ -44,7 +45,7 @@ export default function AuthorMyScenarioPanel({
             cursor: "pointer",
           }}
         >
-          + 새 초안
+          + 새 시나리오
         </button>
       </div>
       <ul style={{ display: "grid", gap: 8 }}>

@@ -1,3 +1,4 @@
+// 새 시나리오 작성
 // src/pages/author/AuthorNewScenarioPanel.tsx
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -99,7 +100,7 @@ export default function AuthorNewScenarioPanel({ onCancel, onCreated }: Props) {
       return data;
     },
     onSuccess: (res) => {
-      alert("초안이 제출되었습니다.");
+      alert("시나리오가 제출되었습니다.");
       onCreated(res.id);
     },
     onError: (e: any) => {
@@ -142,7 +143,7 @@ export default function AuthorNewScenarioPanel({ onCancel, onCreated }: Props) {
   // 렌더링
   return (
     <div style={{ maxWidth: 980, margin: "24px auto" }}>
-      <h2>새 시나리오 작성 (JSON 템플릿)</h2>
+      <h2>새 시나리오 작성</h2>
 
       <form onSubmit={onSubmit}>
         {/* 제목 */}
@@ -495,7 +496,7 @@ export default function AuthorNewScenarioPanel({ onCancel, onCreated }: Props) {
             disabled={createScenario.isPending}
             style={btnPrimary}
           >
-            {createScenario.isPending ? "제출 중…" : "초안 제출"}
+            {createScenario.isPending ? "제출 중…" : "시나리오 제출"}
           </button>
           <button type="button" onClick={onCancel} style={btnGhost}>
             취소

@@ -1,3 +1,4 @@
+// 유저 관리
 // src/features/admin/AdminUserPanel.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

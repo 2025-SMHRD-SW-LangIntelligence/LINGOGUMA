@@ -1,3 +1,4 @@
+// 내 시나리오 관리 > 시나리오 (json파일)
 // src/pages/author/AuthorScenarioDetailPanel.tsx
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../shared/api/client";
@@ -86,6 +87,7 @@ export default function AuthorScenarioDetailPanel({
           borderRadius: 8,
           border: "1px solid #eee",
           minHeight: 120,
+          color: "black",
         }}
       >
         {data.content}

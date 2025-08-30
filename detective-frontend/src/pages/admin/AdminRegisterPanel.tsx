@@ -1,3 +1,4 @@
+// 시나리오 발행 관리
 // src/features/admin/AdminRegisterPanel.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
