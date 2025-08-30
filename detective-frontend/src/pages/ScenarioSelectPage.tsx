@@ -351,7 +351,7 @@ export default function ScenarioSelectPage() {
               letterSpacing: 0.5,
               padding: "10px 14px",
               borderRadius: 14,
-              background: "rgba(0,0,0,0.45)",
+              background: "rgba(161, 161, 161, 0.45)",
               border: "1px solid rgba(255,255,255,0.22)",
               textShadow: "0 2px 8px rgba(0,0,0,0.65)",
               cursor: "pointer",
@@ -363,20 +363,7 @@ export default function ScenarioSelectPage() {
             title="닫기 (Esc)"
             aria-label="닫기 (Esc)"
           >
-            <span
-              style={{
-                display: "inline-block",
-                padding: "6px 10px",
-                marginRight: 8,
-                borderRadius: 8,
-                background: "rgba(255,255,255,0.12)",
-                border: "1px solid rgba(255,255,255,0.25)",
-                fontWeight: 800,
-              }}
-            >
-              ESC
-            </span>
-            로 닫기
+            닫기 (ESC)
           </div>
         </div>
       )}
