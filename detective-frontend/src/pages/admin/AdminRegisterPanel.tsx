@@ -139,6 +139,9 @@ export default function AdminRegisterPanel() {
                       onClick={() => publishMut.mutate(r.id)}
                       disabled={publishMut.isPending}
                       className="btn-primary"
+                      style={{
+                        background: "#2d6cdf",
+                      }}
                     >
                       {publishMut.isPending ? "등록 중…" : "등록"}
                     </button>
@@ -184,6 +187,9 @@ export default function AdminRegisterPanel() {
                       onClick={() => unpublishMut.mutate(r.id)}
                       disabled={unpublishMut.isPending}
                       className="btn-danger"
+                      style={{
+                        background: "#e33",
+                      }}
                     >
                       {unpublishMut.isPending ? "해제 중…" : "등록 해제"}
                     </button>

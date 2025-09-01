@@ -105,9 +105,8 @@ export default function AuthorScenarioDetailPanel({
               style={{
                 marginLeft: "auto",
                 cursor: "pointer",
-                border: "1px solid #2d6cdf",
-                background: "white",
-                color: "#2d6cdf",
+                background: "#2d6cdf",
+                color: "white",
                 padding: "6px 10px",
                 borderRadius: 6,
               }}
@@ -126,9 +125,8 @@ export default function AuthorScenarioDetailPanel({
               }}
               disabled={del.isPending}
               style={{
-                border: "1px solid #e33",
-                background: "white",
-                color: "#e33",
+                background: "#e33",
+                color: "white",
                 padding: "6px 10px",
                 borderRadius: 6,
                 cursor: "pointer",

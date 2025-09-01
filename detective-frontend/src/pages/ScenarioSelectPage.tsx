@@ -8,10 +8,16 @@ import folder from "../assets/folder.png";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../shared/api/client";
 
+/* =========================
+   타입
+   ========================= */
 type PublicScenario = { id: number; title: string };
 type UIItem = { key: string; routeId: string; title: string };
-
 type StaticScenario = { id: string; title: string };
+
+/* =========================
+   정적 시나리오
+   ========================= */
 const SCENARIOS: StaticScenario[] = [
   { id: "s1", title: "도서관에서 사라진 고서" },
   { id: "s2", title: "밀실의 마지막 실험" },
@@ -25,32 +31,57 @@ const SCENARIOS: StaticScenario[] = [
   { id: "s10", title: "문세인업데 일해라" },
 ];
 
-/** BASE_URL 고려해서 public 경로 안전하게 만들기 */
+/* =========================
+   유틸: BASE_URL 대응 공용 경로
+   ========================= */
 function publicURL(p: string) {
   const base = (import.meta as any).env?.BASE_URL ?? "/";
   const norm = base.endsWith("/") ? base.slice(0, -1) : base;
   return p.startsWith("/") ? `${norm}${p}` : `${norm}/${p}`;
 }
 
+/* =========================
+   유틸: 응답을 항상 "배열"로 정규화
+   (data | {data}|{content}|{items}) → PublicScenario[]
+   ========================= */
+function toScenarioArray(x: unknown): PublicScenario[] {
+  if (Array.isArray(x)) return x as PublicScenario[];
+  const any = x as any;
+  if (Array.isArray(any?.data)) return any.data as PublicScenario[];
+  if (Array.isArray(any?.content)) return any.content as PublicScenario[];
+  if (Array.isArray(any?.items)) return any.items as PublicScenario[];
+  return [];
+}
+
 export default function ScenarioSelectPage() {
   const nav = useNavigate();
   const user = useAuth((s) => s.user);
   const setCurrentScenarioId = useScenario((s) => s.setCurrentScenarioId);
-
   const isAuthed = !!user;
 
+  /* =========================
+     힌트 토스트
+     ========================= */
   const [hint, setHint] = useState<string | null>(null);
   const hideTimer = useRef<number | null>(null);
 
-  // ▶ 게임 방법 모달
+  /* =========================
+     게임 방법 모달
+     ========================= */
   const [howtoOpen, setHowtoOpen] = useState(false);
 
-  // 공개(등록됨) 목록
-  const { data, isLoading, isError } = useQuery({
+  /* =========================
+     공개(등록됨) 목록: 항상 배열로 받도록 정규화
+     ========================= */
+  const {
+    data: dbScenarios, // ← 이미 배열로 정규화
+    isLoading,
+    isError,
+  } = useQuery<PublicScenario[]>({
     queryKey: ["public-scenarios"],
     queryFn: async () => {
-      const { data } = await api.get<PublicScenario[]>("/scenarios/public");
-      return data;
+      const res = await api.get("/scenarios/public"); // axios 응답
+      return toScenarioArray(res.data);
     },
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
@@ -58,7 +89,9 @@ export default function ScenarioSelectPage() {
     staleTime: 0,
   });
 
-  // 정적 → UIItem
+  /* =========================
+     정적 → UIItem
+     ========================= */
   const staticItems = useMemo<UIItem[]>(
     () =>
       SCENARIOS.map((s) => ({
@@ -69,24 +102,30 @@ export default function ScenarioSelectPage() {
     []
   );
 
-  // 동적 → UIItem
+  /* =========================
+     동적(DB) → UIItem
+     ========================= */
   const dynamicItems = useMemo<UIItem[]>(
     () =>
-      (data ?? []).map((d) => ({
+      (dbScenarios ?? []).map((d) => ({
         key: `db-${d.id}`,
         routeId: String(d.id), // 숫자 → 문자열
         title: d.title,
       })),
-    [data]
+    [dbScenarios]
   );
 
-  // ✅ 최종 표시 목록: 정적 + 동적
+  /* =========================
+     최종 목록: 정적 + 동적
+     ========================= */
   const items = useMemo<UIItem[]>(
     () => [...staticItems, ...dynamicItems],
     [staticItems, dynamicItems]
   );
 
-  // 비로그인: 1개만 오픈
+  /* =========================
+     비로그인: 1개만 오픈
+     ========================= */
   const unlockedCount = isAuthed ? items.length : Math.min(1, items.length);
 
   const showHint = (msg: string) => {
@@ -138,7 +177,9 @@ export default function ScenarioSelectPage() {
     []
   );
 
-  // Esc로만 모달 닫기 (Enter/Space 제거)
+  /* =========================
+     모달: Esc로만 닫기
+     ========================= */
   useEffect(() => {
     if (!howtoOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -151,7 +192,9 @@ export default function ScenarioSelectPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [howtoOpen]);
 
-  // 상태 카드(그리드 내에서 카드 형태로만 표시)
+  /* =========================
+     상태 카드(그리드 내에서 카드 형태로만 표시)
+     ========================= */
   const statusCard =
     items.length === 0 ? (
       <div className="sc-card">
@@ -168,7 +211,9 @@ export default function ScenarioSelectPage() {
       </div>
     ) : null;
 
-  // ====== 이미지 전용 확대/이동 상태 ======
+  /* =========================
+     이미지 뷰어(튜토리얼) 확대/이동
+     ========================= */
   const [zoom, setZoom] = useState(1); // 1 ~ 4
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const isPanning = useRef(false);
@@ -199,16 +244,21 @@ export default function ScenarioSelectPage() {
     isPanning.current = true;
     panStart.current = { x: e.clientX, y: e.clientY, ox: pan.x, oy: pan.y };
   };
+
   const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
     if (!isPanning.current) return;
     const dx = e.clientX - panStart.current.x;
     const dy = e.clientY - panStart.current.y;
     setPan({ x: panStart.current.ox + dx, y: panStart.current.oy + dy });
   };
+
   const onMouseUpOrLeave = () => {
     isPanning.current = false;
   };
 
+  /* =========================
+     렌더
+     ========================= */
   return (
     <div className="sc-root">
       {/* 우상단 고정 아바타 버튼 */}
@@ -227,7 +277,7 @@ export default function ScenarioSelectPage() {
       <div className="sc-wrap">
         <h1 className="sc-title">사건 의뢰서</h1>
 
-        {/* ▶ 박스 위 툴바: 게임 방법 버튼 */}
+        {/* 박스 위 툴바: 게임 방법 버튼 */}
         <div className="sc-toolbar">
           <button
             type="button"
@@ -246,7 +296,7 @@ export default function ScenarioSelectPage() {
 
         <section className="sc-board" aria-label="사건 목록">
           <div className="sc-grid">
-            {/* 항상: 정적 + 동적 카드 */}
+            {/* 정적 + 동적 카드 */}
             {items.map((s, i) => {
               const locked = i >= unlockedCount;
               return (
@@ -281,13 +331,13 @@ export default function ScenarioSelectPage() {
               );
             })}
 
-            {/* items가 0일 때만 상태 카드 표시 → 정적이 있으면 절대 안 보임 */}
+            {/* items가 0일 때만 상태 카드 표시(정적이 있으면 안 보임) */}
             {statusCard}
           </div>
         </section>
       </div>
 
-      {/* ▶ 게임 방법: 풀스크린 이미지 뷰어 (X 버튼 없음) */}
+      {/* 게임 방법: 풀스크린 이미지 뷰어 (X 버튼 없음, Esc로 닫기 가능) */}
       {howtoOpen && (
         <div
           className="howto-overlay"
@@ -338,7 +388,7 @@ export default function ScenarioSelectPage() {
             }}
           />
 
-          {/* 우상단 'ESC 로 닫기' 배너 — 클릭으로만 닫힘 (Enter/Space 제거) */}
+          {/* 우상단 'ESC 로 닫기' 배너 — 클릭으로 닫힘 */}
           <div
             onClick={() => setHowtoOpen(false)}
             style={{

@@ -1,4 +1,4 @@
-// 신규 시나리오 관리
+// 신규
 // src/features/admin/AdminSubmittedPanel.tsx
 import { useState } from "react";
 import {

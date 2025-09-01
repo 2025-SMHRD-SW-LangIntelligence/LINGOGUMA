@@ -194,7 +194,7 @@ export default function AdminAllScenariosPanel({ onClose }: Props) {
       {/* 목록 테이블 */}
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ background: "#fafafa" }}>
+          <tr style={{ background: "#ffffffff", color: "black" }}>
             <th style={th}>#</th>
             <th style={th}>제목</th>
             <th style={th}>상태</th>
@@ -262,8 +262,9 @@ const pill: React.CSSProperties = {
   padding: "2px 8px",
   borderRadius: 999,
   background: "#eef",
-  border: "1px solid #dde",
+  border: "1px solid rgba(0, 0, 0, 1)",
   display: "inline-block",
+  color: "black",
 };
 
 function RowFragment(props: {
@@ -315,7 +316,7 @@ function RowFragment(props: {
               padding: 0,
               fontSize: 15,
               fontWeight: 700,
-              color: "#222",
+              color: "#ffffffff",
               cursor: "pointer",
               textAlign: "left",
             }}
@@ -338,14 +339,26 @@ function RowFragment(props: {
           <button
             onClick={onReview}
             disabled={isReviewing}
-            style={{ padding: "4px 8px", marginRight: 6, cursor: "pointer" }}
+            style={{
+              padding: "4px 8px",
+              marginRight: 6,
+              cursor: "pointer",
+              background: "rgba(141, 80, 0, 1)",
+              color: "white",
+            }}
           >
             {isReviewing ? "검토…" : "검토"}
           </button>
           <button
             onClick={onApprove}
             disabled={isApproving}
-            style={{ padding: "4px 8px", marginRight: 6, cursor: "pointer" }}
+            style={{
+              padding: "4px 8px",
+              marginRight: 6,
+              cursor: "pointer",
+              background: "#2d6cdf",
+              color: "white",
+            }}
           >
             {isApproving ? "승인…" : "승인"}
           </button>
@@ -356,9 +369,8 @@ function RowFragment(props: {
               padding: "4px 8px",
               marginRight: 6,
               cursor: "pointer",
-              border: "1px solid #e68",
-              background: "white",
-              color: "#e68",
+              background: "rgba(255, 153, 0, 1)",
+              color: "white",
               borderRadius: 6,
             }}
           >
@@ -370,9 +382,8 @@ function RowFragment(props: {
             style={{
               padding: "4px 8px",
               cursor: "pointer",
-              border: "1px solid #e33",
-              background: "white",
-              color: "#e33",
+              background: "#e33",
+              color: "white",
               borderRadius: 6,
             }}
           >
@@ -414,7 +425,7 @@ function RowFragment(props: {
                     background: "white",
                     padding: 12,
                     borderRadius: 8,
-                    border: "1px solid #eee",
+                    border: "1px solid #000000ff",
                     margin: 0,
                     color: "black",
                   }}
