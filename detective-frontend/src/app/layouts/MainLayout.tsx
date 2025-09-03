@@ -1,39 +1,65 @@
-// src/app/layouts/MainLayout.tsx
-import { Outlet } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/auth.store";
+import { useEffect } from "react";
 import { api } from "../../shared/api/client";
 
 export default function MainLayout() {
-  const { user, set } = useAuth();
-  const hydrated = useRef(false);
+    const { user, set, logout } = useAuth();
+    const nav = useNavigate();
 
-  // 새로고침 시 세션 하이드레이트: 세션 쿠키(JSESSIONID)가 있으면 /me가 200을 반환
-  useEffect(() => {
-    if (hydrated.current) return;
-    if (!user) {
-      api
-        .get("/users/me")
-        .then(({ data }) => {
-          if (data?.nickname) set({ user: data });
-        })
-        .catch(() => {
-          // 미로그인(401) 등은 무시
-        })
-        .finally(() => {
-          hydrated.current = true;
+    useEffect(() => {
+        const me = async () => {
+            try {
+                const { data } = await api.get("/users/me");
+                set({ user: data });
+            } catch (e) {
+                // not login
+            }
+        };
+        me();
+    }, [set]);
+
+    const handleLogout = () => {
+        api.post("/users/logout").finally(() => {
+            logout();
+            nav("/login");
         });
-    } else {
-      hydrated.current = true;
-    }
-  }, [user, set]);
+    };
 
-  return (
-    <div>
-      {/* NavBar 전체 제거 */}
-      <main style={{ padding: 0 }}>
+    return (
+        <>
         <Outlet />
-      </main>
-    </div>
-  );
+        </>
+        // <div>
+        //     <header style={{ padding: 12, borderBottom: "1px solid #eee" }}>
+        //         <Link to="/">Lobby</Link> ·
+        //         <Link to="/scenarios">Scenarios</Link> ·<Link to="/my">My</Link>
+        //         · <Link to="/admin">admin</Link> ·
+        //         {user ? (
+        //             <>
+        //                 <span style={{ marginLeft: 8 }}>
+        //                     {user?.nickname ?? "User"}({user?.userId})
+        //                 </span>
+        //                 <button
+        //                     onClick={handleLogout}
+        //                     style={{
+        //                         marginLeft: 8,
+        //                         border: "none",
+        //                         background: "transparent",
+        //                         color: "blue",
+        //                         cursor: "pointer",
+        //                     }}
+        //                 >
+        //                     Logout
+        //                 </button>
+        //             </>
+        //         ) : (
+        //             <Link to="/login">Login</Link>
+        //         )}
+        //     </header>
+        //     <main style={{ padding: 16 }}>
+        //         <Outlet />
+        //     </main>
+        // </div>
+    );
 }

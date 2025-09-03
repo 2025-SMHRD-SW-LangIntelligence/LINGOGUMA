@@ -1,17 +1,22 @@
 import { create } from "zustand";
 
-type User = { index?: number; id?: string; nickname?: string; role?: string };
+export type User = {
+  userIdx?: number;
+  userId?: string;
+  email?: string;
+  nickname?: string;
+  role?: "MEMBER" | "EXPERT" | "ADMIN"; // 권한 Enum 값 반영
+  expertRequested?: boolean;
+};
 
 type AuthState = {
-  token?: string | null; // 세션 기반이면 없어도 되는 값
   user?: User | null;
   set: (patch: Partial<AuthState>) => void; // 부분 업데이트 허용
   logout: () => void;
 };
 
 export const useAuth = create<AuthState>((set) => ({
-  token: undefined,
   user: undefined,
   set: (patch) => set((s) => ({ ...s, ...patch })), // merge
-  logout: () => set({ token: undefined, user: undefined }),
+  logout: () => set({ user: undefined }),
 }));

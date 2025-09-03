@@ -1,28 +1,32 @@
 package com.lingoguma.detective_backend.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Table(name = "`user`") // 테이블명이 user면 백틱 권장
-@ToString(exclude = {"password", "emailVerificationToken"})
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_index")             // PK 컬럼명
-    private Long index;                      // PK(Long)
+    @Column(name = "user_idx")
+    private Integer userIdx;  // PK
 
-    @Column(name = "id", nullable = false, unique = true, length = 100)
-    private String id;                       // 로그인 아이디(문자열, 기존 email 대체)
+    @Column(nullable = false, unique = true, length = 50)
+    private String userId; // 로그인용 아이디
 
-    @Column(name = "email", nullable = false, unique = true, length = 320)
-    private String email;                    // 이메일(인증 대상)
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
 
+    @JsonIgnore
     @Column(nullable = false, length = 255)
     private String password;
 
@@ -33,26 +37,93 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role = Role.MEMBER;
 
-    @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified;           // 기본 false
+    // 전문가 권한 요청 상태
+    @Column(name = "expert_requested", nullable = false)
+    private boolean expertRequested = false;
 
-    @Column(name = "email_verification_token", length = 64)
-    private String emailVerificationToken;
+    @Column(length = 20)
+    private String provider; // ex: google, kakao, naver
 
-    @Column(name = "email_verification_expires_at")
-    private LocalDateTime emailVerificationExpiresAt;
-
-    @Column(name = "verified_at")
-    private LocalDateTime verifiedAt;
+    @Column(length = 100)
+    private String providerId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (role == null) role = Role.MEMBER;
-        // // 신규 유저 기본값
-        // if (!this.emailVerified) this.emailVerified = false;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
+
+
+// package com.lingoguma.detective_backend.user.entity;
+
+// import com.fasterxml.jackson.annotation.JsonIgnore;
+// import jakarta.persistence.*;
+// import lombok.*;
+
+// import java.time.LocalDateTime;
+
+// @Entity
+// @Getter
+// @Setter
+// @NoArgsConstructor
+// @AllArgsConstructor
+// @Builder
+// public class User {
+
+//     @Id
+//     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//     @Column(name = "user_idx")
+//     private Long userIdx;  // PK (DB 내부 식별자)
+
+//     @Column(nullable = false, unique = true, length = 50)
+//     private String userId; // 로그인용 아이디 (기존 id → userId 로 변경)
+
+//     @Column(nullable = false, unique = true, length = 100)
+//     private String email;
+
+//     @JsonIgnore // 응답 JSON 직렬화 시 제외
+//     @Column(nullable = false, length = 255)
+//     private String password;
+
+//     @Column(nullable = false, length = 50)
+//     private String nickname;
+
+//     @Enumerated(EnumType.STRING)
+//     @Column(nullable = false, length = 20)
+//     private Role role = Role.MEMBER;
+
+//     @Column(length = 20)
+//     private String provider; // ex: google, kakao, naver
+
+//     @Column(length = 100)
+//     private String providerId; // SNS 로그인 시 고유 식별자
+
+//     @Column(name = "created_at", nullable = false, updatable = false)
+//     private LocalDateTime createdAt;
+
+//     @Column(name = "updated_at")
+//     private LocalDateTime updatedAt;
+
+//     @PrePersist
+//     protected void onCreate() {
+//         this.createdAt = LocalDateTime.now();
+//         this.updatedAt = LocalDateTime.now();
+//     }
+
+//     @PreUpdate
+//     protected void onUpdate() {
+//         this.updatedAt = LocalDateTime.now();
+//     }
+// }

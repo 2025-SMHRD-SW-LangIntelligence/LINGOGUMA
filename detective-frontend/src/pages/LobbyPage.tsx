@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import "./LobbyPage.css";
+import "@/shared/styles/LobbyPage.css";
 
-import lamp from "../assets/lamp.png";
-import logo from "../assets/logo-thecase.png";
+import lamp from "@/assets/images/lamp.png";
+import logo from "@/assets/images/logo-thecase.png";
 
-import { useAuth } from "../store/auth.store";
+import { useAuth } from "@/store/auth.store";
 
 export default function LobbyPage() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // ✅ 로그인 여부 확인
+  const { user } = useAuth();
 
   const handleStart = () => {
-    navigate("/scenarios"); // 로그인 → 시나리오 선택
+    navigate("/scenarios");
   };
 
   return (
@@ -27,7 +27,7 @@ export default function LobbyPage() {
           시작하기
         </button>
 
-        {/* ✅ 비로그인일 때만 로그인/회원가입 표시 */}
+        {/* 비로그인일 때만 로그인/회원가입 표시 */}
         {!user && (
           <div className="auth-row">
             <button

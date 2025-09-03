@@ -1,21 +1,13 @@
-// src/main/java/com/lingoguma/detective_backend/scenario/entity/Scenario.java
 package com.lingoguma.detective_backend.scenario.entity;
 
-import com.lingoguma.detective_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "scenarios",
-       indexes = {
-           @Index(name = "ix_scenarios_status", columnList = "status"),
-           @Index(name = "ix_scenarios_submittedAt", columnList = "submittedAt")
-       })
-@Getter @Setter
+@Table(name = "scenarios")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -23,32 +15,40 @@ public class Scenario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer scenIdx;   // int 기반 PK
 
-    @Column(nullable = false, length = 150)
-    private String title;
+    @Column(nullable = false, length = 225)
+    private String scenTitle;
 
-    @Lob
-    @Column(name = "content", columnDefinition = "MEDIUMTEXT", nullable = false)
-    private String content;
+    @Column(columnDefinition = "TEXT")
+    private String scenSummary;
+
+    private Integer scenLevel;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ScenarioStatus status;
+    @Column(length = 20)
+    private ScenAccess scenAccess;
 
-    /** FK: users.user_index 를 참조 — DB 컬럼명 'author_id'에 맞춘다 */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author_id", referencedColumnName = "user_index", nullable = false)
-    private User author;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ScenStatus scenStatus;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(columnDefinition = "JSON")
+    private String contentJson;   // JSON 한 줄 저장
+
+    private Integer createdBy;    // 작성자 (users.user_idx FK)
+
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    /** 제출 시각(정렬용) */
-    private LocalDateTime submittedAt;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

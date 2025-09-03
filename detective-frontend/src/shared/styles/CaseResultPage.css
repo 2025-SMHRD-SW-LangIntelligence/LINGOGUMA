@@ -1,0 +1,303 @@
+:root {
+  --panel-max: 1100px; /* 패널 최대폭 */
+  --page-pad: clamp(12px, 3vw, 36px);
+  --gap: clamp(14px, 2.4vw, 28px);
+
+  --frame-border: 6px;
+  --frame-radius: 28px;
+  --ring-selected: #ff3b30;
+  --ink: #ffffff;
+  --ink-dim: #e7e7ea;
+
+  --form-max: 920px; /* 질문/용의자/버튼 공통 폭 */
+  --content-shift-x: -14px; /* 시각적 균형을 위한 좌우 미세 이동(왼쪽으로 -) */
+}
+
+/* 화면 가운데 정렬 */
+.summary-root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--page-pad);
+  background: radial-gradient(
+    ellipse at center,
+    #2c2c2f 0%,
+    #1f1f22 60%,
+    #151518 100%
+  );
+}
+
+/* 두툼한 프레임 + 내부 그리드(타이틀/용의자/폼) */
+.summary-panel {
+  position: relative;
+  width: min(100%, var(--panel-max));
+  margin: 0 auto;
+  border-radius: calc(var(--frame-radius) + 8px);
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.05) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 20px 50px rgba(0, 0, 0, 0.45) inset, 0 18px 60px rgba(0, 0, 0, 0.35);
+  padding: clamp(20px, 4vw, 36px);
+
+  display: grid;
+  grid-template-areas:
+    "title"
+    "suspects"
+    "form";
+  row-gap: clamp(18px, 3vw, 28px);
+}
+
+/* 타이틀: 좌측 상단 */
+.summary-title {
+  grid-area: title;
+  color: var(--ink);
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin: 4px 6px clamp(12px, 2vw, 20px);
+  justify-self: start;
+}
+
+/* 용의자 행: 좌우로 넓게 펼치기 + 중앙에서 약간 왼쪽 시프트 */
+.suspects-row {
+  grid-area: suspects;
+  width: min(100%, var(--form-max));
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between; /* 좌우 끝으로 배치 */
+  align-items: center;
+  gap: clamp(16px, 3vw, 36px);
+  flex-wrap: nowrap;
+  transform: translateX(var(--content-shift-x));
+}
+/* 좁은 화면: 자동 줄바꿈 + 중앙 정렬 */
+@media (max-width: 780px) {
+  .suspects-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    transform: none; /* 모바일은 시프트 해제 */
+  }
+}
+
+/* 아바타 카드(크게) */
+.suspect-card {
+  --size: clamp(110px, 14vw, 160px);
+  background: transparent;
+  border: none;
+  color: var(--ink-dim);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  outline: none;
+}
+.avatar-wrap {
+  width: var(--size);
+  height: var(--size);
+  position: relative;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+.avatar {
+  width: calc(var(--size) - 10px);
+  height: calc(var(--size) - 10px);
+  object-fit: cover;
+  border-radius: 999px;
+  background: #bdbdbd;
+}
+.avatar-wrap .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 4px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25) inset, 0 0 0 4px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+.suspect-card.selected .ring {
+  border-color: var(--ring-selected);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25) inset,
+    0 0 0 4px rgba(255, 59, 48, 0.22);
+}
+.suspect-name {
+  font-size: clamp(13px, 1.6vw, 16px);
+  color: var(--ink-dim);
+  opacity: 0.95;
+}
+
+/* 질문 폼: 동일 폭 + 중앙 정렬 + 약간 왼쪽 시프트 */
+.qa-form {
+  grid-area: form;
+  width: min(100%, var(--form-max));
+  margin: 0 auto;
+  justify-self: center;
+  display: grid;
+  gap: var(--gap);
+  padding-bottom: 24px;
+  transform: translateX(var(--content-shift-x));
+}
+@media (max-width: 780px) {
+  .qa-form {
+    transform: none;
+  }
+}
+
+/* 질문 라벨(굵고 큼) */
+.q-label {
+  color: var(--ink);
+  font-weight: 800;
+  font-size: clamp(18px, 2.2vw, 28px);
+  display: grid;
+  gap: 12px;
+  margin-top: clamp(4px, 1vw, 8px);
+}
+
+/* 긴 알약 모양 입력창 */
+.q-input,
+.q-textarea {
+  width: 100%;
+  border-radius: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 16, 18, 0.45);
+  color: #f3f3f6;
+  padding: clamp(12px, 1.8vw, 16px) clamp(14px, 2.2vw, 20px);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-size: clamp(15px, 2vw, 18px);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.18) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+.q-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.q-input::placeholder,
+.q-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.q-input:focus,
+.q-textarea:focus {
+  border-color: rgba(138, 164, 255, 0.9);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.18) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 0 0 4px rgba(138, 164, 255, 0.15);
+}
+
+/* 폼 맨 아래 버튼: 폼 폭 기준 중앙 + 살짝 왼쪽 시프트 */
+.action-bar {
+  position: static;
+  width: min(100%, var(--form-max));
+  margin: 0 auto;
+  padding-top: 12px;
+  background: transparent;
+  text-align: center;
+  transform: translateX(var(--content-shift-x));
+}
+@media (max-width: 780px) {
+  .action-bar {
+    transform: none;
+  }
+}
+.action-bar .submit-btn {
+  display: inline-block;
+  margin: 0 auto;
+  width: min(100%, 340px);
+}
+
+/* 버튼 스타일 */
+.submit-btn {
+  border: none;
+  background: #5a7bff;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(90, 123, 255, 0.25);
+}
+.submit-btn:hover {
+  filter: brightness(1.06);
+}
+
+/* 메모 팝업창 */
+.memo-popup {
+  position: absolute;
+  top: 120px;
+  left: 200px;
+  min-width: 320px;
+  min-height: 200px;
+  background: #1e1e1e;
+  border: 2px solid #e77a3e;
+  border-radius: 8px;
+  padding: 12px;
+  z-index: 2000; /* 결과 입력창 위 */
+  resize: both;
+  overflow: auto;
+}
+
+/* 드래그 헤더 */
+.memo-header {
+  background: #e77a3e;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: move; /* 드래그 가능 표시 */
+  user-select: none; /* 드래그 시 텍스트 선택 방지 */
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.memo-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* 읽기 전용 textarea */
+.memo-readonly {
+  width: 100%;
+  height: 200px;
+  resize: none;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  background: #2a2a2a;
+  color: #ddd;
+  font-size: 14px;
+  cursor: default;
+}
+.memo-readonly:focus {
+  outline: none; /* focus 테두리 제거 */
+}
+
+/* 결과창 상단의 버튼 (네모박스 상단 배치용) */
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.memo-btn {
+  background: #e77a3e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.memo-btn:hover {
+  filter: brightness(1.1);
+}
