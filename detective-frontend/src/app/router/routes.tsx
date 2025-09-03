@@ -24,57 +24,57 @@ import AdminDashboardPage from "../../pages/admin/AdminDashboardPage";
 import AdminUserPage from "../../pages/admin/users/AdminUserPage";
 import AdminScenarioPage from "../../pages/admin/scenarios/AdminScenarioPage";
 import AdminGamePage from "../../pages/admin/games/AdminGamePage";
-import AdminLogPage from "../../pages/admin/logs/AdminLogPage";
+// import AdminLogPage from "../../pages/admin/logs/AdminLogPage";
 
 export const router = createBrowserRouter([
-    {
-        element: <MainLayout />,
+  {
+    element: <MainLayout />,
+    children: [
+      { path: "/", element: <LobbyPage /> },
+      { path: "/scenarios", element: <ScenarioSelectPage /> },
+      {
+        path: "/scenarios/:scenarioId/summary",
+        element: <ScenarioSummaryPage />,
+      },
+      { path: "/play/:scenarioId", element: <GamePlayPage /> },
+      { path: "/play/:scenarioId/result", element: <ResultPage /> },
+      { path: "/play/:scenarioId/analysis", element: <AnalysisPage /> },
+      {
+        path: "/my",
+        element: <MyPageLayout />,
         children: [
-            { path: "/", element: <LobbyPage /> },
-            { path: "/scenarios", element: <ScenarioSelectPage /> },
-            {
-                path: "/scenarios/:scenarioId/summary",
-                element: <ScenarioSummaryPage />,
-            },
-            { path: "/play/:scenarioId", element: <GamePlayPage /> },
-            { path: "/play/:scenarioId/result", element: <ResultPage /> },
-            { path: "/play/:scenarioId/analysis", element: <AnalysisPage /> },
-            {
-                path: "/my",
-                element: <MyPageLayout />,
-                children: [
-                    { path: "account", element: <AccountInfoPage /> },
-                    { path: "request-expert", element: <RequestExpertPage /> },
-                    { path: "history", element: <GameHistoryPage /> },
-                    {
-                        path: "game-result/:resultId",
-                        element: <GameResultDetailPage />,
-                    },
-                    {
-                        path: "expert-scenario",
-                        element: <ExpertScenarioPage />,
-                    },
-                ],
-            },
+          { path: "account", element: <AccountInfoPage /> },
+          { path: "request-expert", element: <RequestExpertPage /> },
+          { path: "history", element: <GameHistoryPage /> },
+          {
+            path: "game-result/:resultId",
+            element: <GameResultDetailPage />,
+          },
+          {
+            path: "expert-scenario",
+            element: <ExpertScenarioPage />,
+          },
         ],
-    },
-    {
-        element: <AuthLayout />,
-        children: [
-            { path: "/login", element: <LoginPage /> },
-            { path: "/signup", element: <SignupPage /> },
-            { path: "/signup/complete", element: <SignupCompletePage /> },
-        ],
-    },
-    {
-        path: "/admin",
-        element: <AdminLayout />,
-        children: [
-            { path: "", element: <AdminDashboardPage /> }, // 기본 대시보드
-            { path: "users", element: <AdminUserPage /> },
-            { path: "scenarios", element: <AdminScenarioPage /> },
-            { path: "games", element: <AdminGamePage /> },
-            { path: "logs", element: <AdminLogPage /> },
-        ],
-    },
+      },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      { path: "/login", element: <LoginPage /> },
+      { path: "/signup", element: <SignupPage /> },
+      { path: "/signup/complete", element: <SignupCompletePage /> },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      { path: "", element: <AdminDashboardPage /> }, // 기본 대시보드
+      { path: "users", element: <AdminUserPage /> },
+      { path: "scenarios", element: <AdminScenarioPage /> },
+      { path: "games", element: <AdminGamePage /> },
+      // { path: "logs", element: <AdminLogPage /> },
+    ],
+  },
 ]);
