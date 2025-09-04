@@ -60,7 +60,7 @@ type PlayConfig = {
   spotlight?: SpotlightCfg;
 };
 
-/* ---------- SVG 아이콘 (팀원 UI 그대로) ---------- */
+/* ---------- SVG 아이콘 ---------- */
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
 const IconChatLeft = ({ size = 32, ...p }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
@@ -85,20 +85,23 @@ const IconChatRight = ({ size = 32, ...p }: IconProps) => (
   </svg>
 );
 
-/* ---------- 이미지 임포트 ---------- */
+/* ---------- 이미지 ---------- */
 import stageBg from "@/assets/images/background/s1_back.png";
 import defaultMap from "@/assets/images/map/s1_map.png";
 import summaryIcon from "@/assets/images/icons/summary.png";
 import memoIcon from "@/assets/images/icons/memo.png";
 import closeIcon from "@/assets/images/icons/close.png";
 import placeholderAvatar from "@/assets/images/folder.png";
-import placeholderFull from "@/assets/images/logo-thecase.png"; // 풀 이미지 없을 때 사용
-import actionIcon from "@/assets/images/icons/action.png"; // [ADD] 액션 아이콘
+import placeholderFull from "@/assets/images/logo-thecase.png";
+import actionIcon from "@/assets/images/icons/action.png"; // 액션 아이콘
 
-// [ADD] 가상 액션 대상자 ID
 const ACTION_ID = "__action__";
 
-// glob import (아바타/풀)
+/* ---------- 세션별 키 ---------- */
+const sk = (sid: number | null | undefined, name: string) =>
+  sid ? `play_${name}_session_${sid}` : `play_${name}_session_unknown`;
+
+/* ---------- glob import ---------- */
 const avatarModules = import.meta.glob(
   "/src/assets/images/avatars/*.{png,jpg,jpeg,webp,svg}",
   { eager: true, import: "default" }
@@ -162,14 +165,13 @@ function toPlaySuspects(chars: Character[] | undefined): PlaySuspect[] {
   });
 }
 
-/* ---------- 본문 ---------- */
+/* ---------- 컴포넌트 ---------- */
 export default function GamePlayPage() {
   const nav = useNavigate();
   const { scenarioId } = useParams<{ scenarioId: string }>();
   const [searchParams] = useSearchParams();
   const sessionId = Number(searchParams.get("sessionId"));
 
-  const [scenario, setScenario] = useState<ScenarioDetail | null>(null);
   const [config, setConfig] = useState<PlayConfig>({
     background: stageBg,
     suspects: [],
@@ -187,121 +189,135 @@ export default function GamePlayPage() {
   });
 
   const suspects = config.suspects;
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [viewId, setViewId] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null); // 저장 안 함
+  const [viewId, setViewId] = useState<string | null>(null); // 저장 안 함
+  const [chatOpen, setChatOpen] = useState(false); // 저장 안 함
+  const [actionMode, setActionMode] = useState(false); // 저장 안 함
+
+  const [overviewOpen, setOverviewOpen] = useState(false); // ✅ 사건 개요 복구
+
   const [input, setInput] = useState("");
-  const [msgs, setMsgs] = useState<ChatMessage[]>([]);
+  const [msgs, setMsgs] = useState<ChatMessage[]>([]); // ✅ 저장/복원
   const [asking, setAsking] = useState(false);
 
-  // [ADD] 액션 모드 상태
-  const [actionMode, setActionMode] = useState(false);
-
+  // 메모(세션별) ✅ 저장/복원
+  const MEMO_KEY = sk(sessionId, "memo");
   const [memoOpen, setMemoOpen] = useState(false);
   const [memoText, setMemoText] = useState<string>(
-    () => localStorage.getItem("detective_memo") ?? ""
+    () => localStorage.getItem(MEMO_KEY) ?? ""
   );
   useEffect(() => {
-    localStorage.setItem("detective_memo", memoText);
-  }, [memoText]);
+    localStorage.setItem(MEMO_KEY, memoText);
+  }, [MEMO_KEY, memoText]);
   const clearMemo = () => setMemoText("");
 
-  const [overviewOpen, setOverviewOpen] = useState(false);
-
+  // 타이머(세션별) ✅ 저장/복원
   const [seconds, setSeconds] = useState(0);
   const timerRef = useRef<number | null>(null);
   const TIMER_KEY = sessionId
     ? `timer_session_${sessionId}`
     : "timer_session_unknown";
   useEffect(() => {
+    // 기존 값 복원
+    const v = sessionStorage.getItem(TIMER_KEY);
+    if (v && !isNaN(Number(v))) setSeconds(Number(v));
+
     timerRef.current = window.setInterval(() => {
       setSeconds((s) => {
         const next = s + 1;
         sessionStorage.setItem(TIMER_KEY, String(next));
         return next;
       });
-    }, 1000);
+    }, 1000) as unknown as number;
     return () => {
       if (timerRef.current !== null) clearInterval(timerRef.current);
     };
   }, [TIMER_KEY]);
+
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
 
-  /* --- 시나리오 불러오기 (내 백엔드) --- */
+  // 대화만 세션별 저장/복원
+  const MSGS_KEY = sk(sessionId, "msgs");
+  const restoredMsgsRef = useRef(false);
+  useEffect(() => {
+    if (restoredMsgsRef.current) return;
+    const raw = sessionStorage.getItem(MSGS_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setMsgs(parsed as ChatMessage[]);
+      } catch {
+        /* noop */
+      }
+    }
+    restoredMsgsRef.current = true;
+  }, [MSGS_KEY]);
+  useEffect(() => {
+    sessionStorage.setItem(MSGS_KEY, JSON.stringify(msgs));
+  }, [MSGS_KEY, msgs]);
+
+  /* --- 시나리오 불러오기 --- */
   useEffect(() => {
     (async () => {
       try {
         if (!scenarioId) return;
         const res = await api.get<ScenarioDetail>(`/scenarios/${scenarioId}`);
-        setScenario(res.data);
         const parsed = safeParse(res.data.contentJson) ?? {};
         const chars: Character[] = Array.isArray(parsed?.characters)
           ? parsed.characters
           : [];
 
-        // 기본 용의자
         const suspectsBase = toPlaySuspects(chars);
-
-        // [ADD] 채팅 전용 ‘액션’ 참가자 (무대에는 미노출)
         const actionEntry: PlaySuspect = {
           id: ACTION_ID,
           name: "조사",
           avatar: actionIcon,
-          full: undefined,
           comment: "무엇을 조사할까요?",
           facts: [
             "현장 조사, CCTV 확인, 기록 조회, 목격자 증언 수집 등을 수행합니다.",
           ],
         };
-
-        // [ADD] 채팅 아바타에는 포함되도록 뒤에 추가
         const suspectsAll = [...suspectsBase, actionEntry];
-
-        const intro =
-          String(res.data.scenSummary ?? "") || "시나리오 개요가 없습니다.";
-        const background = stageBg;
-        const map = defaultMap;
-        const spotlight: SpotlightCfg | undefined =
-          parsed?.spotlight || undefined;
 
         setConfig((prev) => ({
           ...prev,
-          background,
-          suspects: suspectsAll, // [MOD] 전체 참가자 목록(용의자 + 액션)
+          background: stageBg,
+          suspects: suspectsAll,
           messages: [],
-          intro,
-          map,
-          spotlight: spotlight ?? prev.spotlight,
+          intro:
+            String(res.data.scenSummary ?? "") || "시나리오 개요가 없습니다.",
+          map: defaultMap,
+          spotlight: parsed?.spotlight ?? prev.spotlight,
         }));
 
-        // 기본 활성/뷰는 실제 용의자에게만
+        // UI 초기화(저장은 안 함). 저장된 대화가 없을 때만 기본 멘트 주입
         if (suspectsBase.length > 0) {
           setActiveId(suspectsBase[0].id);
           setViewId(suspectsBase[0].id);
-          const baseMsgs: ChatMessage[] = [];
-          for (const s of suspectsBase) {
-            if (s.comment) {
-              baseMsgs.push({
+          if (sessionStorage.getItem(MSGS_KEY) == null) {
+            const baseMsgs: ChatMessage[] = suspectsBase
+              .filter((s) => !!s.comment)
+              .map((s) => ({
                 id: `c-${s.id}`,
                 from: "npc",
                 whoId: s.id,
-                text: s.comment,
-              });
-            }
+                text: s.comment!,
+              }));
+            setMsgs(baseMsgs);
           }
-          setMsgs(baseMsgs);
         }
       } catch (err) {
         console.error("시나리오 불러오기 실패:", err);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioId]);
 
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [msgs, activeId, viewId, chatOpen]);
+  }, [msgs, viewId, chatOpen]);
 
   const lastById = useMemo(() => {
     const map: Record<string, ChatMessage> = {};
@@ -340,29 +356,24 @@ export default function GamePlayPage() {
     []
   );
 
-  /* --- 질문 전송 (내 백엔드 /game/ask) --- */
+  /* --- 질문 전송 --- */
   const send = async () => {
     const text = input.trim();
     if (!text) return;
 
-    // 액션 모드가 아닐 때만 용의자 선택 요구
-    if (!actionMode && !activeId) {
-      alert("대화할 인물을 먼저 선택하세요.");
-      return;
-    }
-    if (!sessionId) {
-      alert("세션 정보가 없습니다. 시나리오 선택 화면에서 다시 시작해주세요.");
-      return;
-    }
+    if (!actionMode && !activeId)
+      return alert("대화할 인물을 먼저 선택하세요.");
+    if (!sessionId)
+      return alert(
+        "세션 정보가 없습니다. 시나리오 선택 화면에서 다시 시작해주세요."
+      );
 
-    // 타깃 결정: 액션 모드면 ACTION, 아니면 선택된 용의자
     const targetId = actionMode ? ACTION_ID : (activeId as string);
     const who = actionMode
       ? ({ name: "ACTION" } as { name: string })
       : suspects.find((s) => s.id === targetId);
     if (!who) return;
 
-    // 액션 모드면 조tk 탭 자동 포커스
     if (actionMode) {
       setChatOpen(true);
       setViewId(ACTION_ID);
@@ -380,10 +391,10 @@ export default function GamePlayPage() {
     try {
       setAsking(true);
       const res = await api.post<AskResponse>("/game/ask", {
-        sessionId: sessionId,
+        sessionId,
         suspectName: actionMode ? "ACTION" : (who as any).name,
         userText: text,
-        action: actionMode ? true : undefined, // 서버 분기용 플래그(모르면 무시)
+        action: actionMode ? true : undefined,
       });
       const reply = res.data.answer || "…응답이 없습니다.";
       const npcMsg: ChatMessage = {
@@ -394,7 +405,6 @@ export default function GamePlayPage() {
       };
       setMsgs((prev) => [...prev, npcMsg]);
 
-      // 무대 말풍선은 용의자만; 액션은 무대에 없으므로 제외
       if (!actionMode) showNpcBubble(targetId, reply);
     } catch (err) {
       console.error("질문 처리 실패:", err);
@@ -412,10 +422,7 @@ export default function GamePlayPage() {
 
   /* --- 결과 페이지 이동 --- */
   const goResult = () => {
-    if (!sessionId) {
-      alert("세션 정보가 없습니다.");
-      return;
-    }
+    if (!sessionId) return alert("세션 정보가 없습니다.");
     if (timerRef.current !== null) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -427,42 +434,18 @@ export default function GamePlayPage() {
     });
   };
 
-  /* --- 브리핑 --- */
-  const briefList = useMemo(() => {
-    return (suspects ?? [])
-      .filter((s) => s.id !== ACTION_ID)
-      .map((s) => ({
-        ...s,
-        facts: s.facts ?? [],
-        quote: (s.comment ?? "").trim(),
-      }))
-      .filter((b) => b.quote || (b.facts?.length ?? 0) > 0);
-  }, [suspects]);
-  const [briefOpen, setBriefOpen] = useState(false);
-  const [briefIdx, setBriefIdx] = useState(0);
-  const briefInitRef = useRef(false);
-  useEffect(() => {
-    if (briefInitRef.current) return;
-    if (briefList.length > 0) {
-      setBriefOpen(true);
-      setBriefIdx(0);
-      briefInitRef.current = true;
-    }
-  }, [briefList]);
-  const currentBrief = briefList[briefIdx];
-  const briefFacts = currentBrief?.facts ?? [];
-  const briefQuote = currentBrief?.quote ?? "";
-  const briefImgSrc =
-    currentBrief?.full || currentBrief?.avatar || placeholderFull;
+  /* --- spotlight --- */
+  const sp = config.spotlight ?? {};
+  const w = (sp.widthPct ?? 1.6) * 100;
+  const h = (sp.heightPct ?? 1.9) * 100;
+  const topRatio = sp.top ?? -0.28;
+  const ang = sp.angleDeg ?? 18;
+  const op = sp.opacity ?? 0.9;
 
-  /*--- 메모장 핸들러 ---*/
-  // 상태
+  /* --- 메모 드래그 --- */
   const [memoPos, setMemoPos] = useState({ x: 20, y: 80 });
   const memoRef = useRef<HTMLDivElement | null>(null);
-
-  // 드래그 데이터 저장
   const dragData = useRef<{ offsetX: number; offsetY: number } | null>(null);
-
   const onDragStart = (e: React.MouseEvent) => {
     if (!memoRef.current) return;
     dragData.current = {
@@ -472,7 +455,6 @@ export default function GamePlayPage() {
     document.addEventListener("mousemove", onDragging);
     document.addEventListener("mouseup", onDragEnd);
   };
-
   const onDragging = (e: MouseEvent) => {
     if (!dragData.current) return;
     setMemoPos({
@@ -480,20 +462,11 @@ export default function GamePlayPage() {
       y: e.clientY - dragData.current.offsetY,
     });
   };
-
   const onDragEnd = () => {
     dragData.current = null;
     document.removeEventListener("mousemove", onDragging);
     document.removeEventListener("mouseup", onDragEnd);
   };
-
-  /* --- spotlight --- */
-  const sp = config.spotlight ?? {};
-  const w = (sp.widthPct ?? 1.6) * 100;
-  const h = (sp.heightPct ?? 1.9) * 100;
-  const topRatio = sp.top ?? -0.28;
-  const ang = sp.angleDeg ?? 18;
-  const op = sp.opacity ?? 0.9;
 
   return (
     <div
@@ -504,58 +477,10 @@ export default function GamePlayPage() {
         backgroundPosition: "center",
       }}
     >
-      {/* 타이мер */}
+      {/* 타이머 */}
       <button className="timer-badge" onClick={goResult}>
         심문 종료 ({mm}:{ss})
       </button>
-
-      {/* 브리핑 */}
-      {briefOpen && currentBrief && (
-        <div className="brief-overlay" role="dialog" aria-modal="true">
-          <div className="brief-dim" />
-          <div className="brief-panel">
-            <div
-              className="brief-figure"
-              style={{ ["--brief-img" as any]: `url(${briefImgSrc})` }}
-            >
-              <img
-                src={briefImgSrc}
-                alt={currentBrief.name}
-                onError={(e) => (e.currentTarget.src = placeholderFull)}
-              />
-            </div>
-            <div className="brief-text">
-              <h2 className="brief-title">{currentBrief.name}</h2>
-              {briefFacts.length > 0 && (
-                <ul className="brief-facts">
-                  {briefFacts.map((line, i) => (
-                    <li key={i}>{line}</li>
-                  ))}
-                </ul>
-              )}
-              {briefQuote && <p className="brief-quote">{briefQuote}</p>}
-            </div>
-          </div>
-          <div className="brief-navs">
-            <button
-              className="brief-sidenav prev fab-like"
-              onClick={() => setBriefIdx((i) => Math.max(i - 1, 0))}
-            >
-              <IconChatLeft />
-            </button>
-            <button
-              className="brief-sidenav next fab-like"
-              onClick={() =>
-                briefIdx < briefList.length - 1
-                  ? setBriefIdx((i) => i + 1)
-                  : setBriefOpen(false)
-              }
-            >
-              <IconChatRight />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 좌측 도구 */}
       <div className="tools">
@@ -565,6 +490,7 @@ export default function GamePlayPage() {
         >
           <img className="icon" src={summaryIcon} alt="사건 개요" />
         </button>
+
         <button
           className={`tool-btn ${memoOpen ? "is-on" : ""}`}
           onClick={() => setMemoOpen((v) => !v)}
@@ -573,7 +499,7 @@ export default function GamePlayPage() {
         </button>
       </div>
 
-      {/* 사건 개요 팝업 */}
+      {/* ✅ 사건 개요 팝업 (복구) */}
       {overviewOpen && (
         <div className="overview-popup">
           <div className="overview-header">
@@ -610,7 +536,6 @@ export default function GamePlayPage() {
           className="memo-popup"
           style={{ top: memoPos.y, left: memoPos.x, position: "absolute" }}
         >
-          {/* 헤더에 드래그 이벤트 연결 */}
           <div className="memo-header" onMouseDown={onDragStart}>
             📝 메모장
           </div>
@@ -626,15 +551,14 @@ export default function GamePlayPage() {
         </div>
       )}
 
-      {/* 중앙 무대 */}
+      {/* 중앙 무대 (UI 상태 저장 없음) */}
       <div className="stage">
         {suspects
-          .filter((s) => s.id !== ACTION_ID) // [ADD] 액션 제외
+          .filter((s) => s.id !== ACTION_ID)
           .slice(0, 4)
           .map((s) => {
             const sel = s.id === activeId;
             const last = lastById[s.id];
-
             return (
               <button
                 key={s.id}
@@ -648,7 +572,13 @@ export default function GamePlayPage() {
                     last && last.from === "npc"
                       ? last.text
                       : s.comment ?? "무엇을 물어볼까요?";
-                  showNpcBubble(s.id, text);
+                  setStageBubble({ whoId: s.id, text });
+                  if (bubbleTimer.current)
+                    window.clearTimeout(bubbleTimer.current);
+                  bubbleTimer.current = window.setTimeout(
+                    () => setStageBubble(null),
+                    BUBBLE_MS
+                  ) as unknown as number;
                 }}
                 aria-pressed={sel}
                 title={`${s.name} 대화하기`}
@@ -695,9 +625,8 @@ export default function GamePlayPage() {
           })}
       </div>
 
-      {/* 오른쪽 대화 패널 */}
+      {/* 오른쪽 대화 패널 (열림 상태 저장 안 함) */}
       <aside className={`chat-panel ${chatOpen ? "" : "is-closed"}`}>
-        {/* 아바타 필터 */}
         <div className="chat-avatars">
           {suspects.map((s) => {
             const viewing = viewId != null && s.id === viewId;
@@ -721,7 +650,7 @@ export default function GamePlayPage() {
           })}
         </div>
 
-        {/* 선택된 용의자/조수 FACTS */}
+        {/* 선택된 인물 FACTS */}
         {(() => {
           const selected = suspects.find((s) => s.id === viewId);
           const facts = selected?.facts?.filter(Boolean) ?? [];
@@ -747,7 +676,7 @@ export default function GamePlayPage() {
         </div>
       </aside>
 
-      {/* 대화창 토글 FAB */}
+      {/* 대화창 토글 */}
       <button
         type="button"
         className="chat-fab"
@@ -762,26 +691,22 @@ export default function GamePlayPage() {
 
       {/* 입력창 */}
       <div className="input-dock">
-        {/* 액션 버튼 (토글) */}
         <button
           type="button"
           className={`action-btn ${actionMode ? "is-on" : ""}`}
           onClick={() => {
             setActionMode((v) => {
               const next = !v;
-              if (next) {
-                setViewId(ACTION_ID);
-              }
+              if (next) setViewId(ACTION_ID);
               return next;
             });
           }}
-          title={actionMode ? "액션 모드: 켜짐" : "액션 모드: 꺼짐"}
           aria-pressed={actionMode}
           aria-label="액션 모드 토글"
+          title={actionMode ? "액션 모드: 켜짐" : "액션 모드: 꺼짐"}
         >
           <img src={actionIcon} alt="액션" />
         </button>
-
         <input
           className="input"
           placeholder={

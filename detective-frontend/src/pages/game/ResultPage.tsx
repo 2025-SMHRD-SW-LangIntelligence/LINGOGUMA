@@ -1,5 +1,11 @@
+// src/pages/ResultPage.tsx
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import { api } from "@/shared/api/client";
 import { useAuth } from "@/store/auth.store";
 import "@/shared/styles/CaseResultPage.css";
@@ -19,6 +25,10 @@ type ScenarioDetail = {
   contentJson?: string | any;
 };
 
+/* ✅ GamePlay와 동일 규칙의 세션별 키 유틸 (없으면 폴백 처리용) */
+const sk = (sid: number | null | undefined, name: string) =>
+  sid ? `play_${name}_session_${sid}` : `play_${name}_session_unknown`;
+
 export default function ResultPage() {
   const { scenarioId } = useParams();
   const [searchParams] = useSearchParams();
@@ -29,15 +39,21 @@ export default function ResultPage() {
   const sessionId = Number(searchParams.get("sessionId"));
 
   /* 상태 */
-  const [suspects, setSuspects] = useState<{ id: string; name: string; avatar?: string }[]>([]);
+  const [suspects, setSuspects] = useState<
+    { id: string; name: string; avatar?: string }[]
+  >([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [whenText, setWhenText] = useState("");
   const [howText, setHowText] = useState("");
   const [whyText, setWhyText] = useState("");
 
   /* 총 플레이 시간 (GamePlay에서 가져옴) */
-  const TIMER_KEY = sessionId ? `timer_session_${sessionId}` : "timer_session_unknown";
-  const initialFromState = (location.state as any)?.totalDuration as number | undefined;
+  const TIMER_KEY = sessionId
+    ? `timer_session_${sessionId}`
+    : "timer_session_unknown";
+  const initialFromState = (location.state as any)?.totalDuration as
+    | number
+    | undefined;
   const initialFromQuery = (() => {
     const t = searchParams.get("t");
     return t && !isNaN(Number(t)) ? Number(t) : undefined;
@@ -46,9 +62,13 @@ export default function ResultPage() {
     const v = sessionStorage.getItem(TIMER_KEY);
     return v && !isNaN(Number(v)) ? Number(v) : undefined;
   })();
-  const totalDuration = initialFromState ?? initialFromQuery ?? initialFromStorage ?? 0;
+  const totalDuration =
+    initialFromState ?? initialFromQuery ?? initialFromStorage ?? 0;
   const formatTime = (s: number) =>
-    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(
+      2,
+      "0"
+    )}`;
 
   /* 보고서 작성 시간 */
   const [reportSeconds, setReportSeconds] = useState(0);
@@ -71,7 +91,9 @@ export default function ResultPage() {
             content = {};
           }
         }
-        const chars = Array.isArray(content?.characters) ? content.characters : [];
+        const chars = Array.isArray(content?.characters)
+          ? content.characters
+          : [];
         const names = chars
           .filter((c: any) => ["용의자", "범인"].includes(c?.role))
           .map((c: any, idx: number) => ({
@@ -79,7 +101,9 @@ export default function ResultPage() {
             name: String(c?.name || ""),
             avatar: c.avatar || fallbackAvatars[idx] || "", // 없으면 CSS에서 placeholder 처리
           }))
-          .filter((c: { id: string; name: string; avatar?: string }) => !!c.name);
+          .filter(
+            (c: { id: string; name: string; avatar?: string }) => !!c.name
+          );
         setSuspects(names);
       } catch (err) {
         console.error("시나리오 불러오기 실패:", err);
@@ -102,7 +126,7 @@ export default function ResultPage() {
     if (!whyText.trim()) {
       return alert('"왜?"에 대한 답변을 입력해주세요.');
     }
-    
+
     const selected = suspects.find((s) => s.id === selectedId);
 
     const payload = {
@@ -136,20 +160,32 @@ export default function ResultPage() {
     }
   };
 
-  /* 메모 팝업 (팀원 UI 그대로) */
+  /* ✅ 메모 팝업: GamePlay 세션키 우선, 없으면 기존 'detective_memo' 폴백 */
+  const MEMO_KEY = sk(sessionId, "memo");
   const [memoOpen, setMemoOpen] = useState(false);
-  const [memoText, setMemoText] = useState(localStorage.getItem("detective_memo") ?? "");
+  const [memoText] = useState(() => {
+    const v1 = localStorage.getItem(MEMO_KEY);
+    if (v1 != null) return v1; // 세션별 메모가 있으면 이걸 사용
+    const v2 = localStorage.getItem("detective_memo"); // 구버전 호환
+    return v2 ?? "";
+  });
   const [pos, setPos] = useState({ x: window.innerWidth / 2 - 210, y: 120 });
   const dragData = useRef<{ offsetX: number; offsetY: number } | null>(null);
 
   const onDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
-    dragData.current = { offsetX: e.clientX - pos.x, offsetY: e.clientY - pos.y };
+    dragData.current = {
+      offsetX: e.clientX - pos.x,
+      offsetY: e.clientY - pos.y,
+    };
     document.addEventListener("mousemove", onDragging);
     document.addEventListener("mouseup", onDragEnd);
   };
   const onDragging = (e: MouseEvent) => {
     if (!dragData.current) return;
-    setPos({ x: e.clientX - dragData.current.offsetX, y: e.clientY - dragData.current.offsetY });
+    setPos({
+      x: e.clientX - dragData.current.offsetX,
+      y: e.clientY - dragData.current.offsetY,
+    });
   };
   const onDragEnd = () => {
     dragData.current = null;
@@ -163,7 +199,7 @@ export default function ResultPage() {
         {/* 헤더 */}
         <div className="summary-header">
           <h2 className="summary-title">사건의 전말</h2>
-          <p className="summary-time" style={{display:"none"}}>
+          <p className="summary-time" style={{ display: "none" }}>
             총 플레이: <b>{formatTime(totalDuration)}</b> · 보고서 작성:{" "}
             <b>{formatTime(reportSeconds)}</b>
           </p>
