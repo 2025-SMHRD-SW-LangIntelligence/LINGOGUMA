@@ -79,9 +79,11 @@
 
 /* ===== 메인 컨텐츠 ===== */
 .mypage-main {
+  min-width: 0;
+  --page-pad: clamp(12px, 3vw, 40px);
   flex: 1;
-  padding: 40px;
-  overflow-y: auto;
+  padding: var(--page-pad);
+  overflow-x: hidden;
 }
 .mypage-main h3 {
   margin-bottom: 20px;
@@ -127,6 +129,9 @@
 .account-section {
   display: grid;
   gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
 }
 
 /* 카드 공통 */
@@ -270,4 +275,65 @@
     width: 100%;
     justify-self: stretch;
   }
+}
+
+/* ===== GameHistoryPage 전용 (AccountInfo와 일관) ===== */
+
+/* 카드 목록 그리드 */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* 섹션을 760px로 제한했다면 1열이 자연스러움 */
+  gap: 12px;
+}
+
+/* 빈 상태 */
+.account-empty {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #cfcfcf;
+  opacity: 0.85;
+}
+
+/* 클릭 가능한 카드 효과 */
+.account-card.clickable {
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, background 0.12s,
+    box-shadow 0.12s;
+}
+.account-card.clickable:hover {
+  transform: translateY(-2px);
+  border-color: #3a3a3a;
+  background: #1d1d1d;
+}
+.account-card.clickable:focus-visible {
+  outline: 3px solid rgba(231, 122, 62, 0.45);
+  outline-offset: 2px;
+}
+
+/* 헤더 오른쪽으로 배지 정렬 */
+.account-card-header .badge {
+  margin-left: auto;
+}
+
+/* 배지 (정답/오답) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+.badge-success {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: #22c55e;
+  color: #9ee6b3;
+}
+.badge-fail {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: #ef4444;
+  color: #f4a4a4;
 }

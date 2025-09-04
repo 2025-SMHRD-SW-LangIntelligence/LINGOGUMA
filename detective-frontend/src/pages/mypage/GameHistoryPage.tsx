@@ -1,106 +1,136 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { api } from "@/shared/api/client";
 import { useAuth } from "@/store/auth.store";
 import { useNavigate } from "react-router-dom";
 import "@/shared/styles/MyPage.css";
 
 interface GameResult {
-    resultId: number;
-    scenIdx: number;
-    answerJson: any;
-    skillsJson: {
-        logic: number;
-        creativity: number;
-        focus: number;
-        diversity: number;
-        depth: number;
-    };
-    correct: boolean;
+  resultId: number;
+  scenIdx: number;
+  answerJson: any;
+  skillsJson: {
+    logic: number;
+    creativity: number;
+    focus: number;
+    diversity: number;
+    depth: number;
+  };
+  correct: boolean;
 }
 
 export default function GameHistoryPage() {
-    const { user } = useAuth();
-    const [results, setResults] = useState<GameResult[]>([]);
-    const navigate = useNavigate();
+  const { user } = useAuth();
+  const [results, setResults] = useState<GameResult[]>([]);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchResults = async () => {
-            try {
-                const res = await api.get<GameResult[]>("/game-results/me");
-                setResults(res.data);
-            } catch (err) {
-                console.error("게임 기록 불러오기 실패:", err);
-            }
-        };
-        if (user) fetchResults();
-    }, [user]);
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const res = await api.get<GameResult[]>("/game-results/me");
+        setResults(res.data ?? []);
+      } catch (err) {
+        console.error("게임 기록 불러오기 실패:", err);
+      }
+    };
+    if (user) fetchResults();
+  }, [user]);
 
-    if (!user) {
-        return <p className="form-error">로그인이 필요합니다.</p>;
-    }
+  const isEmpty = useMemo(() => results.length === 0, [results]);
 
-    return (
-        <section>
-            <h3 className="mypage-section-title">내 게임 기록</h3>
+  if (!user) {
+    return <p className="form-error">로그인이 필요합니다.</p>;
+  }
 
-            {results.length === 0 ? (
-                <p className="empty-msg">게임 기록이 없습니다.</p>
-            ) : (
-                <div className="history-list">
-                    {results.map((r) => (
-                        <div
-                            key={r.resultId}
-                            className="history-card"
-                            onClick={() =>
-                                navigate(`/my/game-result/${r.resultId}`, {
-                                    state: r,
-                                })
-                            }
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                    navigate(`/my/game-result/${r.resultId}`, {
-                                        state: r,
-                                    });
-                                }
-                            }}
-                        >
-                            <div className="history-card-header">
-                                <span className="history-title">
-                                    시나리오 {r.scenIdx}
-                                </span>
-                                <span
-                                    className={`badge ${
-                                        r.correct
-                                            ? "badge-success"
-                                            : "badge-fail"
-                                    }`}
-                                >
-                                    {r.correct ? "정답" : "오답"}
-                                </span>
-                            </div>
-                            <div className="history-card-body">
-                                <p>
-                                    범인 추리:{" "}
-                                    {r.answerJson?.culprit ?? "미입력"}
-                                </p>
-                                <p>
-                                    능력치 평균:{" "}
-                                    {Math.round(
-                                        (r.skillsJson.logic +
-                                            r.skillsJson.creativity +
-                                            r.skillsJson.focus +
-                                            r.skillsJson.diversity +
-                                            r.skillsJson.depth) /
-                                            5
-                                    )}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
+  // 안전한 평균 계산
+  const avgScore = (r: GameResult) => {
+    const s = r.skillsJson ?? {};
+    const vals = [
+      Number(s.logic) || 0,
+      Number(s.creativity) || 0,
+      Number(s.focus) || 0,
+      Number(s.diversity) || 0,
+      Number(s.depth) || 0,
+    ];
+    return Math.round(vals.reduce((a, b) => a + b, 0) / 5);
+  };
+
+  const culpritText = (r: GameResult) => {
+    const a = r.answerJson ?? {};
+    if (typeof a.culprit === "string") return a.culprit || "미입력";
+    if (a.culprit && typeof a.culprit.name === "string") return a.culprit.name;
+    return "미입력";
+  };
+
+  return (
+    // ✅ 섹션에 좁은 폭 클래스를 추가
+    <section className="account-section">
+      <h3 className="mypage-section-title">내 게임 기록</h3>
+
+      {isEmpty ? (
+        <p className="account-empty">게임 기록이 없습니다.</p>
+      ) : (
+        <div className="account-grid">
+          {results.map((r) => (
+            <div
+              key={r.resultId}
+              className="account-card clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                navigate(`/my/game-result/${r.resultId}`, { state: r })
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  navigate(`/my/game-result/${r.resultId}`, { state: r });
+                }
+              }}
+            >
+              <div className="account-card-header">
+                <span className="account-card-title">시나리오 {r.scenIdx}</span>
+                <span
+                  className={`badge ${
+                    r.correct ? "badge-success" : "badge-fail"
+                  }`}
+                >
+                  {r.correct ? "정답" : "오답"}
+                </span>
+              </div>
+
+              <div className="account-card-body">
+                <div className="account-profile-grid">
+                  <div className="k">범인 추리</div>
+                  <div className="v">
+                    {(() => {
+                      const a = r.answerJson ?? {};
+                      if (typeof a.culprit === "string")
+                        return a.culprit || "미입력";
+                      if (a.culprit && typeof a.culprit.name === "string")
+                        return a.culprit.name;
+                      return "미입력";
+                    })()}
+                  </div>
+
+                  <div className="k">능력치 평균</div>
+                  <div className="v">
+                    {(() => {
+                      const s = r.skillsJson ?? {};
+                      const vals = [
+                        Number(s.logic) || 0,
+                        Number(s.creativity) || 0,
+                        Number(s.focus) || 0,
+                        Number(s.diversity) || 0,
+                        Number(s.depth) || 0,
+                      ];
+                      return Math.round(vals.reduce((a, b) => a + b, 0) / 5);
+                    })()}
+                    점
+                  </div>
                 </div>
-            )}
-        </section>
-    );
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
