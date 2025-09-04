@@ -337,3 +337,199 @@
   border-color: #ef4444;
   color: #f4a4a4;
 }
+
+/* ===============================
+   ExpertScenarioPage – 일관 디자인
+   (폼 구조/마크업 변경 없이 적용)
+   =============================== */
+
+/* 0) 본문/폭 (이미 적용되어 있으면 건너뜀) */
+.mypage-main {
+  min-width: 0;
+  --page-pad: clamp(12px, 3vw, 40px);
+  padding: var(--page-pad);
+  overflow-x: hidden;
+}
+
+/* 1) 바깥 패널: account-card 톤으로 */
+.mypage-main > .panel {
+  width: 100%;
+  max-width: 760px; /* 화면 절반 느낌 + 상한 */
+  margin-inline: auto;
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* 넓은 데스크탑에서 '절반' 느낌 강화 (선택) */
+@media (min-width: 1280px) {
+  .mypage-main > .panel {
+    max-width: min(50%, 760px);
+  }
+}
+
+/* 2) 패널 타이틀 & 섹션 제목 */
+.panel-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  border-left: 4px solid #e77a3e;
+  padding-left: 10px;
+}
+.mypage-main > .panel h3 {
+  margin: 24px 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  border-left: 4px solid #e77a3e;
+  padding-left: 10px;
+}
+
+/* 3) 메타 입력 줄: 라벨/필드 2열 그리드 */
+.form-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.form-group > label {
+  color: #cfcfcf;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.form-group > small {
+  grid-column: 2 / 3; /* 글자수 카운트는 오른쪽 정렬 */
+  justify-self: end;
+  font-size: 12px;
+  color: #cfcfcf;
+  opacity: 0.8;
+}
+
+/* 4) 입력 컴포넌트: account-input 톤 */
+.panel .input,
+.panel .select,
+.panel .textarea {
+  width: 100%;
+  background: #191919;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+.panel .input:focus,
+.panel .select:focus,
+.panel .textarea:focus {
+  border-color: #e77a3e;
+  box-shadow: 0 0 0 3px rgba(231, 122, 62, 0.15);
+}
+.panel .textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* 5) 반복 카드(등장인물/증거/장소/타임라인) */
+.panel .card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr)); /* 2열 폼 */
+  gap: 10px 14px;
+}
+
+/* 삭제 버튼은 우측 하단으로 */
+.panel .card .btn-danger {
+  grid-column: 2 / 3;
+  justify-self: end;
+  align-self: end;
+}
+
+/* 체크박스 그룹(증거 속성/핵심증거) – 칩 스타일 */
+.panel .card > div label:has(> input[type="checkbox"]),
+.mypage-main > .panel > div label:has(> input[type="checkbox"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin: 4px 8px 0 0;
+  border: 1px solid #2a2a2a;
+  border-radius: 999px;
+  background: #191919;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: #ddd;
+}
+.panel label:has(> input[type="checkbox"]:checked) {
+  background: rgba(231, 122, 62, 0.16);
+  border-color: #e77a3e;
+  color: #ffd9c4;
+}
+.panel label > input[type="checkbox"] {
+  accent-color: #e77a3e;
+}
+
+/* 6) 버튼 톤(추가/제출/삭제) */
+.panel .btn {
+  border: 1px solid #2a2a2a;
+  background: #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.12s, border-color 0.12s,
+    opacity 0.12s;
+}
+.panel .btn:hover {
+  transform: translateY(-1px);
+}
+.panel .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.panel .btn-primary {
+  background: #e77a3e;
+  border-color: #e77a3e;
+  margin-top: 12px;
+  margin-left: auto; /* 제출 버튼은 오른쪽 정렬 */
+  display: block; /* block으로 만들어 정렬 적용 */
+}
+.panel .btn-primary:hover {
+  background: #ff914d;
+  border-color: #ff914d;
+}
+
+.panel .btn-danger {
+  background: transparent;
+  border-color: #ef4444;
+  color: #ef9f9f;
+}
+.panel .btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* 7) 반응형 – 좁으면 1열로 안전 전환 */
+@media (max-width: 720px) {
+  .form-group {
+    grid-template-columns: 1fr;
+  }
+  .form-group > small {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+  .panel .card {
+    grid-template-columns: 1fr;
+  }
+  .panel .card .btn-danger {
+    grid-column: 1 / 2;
+    justify-self: end;
+  }
+}
