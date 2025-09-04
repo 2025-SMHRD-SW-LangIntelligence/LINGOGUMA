@@ -1,0 +1,307 @@
+/* =========================
+   Admin 공용 스타일
+   (표/뱃지/액션 등 관리자 전용)
+   ========================= */
+
+/* 테이블 컨테이너: 작은 화면에서 가로 스크롤 허용 */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 다크 톤 표 */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #1b1b1b;
+  color: #fff;
+  font-size: 14px;
+}
+.admin-table thead th {
+  text-align: left;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 12px;
+  position: sticky; /* 카드 내부에서 헤더 고정 느낌 */
+  top: 0;
+  z-index: 1;
+}
+.admin-table tbody td {
+  border-bottom: 1px solid #2a2a2a;
+  padding: 12px;
+  vertical-align: middle;
+}
+.admin-table tr:hover td {
+  background: #1d1d1d; /* 행 호버 */
+}
+
+/* ID 같은 고정폭 텍스트 */
+.admin-table .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+  white-space: nowrap;
+}
+
+/* 액션 열 정렬 + 버튼 간격 (통일) */
+.admin-table .col-actions {
+  width: 30px; /* 기본 */
+  min-width: 30px; /* 눌림 하한 */
+}
+.admin-table .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* 권한/상태 뱃지 */
+.role-badge,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+
+/* 권한별 색상 */
+.role-member {
+  border-color: #6b7280;
+  background: rgba(107, 114, 128, 0.16);
+  color: #cbd5e1;
+}
+.role-expert {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.16);
+  color: #b9d6ff;
+}
+.role-admin {
+  border-color: #e77a3e;
+  background: rgba(231, 122, 62, 0.16);
+  color: #ffd9c4;
+}
+
+/* 전문가 신청 상태 */
+.badge-pending {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.16);
+  color: #ffe1a6;
+}
+
+/* 흐릿 텍스트 / 로딩 */
+.muted {
+  color: #cfcfcf;
+  opacity: 0.65;
+}
+.admin-loading {
+  color: #cfcfcf;
+  opacity: 0.85;
+}
+
+/* 버튼(공통 account-btn을 재사용) – 삭제 전용 위험 톤 */
+.account-btn-danger {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef9f9f;
+}
+.account-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* 반응형: 아주 좁으면 표를 더 촘촘하게 */
+@media (max-width: 720px) {
+  .admin-table thead th,
+  .admin-table tbody td {
+    padding: 10px;
+  }
+  .admin-table .col-actions {
+    width: 180px;
+  } /* 720px 이하 */
+}
+
+/* =========================
+   Admin – Scenario Page
+   ========================= */
+
+/* 툴바 */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.toolbar-label {
+  font-size: 13px;
+  color: #cfcfcf;
+}
+.admin-select {
+  background: #191919;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.admin-select:focus {
+  border-color: #e77a3e;
+  box-shadow: 0 0 0 3px rgba(231, 122, 62, 0.15);
+}
+
+/* 표 텍스트 셀 */
+.scenario-table .td-title,
+.scenario-table .td-summary {
+  word-break: keep-all; /* 한글 어절 단위 줄바꿈 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.5; /* 하단 컷 방지 */
+}
+.scenario-table .td-title {
+  white-space: nowrap; /* 제목은 1줄 말줄임 */
+  min-width: 220px;
+  max-width: 520px;
+}
+.scenario-table .td-summary {
+  min-width: 260px; /* 요약 최소 폭 */
+  white-space: normal; /* 기본은 줄바꿈 허용 */
+}
+@supports (-webkit-line-clamp: 2) {
+  .scenario-table .td-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 기본 2줄 */
+    -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+}
+
+/* 상태 뱃지 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+.status-draft {
+  border-color: #64748b;
+  background: rgba(100, 116, 139, 0.16);
+  color: #cbd5e1;
+}
+.status-published {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.16);
+  color: #9ee6b3;
+}
+.status-archived {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.16);
+  color: #f4a4a4;
+}
+
+/* ===== Admin Scenario: 넓은 섹션 전용 ===== */
+.account-section.admin-section--wide {
+  max-width: 1120px;
+}
+@media (min-width: 1440px) {
+  .account-section.admin-section--wide {
+    max-width: 1280px;
+  }
+}
+
+/* ===== 시나리오 표 레이아웃 & 구분선(안정형) ===== */
+.scenario-table {
+  table-layout: auto; /* admin-table의 fixed 오버라이드 */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.scenario-table thead th {
+  border-bottom: 1px solid #2a2a2a;
+}
+
+/* 셀 밑줄 제거 + 행 단위 한 줄만 그리기 */
+.scenario-table tbody td {
+  border-bottom: 0;
+}
+.scenario-table tbody tr {
+  position: relative;
+}
+.scenario-table tbody tr:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px; /* 살짝 아래로 내려 겹침 방지 */
+  height: 1px;
+  background: #2a2a2a;
+  pointer-events: none;
+}
+
+/* 요약이 잘리지 않도록 하단 여유 */
+.scenario-table tbody td {
+  padding-bottom: 18px;
+}
+
+/* 더 좁을수록 요약을 더 많이 보여주기(클램프 단계) */
+@media (max-width: 1200px) {
+  .scenario-table .td-summary {
+    -webkit-line-clamp: 3;
+  }
+}
+@media (max-width: 900px) {
+  .scenario-table .td-summary {
+    -webkit-line-clamp: 4;
+  }
+  .scenario-table tbody td {
+    padding-bottom: 20px;
+  }
+}
+
+/* 아주 좁은 화면에서는 클램프 제거 → 전체 표시 */
+@media (max-width: 680px) {
+  .scenario-table .td-summary {
+    display: block; /* -webkit-box 해제 */
+    -webkit-line-clamp: initial;
+    -webkit-box-orient: initial;
+    overflow: visible;
+    white-space: normal;
+  }
+}
+
+/* 스크롤바가 가리는 현상 방지: 테이블 컨테이너 바닥 여유 */
+.table-wrap {
+  padding-bottom: 6px;
+}
+
+/* 반응형 보완 */
+@media (max-width: 900px) {
+  .admin-table .col-actions {
+    width: 200px;
+  } /* 900px 이하 */
+}
+@media (max-width: 720px) {
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .admin-table thead th,
+  .admin-table tbody td {
+    padding: 10px;
+  }
+}

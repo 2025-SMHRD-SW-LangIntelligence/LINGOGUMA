@@ -39,9 +39,12 @@
 
 /* 메뉴 */
 .mypage-sidebar nav ul {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   padding: 0;
   width: 100%;
+  gap: 16px;
 }
 .mypage-sidebar nav li {
   padding: 12px 15px;
@@ -64,6 +67,34 @@
   margin-right: 8px;
   font-size: 18px;
   line-height: 1;
+}
+
+/* 링크(a)가 줄 전체를 차지하도록 블록화 */
+.mypage-sidebar nav a.sidebar-link {
+  display: flex; /* ✅ 아이콘·텍스트 정렬 */
+  align-items: center;
+  width: 100%; /* ✅ li 전체 폭 채움 → 줄 전체 클릭 */
+  padding: 12px 15px; /* ✅ 패딩은 a가 담당 */
+  margin: -12px -15px;
+  font-size: 18px;
+  border-radius: 6px;
+  box-sizing: content-box;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mypage-sidebar nav a.sidebar-link:hover,
+.mypage-sidebar nav a.sidebar-link:focus-visible {
+  color: #e77a3e;
+  outline: none;
+}
+.mypage-sidebar nav a.sidebar-link[aria-current="page"] {
+  color: #e77a3e;
+}
+
+.mypage-sidebar nav li.sidebar-link.logout::before {
+  content: none;
+
+  margin-right: 0;
 }
 
 /* 소제목 (작가/관리자) */
@@ -532,4 +563,72 @@
     grid-column: 1 / 2;
     justify-self: end;
   }
+}
+
+/* =========================
+   MyPage 전용 톤 강제 (다른 CSS와 충돌 방지)
+   ========================= */
+
+/* 카드/헤더 톤을 마이페이지 영역에서 고정 */
+.mypage-main .account-card {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+}
+.mypage-main .account-card-header {
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+/* 배지 컬러를 마이페이지에서 우선 적용 (Admin.css의 .badge와 충돌 방지) */
+.mypage-main .badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+.mypage-main .badge-success {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: #22c55e;
+  color: #9ee6b3;
+}
+.mypage-main .badge-fail {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: #ef4444;
+  color: #f4a4a4;
+}
+
+/* (선택) 혹시 예전 클래스가 남아있다면 동일 톤으로 보이게 매핑 */
+.history-list {
+  display: grid;
+  gap: 12px;
+}
+.history-card {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.history-card:hover {
+  transform: translateY(-2px);
+  border-color: #3a3a3a;
+  background: #1d1d1d;
+}
+.history-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+}
+.history-card-header .badge {
+  margin-left: auto;
+}
+.history-card-body {
+  padding: 14px 16px;
 }
