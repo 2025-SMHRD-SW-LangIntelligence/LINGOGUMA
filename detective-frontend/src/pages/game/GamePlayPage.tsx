@@ -788,8 +788,8 @@ export default function GamePlayPage() {
             asking
               ? "질문 전송 중..."
               : actionMode
-              ? "// 액션 모드: 조사/확인할 내용을 입력하세요"
-              : "// 이곳에 텍스트를 입력하세요"
+              ? "// 조사/확인할 내용을 입력하세요"
+              : "// 이곳에 질문을 입력하세요"
           }
           value={input}
           onChange={(e) => setInput(e.target.value)}

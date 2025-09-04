@@ -15,6 +15,9 @@
   --fabGap: 8px; /* 패널 왼쪽 가장자리와 FAB 사이 간격 */
   --panelRight: 12px; /* chat-panel의 right 값과 반드시 동일 */
   --panelBorder: 2px; /* chat-panel의 border와 동일 */
+  --actionSize: clamp(46px, 6vw, 60px);
+  --actionIcon: calc(var(--actionSize) * 0.58); /* 기본 아이콘 크기 */
+  --actionIconOn: calc(var(--actionSize) * 0.66);
 
   --fabMin: 32px;
   --fabMax: 46px;
@@ -368,27 +371,51 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: var(--actionSize);
+  height: var(--actionSize);
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  transition: filter 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
-    border-color 0.2s ease;
+  transition: filter 0.18s ease, background 0.18s ease, border-color 0.18s ease,
+    box-shadow 0.18s ease, transform 0.12s ease;
+  backdrop-filter: blur(2px);
+  outline: none;
 }
+
 .action-btn:hover {
   filter: brightness(1.06);
 }
+.action-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
 .action-btn img {
-  width: 22px;
-  height: 22px;
+  width: var(--actionIcon);
+  height: var(--actionIcon);
   object-fit: contain;
+  transition: transform 0.18s ease;
 }
 .action-btn.is-on {
   border-color: #4f87ff;
-  box-shadow: 0 0 0 3px rgba(79, 135, 255, 0.18) inset;
-  background: rgba(79, 135, 255, 0.18);
+  background: linear-gradient(
+    180deg,
+    rgba(79, 135, 255, 0.25),
+    rgba(79, 135, 255, 0.12)
+  );
+  box-shadow: 0 0 0 3px rgba(79, 135, 255, 0.18) inset,
+    0 6px 18px rgba(79, 135, 255, 0.18);
+  animation: actionPulse 1.4s ease-in-out infinite;
+}
+.action-btn.is-on img {
+  width: var(--actionIconOn);
+  height: var(--actionIconOn);
+  transform: scale(1.06);
+}
+/* 키보드 접근성 */
+.action-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25) inset,
+    0 0 0 3px rgba(79, 135, 255, 0.35);
+  border-color: #4f87ff;
 }
 
 /* responsive */
@@ -415,6 +442,27 @@
     width: calc(100% - 20px);
     left: 10px;
     transform: none;
+  }
+}
+/* ON 상태 펄스 */
+@keyframes actionPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(79, 135, 255, 0.18) inset,
+      0 6px 18px rgba(79, 135, 255, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(79, 135, 255, 0.28) inset,
+      0 10px 24px rgba(79, 135, 255, 0.28);
+  }
+}
+
+/* 모션 최소화 환경 배려 */
+@media (prefers-reduced-motion: reduce) {
+  .action-btn,
+  .action-btn img {
+    transition: none;
+    animation: none;
   }
 }
 
