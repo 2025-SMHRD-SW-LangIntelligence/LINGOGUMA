@@ -80,7 +80,28 @@ public class GameController {
         // system 프롬프트 구성
         String mission = (String) promptConfig.getOrDefault("mission", "너는 사건 속 등장인물 중 하나다.");
         @SuppressWarnings("unchecked")
-        List<String> rules = (List<String>) promptConfig.getOrDefault("rules", List.of());
+        //List<String> rules = (List<String>) promptConfig.getOrDefault("rules", List.of());
+        List<String> rulesInScenario = (List<String>) promptConfig.get("rules");
+        List<String> rules = (rulesInScenario != null && !rulesInScenario.isEmpty())
+        ? rulesInScenario
+        : List.of(
+            // 공통
+            "플레이어는 탐정이다. 반드시 플레이어의 질문과 요청에 집중한다.",
+            "사건과 무관한 잡담은 하지 않는다.",
+            "항상 캐릭터 설정(신상, 성격, 말투)을 유지한다.",
+            // 용의자
+            "용의자는 자신의 알리바이를 일관성 있게 유지한다.",
+            "용의자는 증거와 명백히 모순되는 발언은 피한다.",
+            // "거짓말은 가능하지만 들키면 안 된다.",
+            "용의자는 플레이어의 추리에 도움을 주지 않고, 자신의 시점에서만 대답한다.",
+            // 액션
+            "액션은 객관적 사실과 증거만 제시한다.",
+            "액션은 추측이나 의견은 하지 않는다.",
+            "액션은 플레이어가 요청할 때만 정보를 제공한다.",
+            "액션은 증거를 원본 그대로 전달하며 변형하지 않는다.",
+            "액션은 사건의 결과나 정답을 직접 말하지 않고, 단서만 보여준다.",
+            "액션은 현장 조사, CCTV 확인, 물건 검색, 기록 조회, 목격자 증언 수집 등을 수행합니다.",
+        );
 
         StringBuilder systemPrompt = new StringBuilder();
         systemPrompt.append(mission).append("\n");
@@ -90,6 +111,11 @@ public class GameController {
                 systemPrompt.append("- ").append(r).append("\n");
             }
         }
+
+        // 게임 설명
+        systemPrompt.append("게임 설명:\n");
+        systemPrompt.append("용의자의 신상 및 성격, 관련 단서 등을 바탕으로 그 용의자가 되어서 플레이어와 대화하는 방식의 추리게임이다 (플레이어는 탐정이다)\n");
+        systemPrompt.append("액션 버튼은 조수이다\n");
 
         // 캐릭터 상세 정보
         systemPrompt.append("\n### 너의 캐릭터 정보 ###\n");
