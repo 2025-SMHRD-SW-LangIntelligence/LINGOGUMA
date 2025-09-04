@@ -119,3 +119,155 @@
   background: #ff914d;
   transform: translateY(-2px);
 }
+
+/* =========================
+   AccountInfo 전용 (컴팩트/깔끔)
+   다른 페이지 영향 최소화를 위해 account- 접두사 사용
+   ========================= */
+.account-section {
+  display: grid;
+  gap: 16px;
+}
+
+/* 카드 공통 */
+.account-card {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.account-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a2a;
+  background: #1a1a1a;
+}
+.account-card-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.account-card-note {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.account-card-body {
+  padding: 14px 16px;
+}
+
+/* 프로필 그리드 */
+.account-profile-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px 16px;
+}
+.account-profile-grid .k {
+  color: #cfcfcf;
+  opacity: 0.85;
+}
+.account-profile-grid .v {
+  color: #ffffff;
+}
+
+/* 폼 레이아웃: 라벨 / 입력 / 버튼 */
+.account-form-row {
+  display: grid;
+  /* ✅ 버튼 칸을 내용 너비만큼만 차지하게 */
+  grid-template-columns: 100px minmax(220px, 420px) max-content;
+  column-gap: 12px; /* input ↔ button 간격 확보 */
+  align-items: center;
+  justify-items: start; /* ✅ 각 아이템이 칸을 가득 채우지 않게 */
+}
+
+/* 라벨/인풋/버튼 (작게) */
+.account-label {
+  font-size: 13px;
+  color: #cfcfcf;
+}
+.account-input {
+  width: 100%;
+  min-width: 0;
+  background: #191919;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.account-input:focus {
+  border-color: #e77a3e;
+  box-shadow: 0 0 0 3px rgba(231, 122, 62, 0.15);
+}
+.account-input-sm {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+/* 버튼 */
+.account-btn {
+  border: 1px solid transparent;
+  background: #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: transform 0.12s, opacity 0.12s, background 0.12s,
+    border-color 0.12s;
+}
+
+/* 버튼은 적당히 컴팩트 유지 */
+.account-btn.account-btn-sm {
+  white-space: nowrap;
+}
+
+.account-btn:hover {
+  transform: translateY(-1px);
+}
+.account-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.account-btn-sm {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.account-btn-primary {
+  background: #e77a3e;
+  border-color: #e77a3e;
+}
+.account-btn-primary:hover {
+  background: #ff914d;
+  border-color: #ff914d;
+}
+.account-btn-ghost {
+  background: transparent;
+  border-color: #2a2a2a;
+}
+.account-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 버튼이 늘어나지 않게 고정 */
+.account-form-row .account-btn {
+  justify-self: start; /* ✅ stretch 방지 */
+  width: auto; /* 혹시 상위 .btn 전역 스타일이 width:100%면 덮어쓰기 */
+  margin-left: 20px; /* gap으로 간격 관리 */
+  white-space: nowrap; /* 라벨 짧아도 버튼 폭 안정 */
+}
+
+/* 모바일에서는 세로 스택 */
+@media (max-width: 560px) {
+  .account-form-row {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+    justify-items: stretch; /* 모바일은 버튼도 가로로 꽉 채우기 */
+  }
+  .account-form-row .account-btn {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
