@@ -328,7 +328,7 @@
   transform: translateX(-50%);
   width: min(920px, 72vw);
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto; /* [MOD] 액션 버튼 칼럼 추가 */
   gap: 12px;
   background: rgba(0, 0, 0, 0.35);
   border: 2px solid rgba(255, 255, 255, 0.18);
@@ -361,6 +361,34 @@
 }
 .send-btn:hover {
   filter: brightness(1.06);
+}
+
+/* [ADD] 액션 버튼 */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: filter 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
+    border-color 0.2s ease;
+}
+.action-btn:hover {
+  filter: brightness(1.06);
+}
+.action-btn img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+.action-btn.is-on {
+  border-color: #4f87ff;
+  box-shadow: 0 0 0 3px rgba(79, 135, 255, 0.18) inset;
+  background: rgba(79, 135, 255, 0.18);
 }
 
 /* responsive */
@@ -543,7 +571,8 @@
   transform: translateX(-50%);
   width: 210%;
   height: 220%;
-  background: url("../../assets/images/effects/spotlight.png") center top/contain no-repeat;
+  background: url("../../assets/images/effects/spotlight.png") center
+    top/contain no-repeat;
   mix-blend-mode: screen;
   opacity: 0.9;
   filter: blur(0.2px);
