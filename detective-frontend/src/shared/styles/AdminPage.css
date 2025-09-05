@@ -225,6 +225,7 @@
 }
 
 /* ===== 시나리오 표 레이아웃 & 구분선(안정형) ===== */
+
 .scenario-table {
   table-layout: auto; /* admin-table의 fixed 오버라이드 */
   border-collapse: separate;
@@ -303,5 +304,296 @@
   .admin-table thead th,
   .admin-table tbody td {
     padding: 10px;
+  }
+}
+/******************************
+ * Admin Scenario Detail – Unified Look
+ ******************************/
+:root {
+  --ink: #eaeaea; /* 본문 텍스트 */
+  --ink-dim: #b8b8b8; /* 보조 텍스트 */
+  --bg: #101114; /* 전체 배경 */
+  --panel: #16181d; /* 카드/패널 배경 */
+  --panel-2: #1b1e24; /* 테이블/보조 패널 */
+  --border: #2a2e36; /* 경계선 */
+  --shadow: rgba(0, 0, 0, 0.35);
+
+  --primary: #ff8a3d; /* 핵심 포인트 컬러 */
+  --warning: #ffcc66;
+  --danger: #ff5252;
+  --success: #2ecc71;
+
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 18px;
+  --space-5: 24px;
+
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+
+/* 전체 섹션 폭/여백 */
+.account-section.admin-section--wide {
+  margin: 0 auto;
+  padding: var(--space-5);
+  max-width: 1120px;
+  color: var(--ink);
+}
+
+/* 제목 */
+.mypage-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 var(--space-4) 0;
+  letter-spacing: 0.2px;
+}
+
+/* 카드 */
+.account-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 28px var(--shadow);
+}
+.account-card-body {
+  padding: var(--space-5);
+}
+
+/* 상단 브레드크럼/툴바 */
+.admin-breadcrumb,
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.toolbar-label {
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.admin-select,
+.select,
+.input,
+.textarea {
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  outline: none;
+}
+.admin-select:focus,
+.select:focus,
+.input:focus,
+.textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.15);
+}
+
+/* 소제목/구분선 */
+.panel-subtitle {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.admin-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--space-5) 0;
+}
+
+/* 버튼 공통 */
+.account-btn,
+.btn {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: 0.14s ease;
+  line-height: 1;
+}
+.account-btn-sm {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.account-btn-ghost {
+  background: transparent;
+}
+.account-btn:hover,
+.btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.account-btn-primary,
+.btn.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #111;
+}
+.account-btn-warning {
+  background: var(--warning);
+  border-color: var(--warning);
+  color: #111;
+}
+.account-btn-danger,
+.btn.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #111;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
+.status-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-dim);
+}
+.status-published {
+  border-color: rgba(46, 204, 113, 0.35);
+  color: #b7f7cd;
+}
+.status-published::before {
+  background: var(--success);
+}
+.status-draft {
+  color: #ffdcb0;
+  border-color: rgba(255, 204, 102, 0.35);
+}
+.status-draft::before {
+  background: var(--warning);
+}
+.status-archived {
+  color: #ffb1b1;
+  border-color: rgba(255, 82, 82, 0.35);
+}
+.status-archived::before {
+  background: var(--danger);
+}
+
+/* 테이블 */
+.table-wrap {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.admin-table thead th {
+  text-align: left;
+  padding: 12px 14px;
+  color: var(--ink-dim);
+  background: linear-gradient(to bottom, #20232a, #1a1d24);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.admin-table tbody td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.mono {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+/* 상세 그리드 */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.detail-grid .col-span-2 {
+  grid-column: span 2;
+}
+.detail-label {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+.detail-value {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+/* 하단 액션 정렬 */
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* 클릭 가능한 행/링크 느낌 */
+.row-clickable {
+  cursor: pointer;
+}
+.link-like {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 빈 상태/로딩 */
+.account-empty,
+.admin-loading,
+.form-error {
+  color: var(--ink-dim);
+  background: var(--panel-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+/* 반응형 */
+@media (max-width: 920px) {
+  .account-section.admin-section--wide {
+    padding: var(--space-4);
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-grid .col-span-2 {
+    grid-column: auto;
+  }
+  .admin-table thead {
+    font-size: 13px;
+  }
+  .admin-table tbody td,
+  .admin-table thead th {
+    padding: 10px 12px;
   }
 }

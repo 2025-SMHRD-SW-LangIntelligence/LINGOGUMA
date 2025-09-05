@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/shared/api/client";
+import { useNavigate } from "react-router-dom";
 /* 공통 톤 */
 import "@/shared/styles/MyPage.css";
 /* 관리자 전용 */
@@ -17,11 +18,18 @@ interface Scenario {
 export default function AdminScenarioPage() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // 상태 필터
   const [filter, setFilter] = useState<
     "ALL" | "DRAFT" | "PUBLISHED" | "ARCHIVED"
   >("ALL");
+  const nav = useNavigate();
+
+  // ------------------------------
+  // 상세 열기
+  // ------------------------------
+  const openDetail = (id: number) => {
+    // ⚠️ 실제 라우트에 맞게 수정: 예) `/admin/scenarios/${id}/review` 등
+    nav(`/admin/scenarios/${id}`);
+  };
 
   // ------------------------------
   // 데이터 가져오기
@@ -47,9 +55,10 @@ export default function AdminScenarioPage() {
   }, [filter]);
 
   // ------------------------------
-  // 액션
+  // 액션 (승인/반려/삭제)
   // ------------------------------
-  const handleApprove = async (id: number) => {
+  const handleApprove = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // ✅ 행 클릭 네비게이션 방지
     try {
       await api.post(`/admin/scenarios/${id}/approve`);
       alert("시나리오 승인 완료");
@@ -63,7 +72,8 @@ export default function AdminScenarioPage() {
     }
   };
 
-  const handleReject = async (id: number) => {
+  const handleReject = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // ✅
     try {
       await api.post(`/admin/scenarios/${id}/reject`);
       alert("시나리오 반려 완료");
@@ -77,7 +87,8 @@ export default function AdminScenarioPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // ✅
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/admin/scenarios/${id}`);
@@ -132,9 +143,24 @@ export default function AdminScenarioPage() {
                 </thead>
                 <tbody>
                   {scenarios.map((s) => (
-                    <tr key={s.scenIdx}>
+                    <tr
+                      key={s.scenIdx}
+                      className="row-clickable"
+                      onClick={() => openDetail(s.scenIdx)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                          openDetail(s.scenIdx);
+                      }}
+                      tabIndex={0}
+                      role="button"
+                    >
                       <td className="mono">{s.scenIdx}</td>
-                      <td className="td-title" title={s.scenTitle}>
+                      <td
+                        className="td-title link-like"
+                        title={s.scenTitle}
+                        // 셀 단독 클릭만 활성화하고 싶다면 위 tr의 onClick 제거하고 여기만 유지
+                        // onClick={() => openDetail(s.scenIdx)}
+                      >
                         {s.scenTitle}
                       </td>
                       <td className="td-summary" title={s.scenSummary}>
@@ -152,13 +178,13 @@ export default function AdminScenarioPage() {
                           <>
                             <button
                               className="account-btn account-btn-primary account-btn-sm"
-                              onClick={() => handleApprove(s.scenIdx)}
+                              onClick={(e) => handleApprove(e, s.scenIdx)}
                             >
                               승인
                             </button>
                             <button
                               className="account-btn account-btn-warning account-btn-sm"
-                              onClick={() => handleReject(s.scenIdx)}
+                              onClick={(e) => handleReject(e, s.scenIdx)}
                             >
                               반려
                             </button>
@@ -166,7 +192,7 @@ export default function AdminScenarioPage() {
                         )}
                         <button
                           className="account-btn account-btn-danger account-btn-sm"
-                          onClick={() => handleDelete(s.scenIdx)}
+                          onClick={(e) => handleDelete(e, s.scenIdx)}
                         >
                           삭제
                         </button>

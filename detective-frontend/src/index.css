@@ -23,11 +23,8 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  display: block;
 }
 
 h1 {
@@ -73,15 +70,26 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
+  background: var(--bg) !important;
 }
 
 /* #root {
   max-width: none; /* 혹시 다른 곳에서 다시 지정돼도 풀기
 } 
 */
-html, body, #root { width: 100%; height: 100%; }
-#root { max-width: none; margin: 0; padding: 0; text-align: initial; }
-
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: initial;
+}
 
 /* 배경색은 원하는 색으로 */
 body {

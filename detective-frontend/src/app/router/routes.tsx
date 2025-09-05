@@ -24,6 +24,7 @@ import AdminDashboardPage from "../../pages/admin/AdminDashboardPage";
 import AdminUserPage from "../../pages/admin/users/AdminUserPage";
 import AdminScenarioPage from "../../pages/admin/scenarios/AdminScenarioPage";
 import AdminGamePage from "../../pages/admin/games/AdminGamePage";
+import AdminScenarioDetailPage from "@/pages/admin/scenarios/AdminScenarioDetailPage";
 // import AdminLogPage from "../../pages/admin/logs/AdminLogPage";
 
 export const router = createBrowserRouter([
@@ -76,5 +77,13 @@ export const router = createBrowserRouter([
       { path: "games", element: <AdminGamePage /> },
       // { path: "logs", element: <AdminLogPage /> },
     ],
+  },
+  {
+    path: "/admin/scenarios",
+    element: <AdminScenarioPage />,
+  },
+  {
+    path: "/admin/scenarios/:id", // ✅ 상세 보기
+    element: <AdminScenarioDetailPage />,
   },
 ]);
