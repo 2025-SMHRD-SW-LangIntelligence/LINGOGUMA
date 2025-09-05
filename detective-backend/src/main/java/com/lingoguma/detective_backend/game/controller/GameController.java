@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/game")
@@ -253,7 +255,7 @@ public class GameController {
                 }
             }
 
-            // 4. skills 결정
+            // 4. skills 결정 (기존 5개 점수)
             Map<String, ?> chosen;
             if (req.getSkills() != null) {
                 chosen = req.getSkills();
@@ -263,7 +265,63 @@ public class GameController {
                 chosen = Map.of();
             }
             Map<String, Integer> skillsToSave = coerceSkillInts(chosen);
-            String skillsJsonStr = toJson(skillsToSave);
+
+            // [ADD] 4-1. 정답 유사도 계산 → skillsJson에 함께 저장
+            Map<String, Object> answerTruth = (Map<String, Object>) content.getOrDefault("answer", Map.of());
+            String truthMotive = str(answerTruth.get("motive"));
+            String truthMethod = str(answerTruth.get("method"));
+            // key_evidence: ["e1","e3"] → 이름으로 치환해 비교문자열 구성
+            @SuppressWarnings("unchecked")
+            List<Object> keyEvIds = (List<Object>) answerTruth.getOrDefault("key_evidence", List.of());
+            Map<String, String> evIdToName = evidence.stream().collect(
+                    Collectors.toMap(
+                            ev -> String.valueOf(ev.getOrDefault("id", "")),
+                            ev -> String.valueOf(ev.getOrDefault("name", "")),
+                            (a, b) -> a,
+                            LinkedHashMap::new
+                    )
+            );
+            String truthEvidence = keyEvIds.stream()
+                    .map(id -> evIdToName.getOrDefault(String.valueOf(id), String.valueOf(id)))
+                    .collect(Collectors.joining(", "));
+
+            Map<String, Object> ans = req.getAnswerJson() != null ? req.getAnswerJson() : Map.of();
+            String playerMotive   = !str(ans.get("motive")).isEmpty()   ? str(ans.get("motive"))   : str(ans.get("why"));
+            String playerMethod   = !str(ans.get("method")).isEmpty()   ? str(ans.get("method"))   : str(ans.get("how"));
+            String playerEvidence = !str(ans.get("evidence")).isEmpty() ? str(ans.get("evidence")) : str(ans.get("evidenceText"));
+            String playerTime     = !str(ans.get("time")).isEmpty()     ? str(ans.get("time"))     : str(ans.get("when"));
+            String truthTime      = ""; // 필요시 content.answer.time 으로 확장
+
+            Map<String, Object> simPayload = new HashMap<>();
+            simPayload.put("motive_player",   playerMotive);
+            simPayload.put("motive_truth",    truthMotive);
+            simPayload.put("method_player",   playerMethod);
+            simPayload.put("method_truth",    truthMethod);
+            simPayload.put("evidence_player", playerEvidence);
+            simPayload.put("evidence_truth",  truthEvidence);
+            simPayload.put("time_player",     playerTime);
+            simPayload.put("time_truth",      truthTime);
+
+            Map<String, Object> simRes = null;
+            try {
+                simRes = nlpClient.similarity(simPayload); // ★ GameNlpClient에 메서드 추가 필요
+            } catch (Exception e) {
+                System.err.println("유사도 계산 실패: " + e.getMessage());
+            }
+
+            Map<String, Object> skillsJsonObj = new LinkedHashMap<>(skillsToSave);
+            if (simRes != null) {
+                Double sMot = asDouble(simRes.get("sim_motive"));
+                Double sMet = asDouble(simRes.get("sim_method"));
+                Double sEvd = asDouble(simRes.get("sim_evidence"));
+                Double sTim = asDouble(simRes.get("sim_time"));
+                if (sMot != null) skillsJsonObj.put("sim_motive", sMot);
+                if (sMet != null) skillsJsonObj.put("sim_method", sMet);
+                if (sEvd != null) skillsJsonObj.put("sim_evidence", sEvd);
+                if (sTim != null) skillsJsonObj.put("sim_time", sTim);
+                skillsJsonObj.put("sim_threshold", 0.75); // 프론트에서 O/X 임계값으로 사용
+            }
+            String skillsJsonStr = toJson(skillsJsonObj);
 
             // 5. 정답 여부 계산
             boolean isCorrect = checkCorrect(req);
@@ -292,15 +350,31 @@ public class GameController {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> characters = (List<Map<String, Object>>) content.getOrDefault("characters", List.of());
 
-            String realCulprit = characters.stream()
+            // ID/이름 모두 허용
+            String realCulpritId = characters.stream()
+                    .filter(c -> "범인".equals(c.get("role")))
+                    .map(c -> (String) c.get("id"))
+                    .findFirst()
+                    .orElse(null);
+
+            String realCulpritName = characters.stream()
                     .filter(c -> "범인".equals(c.get("role")))
                     .map(c -> (String) c.get("name"))
                     .findFirst()
                     .orElse(null);
 
-            if (realCulprit != null && req.getAnswerJson() != null) {
-                String chosen = (String) req.getAnswerJson().get("culprit");
-                return realCulprit.equals(chosen);
+            if (req.getAnswerJson() != null) {
+                String chosen = str(req.getAnswerJson().get("culprit"));
+                String chosenIdFallback  = str(req.getAnswerJson().get("culpritId"));
+                String chosenIdFallback2 = str(req.getAnswerJson().get("selectedCulpritId"));
+                String chosenNameFallback= str(req.getAnswerJson().get("culprit_name"));
+
+                if (!chosen.isEmpty() && realCulpritId != null && chosen.equals(realCulpritId)) return true;
+                if (!chosenIdFallback.isEmpty() && realCulpritId != null && chosenIdFallback.equals(realCulpritId)) return true;
+                if (!chosenIdFallback2.isEmpty() && realCulpritId != null && chosenIdFallback2.equals(realCulpritId)) return true;
+                if (!chosenNameFallback.isEmpty() && realCulpritName != null && chosenNameFallback.equals(realCulpritName)) return true;
+
+                if (!chosen.isEmpty() && realCulpritName != null && chosen.equals(realCulpritName)) return true;
             }
         } catch (Exception e) {
             System.err.println("정답 검증 중 오류: " + e.getMessage());
@@ -350,5 +424,20 @@ public class GameController {
             if (!out.containsKey(k)) out.put(k, 0);
         }
         return out;
+    }
+
+    // [ADD] 안전 문자열/숫자
+    private static String str(Object o) {
+        return o == null ? "" : String.valueOf(o).trim();
+    }
+    private static Double asDouble(Object o) {
+        if (o == null) return null;
+        try {
+            Double d = Double.valueOf(String.valueOf(o));
+            if (d.isNaN() || d.isInfinite()) return null;
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

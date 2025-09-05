@@ -9,6 +9,7 @@ import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer, util as st_util
 
 # ---- 안정성 옵션 ----
 os.environ["TRANSFORMERS_NO_FAST_TOKENIZER"] = "1"
@@ -31,6 +32,26 @@ class AnalyzeResponse(BaseModel):
     engine: Literal["hf","dummy"]
     skills: Dict[str, int]
     submetrics: Dict[str, float] = {}
+
+# ========================
+# (ADD) 정답 유사도 스키마
+# ========================
+class SimilarityReq(BaseModel):
+    session_id: Optional[int] = None
+    motive_player: Optional[str] = None
+    motive_truth:  Optional[str] = None
+    method_player: Optional[str] = None
+    method_truth:  Optional[str] = None
+    evidence_player: Optional[str] = None
+    evidence_truth:  Optional[str] = None
+    time_player:    Optional[str] = None
+    time_truth:     Optional[str] = None
+
+class SimilarityRes(BaseModel):
+    sim_motive:    float
+    sim_method:    float
+    sim_evidence:  float = 0.0
+    sim_time:      float = 0.0
 
 # ========================
 # 유틸 함수
@@ -126,6 +147,24 @@ def zsc_score(texts: List[str], pos: str, neg: str) -> float:
             entail_prob = 0.5
         probs.append(entail_prob)
     return float(np.mean(probs)) if probs else 0.5
+
+_SIM_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+# 환경변수로 바꾸고 싶으면 SIM_MODEL 지정 (기본: jhgan/ko-sroberta-multitask)
+_SIM_MODEL_NAME = os.getenv("SIM_MODEL", "jhgan/ko-sroberta-multitask")
+_sim_model = SentenceTransformer(_SIM_MODEL_NAME, device=_SIM_DEVICE)
+
+def _safe_text(x: Optional[str]) -> str:
+    return (x or "").strip()
+
+def _sim_text(a: Optional[str], b: Optional[str]) -> float:
+    """정규화 임베딩 코사인 유사도 (0~1). 어느 한쪽이 비어 있으면 0.0"""
+    a = _safe_text(a); b = _safe_text(b)
+    if not a or not b:
+        return 0.0
+    with torch.inference_mode():
+        ea = _sim_model.encode([a], convert_to_tensor=True, normalize_embeddings=True)
+        eb = _sim_model.encode([b], convert_to_tensor=True, normalize_embeddings=True)
+        return float(st_util.cos_sim(ea, eb).item())
 
 # ========================
 # 핵심 스코어 함수
@@ -261,3 +300,28 @@ def analyze(
     except Exception as e:
         # 마지막 방어선: 모델 에러가 나도 200으로 dummy 반환
         return score_dummy(req)
+
+# ========================
+# (ADD) 정답 유사도 엔드포인트
+# ========================
+@app.post("/nlp/similarity", response_model=SimilarityRes)
+def nlp_calc_similarity(
+    req: SimilarityReq,
+    threshold: Annotated[float, Query(ge=0.0, le=1.0, description="정답 판정 임계값(0~1)")] = 0.75,
+):
+    """
+    플레이어 답변 vs 정답 텍스트의 의미적 유사도(코사인, 0~1)를 항목별로 계산.
+    - 반환값: motive/method/evidence/time 각 유사도
+    - 임계값(threshold)은 선택 파라미터이며, 여기서는 점수만 반환합니다.
+    """
+    s_motive   = _sim_text(req.motive_player,   req.motive_truth)
+    s_method   = _sim_text(req.method_player,   req.method_truth)
+    s_evidence = _sim_text(req.evidence_player, req.evidence_truth)
+    s_time     = _sim_text(req.time_player,     req.time_truth)
+
+    return SimilarityRes(
+        sim_motive=float(s_motive),
+        sim_method=float(s_method),
+        sim_evidence=float(s_evidence),
+        sim_time=float(s_time),
+    )

@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 /**
  * FastAPI /nlp/analyze 호출 클라이언트
@@ -66,5 +67,18 @@ public class GameNlpClient {
             // 여기서는 런타임 예외로 재던짐 (finish()에서 try-catch로 이미 감쌌으니 로그만 깔끔)
             throw new RuntimeException("NLP 서버 호출 실패: " + e.getMessage(), e);
         }
+        
     }
+
+    // FastAPI: POST /nlp/similarity
+    // payload 예: { motive_player, motive_truth, method_player, method_truth, evidence_player, evidence_truth, time_player, time_truth }
+    public Map<String, Object> similarity(Map<String, Object> payload) {
+    String url = nlpBaseUrl + "/nlp/similarity"; // baseUrl은 기존 analyze와 동일한 프리픽스
+    ResponseEntity<Map> res = restTemplate.postForEntity(url, payload, Map.class);
+    @SuppressWarnings("unchecked")
+    Map<String, Object> body = (Map<String, Object>) res.getBody();
+    return body != null ? body : Map.of();
+}
+
+    
 }

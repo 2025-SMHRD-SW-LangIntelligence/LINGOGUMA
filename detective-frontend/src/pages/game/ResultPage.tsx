@@ -1,4 +1,3 @@
-// src/pages/ResultPage.tsx
 import { useState, useEffect, useRef } from "react";
 import {
   useNavigate,
@@ -43,9 +42,11 @@ export default function ResultPage() {
     { id: string; name: string; avatar?: string }[]
   >([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [whenText, setWhenText] = useState("");
+
+  // ↓ ‘동기/수법/증거’만 사용 (변수명은 기존 관성 고려)
   const [howText, setHowText] = useState("");
   const [whyText, setWhyText] = useState("");
+  const [evidenceText, setEvidenceText] = useState(""); // ★ 추가
 
   /* 총 플레이 시간 (GamePlay에서 가져옴) */
   const TIMER_KEY = sessionId
@@ -97,12 +98,13 @@ export default function ResultPage() {
         const names = chars
           .filter((c: any) => ["용의자", "범인"].includes(c?.role))
           .map((c: any, idx: number) => ({
-            id: `s_${idx}`,
+            id: String(c?.id || ""), // ★ 실제 시나리오 ID 사용 (suspect_3 등)
             name: String(c?.name || ""),
             avatar: c.avatar || fallbackAvatars[idx] || "", // 없으면 CSS에서 placeholder 처리
           }))
           .filter(
-            (c: { id: string; name: string; avatar?: string }) => !!c.name
+            (c: { id: string; name: string; avatar?: string }) =>
+              !!c.id && !!c.name
           );
         setSuspects(names);
       } catch (err) {
@@ -117,27 +119,25 @@ export default function ResultPage() {
     e.preventDefault();
     if (!sessionId) return alert("세션 ID가 없습니다.");
     if (!selectedId) return alert("범인을 선택해주세요.");
-    if (!whenText.trim()) {
-      return alert('"언제?"에 대한 답변을 입력해주세요.');
+    if (!whyText.trim()) {
+      return alert("동기를 입력해주세요.");
     }
     if (!howText.trim()) {
-      return alert('"어떻게?"에 대한 답변을 입력해주세요.');
+      return alert("수법을 입력해주세요.");
     }
-    if (!whyText.trim()) {
-      return alert('"왜?"에 대한 답변을 입력해주세요.');
+    if (!evidenceText.trim()) {
+      return alert("증거를 입력해주세요.");
     }
-
-    const selected = suspects.find((s) => s.id === selectedId);
 
     const payload = {
       sessionId,
       scenIdx: Number(scenarioId),
       userIdx: user ? user.userIdx : null,
       answerJson: {
-        culprit: selected?.name ?? "",
-        when: whenText,
-        how: howText,
-        why: whyText,
+        culprit: selectedId, // ★ ID로 저장 (정답 판정과 일치)
+        how: howText, // 수법
+        why: whyText, // 동기
+        evidenceText, // 증거
       },
       timings: {
         total_duration: totalDuration,
@@ -163,6 +163,7 @@ export default function ResultPage() {
   /* ✅ 메모 팝업: GamePlay 세션키 우선, 없으면 기존 'detective_memo' 폴백 */
   const MEMO_KEY = sk(sessionId, "memo");
   const [memoOpen, setMemoOpen] = useState(false);
+
   const [memoText] = useState(() => {
     const v1 = localStorage.getItem(MEMO_KEY);
     if (v1 != null) return v1; // 세션별 메모가 있으면 이걸 사용
@@ -263,33 +264,33 @@ export default function ResultPage() {
         {/* 질문/답변 */}
         <form className="qa-form" onSubmit={handleSubmit}>
           <label className="q-label">
-            언제?
+            동기
             <textarea
               className="q-textarea"
-              placeholder="예: 오후 2시, 도서관 서고에서"
+              placeholder="예: 연구비 유용 사실이 드러날까 두려워서"
               rows={2}
-              value={whenText}
-              onChange={(e) => setWhenText(e.target.value)}
+              value={whyText}
+              onChange={(e) => setWhyText(e.target.value)}
             />
           </label>
           <label className="q-label">
-            어떻게?
+            수법
             <textarea
               className="q-textarea"
-              placeholder="예: 창문을 통해 몰래 들어가 고서를 가방에 넣음"
+              placeholder="예: 괴전화로 유인 후 문서를 회수했다"
               rows={2}
               value={howText}
               onChange={(e) => setHowText(e.target.value)}
             />
           </label>
           <label className="q-label">
-            왜?
+            증거
             <textarea
               className="q-textarea"
-              placeholder="예: 비싼 고서를 팔아 돈을 벌기 위해"
+              placeholder="예: 통화기록(e1), 분실 문서(e3)"
               rows={2}
-              value={whyText}
-              onChange={(e) => setWhyText(e.target.value)}
+              value={evidenceText}
+              onChange={(e) => setEvidenceText(e.target.value)}
             />
           </label>
 
