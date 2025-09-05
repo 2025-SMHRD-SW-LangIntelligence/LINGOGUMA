@@ -145,7 +145,6 @@ function toPlaySuspects(chars: Character[] | undefined): PlaySuspect[] {
   return list.map((c, idx) => {
     const facts: string[] = [];
     if (c.job) facts.push(`직업: ${c.job}`);
-    if (c.alibi) facts.push(`알리바이: ${c.alibi}`);
     if (c.personality) facts.push(`성격: ${c.personality}`);
     if (c.outfit) facts.push(`옷차림: ${c.outfit}`);
     const avatar = pickFromPool(
