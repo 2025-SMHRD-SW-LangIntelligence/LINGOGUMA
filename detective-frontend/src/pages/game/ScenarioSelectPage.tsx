@@ -1,3 +1,4 @@
+// [ScenarioSelectPage.tsx]
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/store/auth.store";
@@ -6,6 +7,7 @@ import "@/shared/styles/ScenarioSelectPage.css";
 
 import folder from "@/assets/images/folder.png";
 import tutoImg from "@/assets/images/effects/tuto.png";
+import star from "@/assets/images/icons/star.png";
 
 /* =========================
    타입
@@ -64,8 +66,6 @@ export default function ScenarioSelectPage() {
       nav("/login");
       return;
     }
-
-    // 세션 바로 시작하지 않고 summary 페이지로 이동
     nav(`/scenarios/${s.scenIdx}/summary`);
   };
 
@@ -75,11 +75,17 @@ export default function ScenarioSelectPage() {
   const showHint = (msg: string) => {
     setHint(msg);
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
-    hideTimer.current = window.setTimeout(() => setHint(null), 2000) as unknown as number;
+    hideTimer.current = window.setTimeout(
+      () => setHint(null),
+      2000
+    ) as unknown as number;
   };
-  useEffect(() => () => {
-    if (hideTimer.current) window.clearTimeout(hideTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    },
+    []
+  );
 
   /* =========================
      게임 방법 오버레이 핸들러
@@ -120,14 +126,12 @@ export default function ScenarioSelectPage() {
      ========================= */
   useEffect(() => {
     if (!howtoOpen) return;
-
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         setHowtoOpen(false);
       }
     };
-
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [howtoOpen]);
@@ -139,6 +143,26 @@ export default function ScenarioSelectPage() {
     () => user?.nickname ?? String(user?.userIdx ?? "게스트"),
     [user]
   );
+
+  /* =========================
+     난이도 별 렌더링
+     ========================= */
+  const renderStars = (level: number) => {
+    if (!level || level < 0) level = 0;
+    return (
+      <span className="sc-card__stars" aria-hidden="true">
+        {Array.from({ length: level }).map((_, i) => (
+          <img
+            key={i}
+            src={star}
+            alt=""
+            className="sc-card__star"
+            draggable={false}
+          />
+        ))}
+      </span>
+    );
+  };
 
   /* =========================
      렌더
@@ -182,24 +206,44 @@ export default function ScenarioSelectPage() {
         {/* 사건 목록 보드 */}
         <section className="sc-board" aria-label="사건 목록">
           <div className="sc-grid">
-            {scenarios.map((s, i) => {
+            {scenarios.map((s) => {
               const locked = s.scenAccess === "MEMBER" && !user?.userIdx;
               return (
-                <div key={s.scenIdx} className={`sc-card ${locked ? "is-locked" : ""}`}>
+                <div
+                  key={s.scenIdx}
+                  className={`sc-card ${locked ? "is-locked" : ""}`}
+                >
                   <button
                     type="button"
                     className="sc-card__btn"
                     onClick={() => handleStart(s)}
-                    aria-label={locked ? `${s.scenTitle} (잠김)` : `${s.scenTitle} 시작`}
+                    aria-label={
+                      locked ? `${s.scenTitle} (잠김)` : `${s.scenTitle} 시작`
+                    }
                     aria-disabled={locked}
                   >
-                    <img src={folder} alt="" aria-hidden="true" className="sc-card__bg" />
+                    <img
+                      src={folder}
+                      alt=""
+                      aria-hidden="true"
+                      className="sc-card__bg"
+                    />
                     <span className="sc-card__title">{s.scenTitle}</span>
                     {locked && (
-                      <span className="sc-card__lock" aria-hidden="true">🔒</span>
+                      <span className="sc-card__lock" aria-hidden="true">
+                        🔒
+                      </span>
                     )}
                   </button>
-                  <div className="sc-card__meta">난이도: {s.scenLevel}</div>
+
+                  {/* 난이도: 별 아이콘으로 표시 */}
+                  <div
+                    className="sc-card__stars"
+                    aria-label={`난이도 ${s.scenLevel}`}
+                    title={`난이도: ${s.scenLevel}`}
+                  >
+                    {renderStars(s.scenLevel)}
+                  </div>
                 </div>
               );
             })}
@@ -244,7 +288,12 @@ export default function ScenarioSelectPage() {
               objectFit: "contain",
               display: "block",
               userSelect: "none",
-              cursor: zoom > 1 ? (isPanning.current ? "grabbing" : "grab") : "zoom-in",
+              cursor:
+                zoom > 1
+                  ? isPanning.current
+                    ? "grabbing"
+                    : "grab"
+                  : "zoom-in",
             }}
             draggable={false}
             onError={(e) => {

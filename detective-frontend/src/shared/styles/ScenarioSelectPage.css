@@ -324,3 +324,23 @@
     padding: 12px;
   }
 }
+
+.sc-card__btn {
+  position: relative; /* 별 위치 고정을 위해 부모를 relative로 */
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sc-card__stars {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+}
+
+.sc-card__star {
+  width: 16px;
+  height: 16px;
+}
