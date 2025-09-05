@@ -24,7 +24,7 @@ type ScenarioDetail = {
   contentJson?: string | any;
 };
 
-/* ✅ GamePlay와 동일 규칙의 세션별 키 유틸 (없으면 폴백 처리용) */
+/* GamePlay와 동일 규칙의 세션별 키 유틸 (없으면 폴백 처리용) */
 const sk = (sid: number | null | undefined, name: string) =>
   sid ? `play_${name}_session_${sid}` : `play_${name}_session_unknown`;
 
@@ -120,10 +120,10 @@ export default function ResultPage() {
     if (!sessionId) return alert("세션 ID가 없습니다.");
     if (!selectedId) return alert("범인을 선택해주세요.");
     if (!whyText.trim()) {
-      return alert("동기를 입력해주세요.");
+      return alert("범행 동기를 입력해주세요.");
     }
     if (!howText.trim()) {
-      return alert("수법을 입력해주세요.");
+      return alert("범행 방법을 입력해주세요.");
     }
     if (!evidenceText.trim()) {
       return alert("증거를 입력해주세요.");
@@ -134,7 +134,7 @@ export default function ResultPage() {
       scenIdx: Number(scenarioId),
       userIdx: user ? user.userIdx : null,
       answerJson: {
-        culprit: selectedId, // ★ ID로 저장 (정답 판정과 일치)
+        culprit: selectedId, // ID로 저장 (정답 판정과 일치)
         how: howText, // 수법
         why: whyText, // 동기
         evidenceText, // 증거
@@ -160,14 +160,14 @@ export default function ResultPage() {
     }
   };
 
-  /* ✅ 메모 팝업: GamePlay 세션키 우선, 없으면 기존 'detective_memo' 폴백 */
+  /* 메모 팝업: GamePlay 세션키 우선, 없으면 기존 'detective_memo' 폴백 */
   const MEMO_KEY = sk(sessionId, "memo");
   const [memoOpen, setMemoOpen] = useState(false);
 
   const [memoText] = useState(() => {
     const v1 = localStorage.getItem(MEMO_KEY);
     if (v1 != null) return v1; // 세션별 메모가 있으면 이걸 사용
-    const v2 = localStorage.getItem("detective_memo"); // 구버전 호환
+    const v2 = localStorage.getItem("detective_memo");
     return v2 ?? "";
   });
   const [pos, setPos] = useState({ x: window.innerWidth / 2 - 210, y: 120 });
@@ -264,7 +264,7 @@ export default function ResultPage() {
         {/* 질문/답변 */}
         <form className="qa-form" onSubmit={handleSubmit}>
           <label className="q-label">
-            동기
+            범행 동기
             <textarea
               className="q-textarea"
               placeholder="예: 연구비 유용 사실이 드러날까 두려워서"
@@ -274,7 +274,7 @@ export default function ResultPage() {
             />
           </label>
           <label className="q-label">
-            수법
+            범행 방법
             <textarea
               className="q-textarea"
               placeholder="예: 괴전화로 유인 후 문서를 회수했다"
@@ -287,7 +287,7 @@ export default function ResultPage() {
             증거
             <textarea
               className="q-textarea"
-              placeholder="예: 통화기록(e1), 분실 문서(e3)"
+              placeholder="예: 통화기록, 분실 문서"
               rows={2}
               value={evidenceText}
               onChange={(e) => setEvidenceText(e.target.value)}
@@ -295,7 +295,21 @@ export default function ResultPage() {
           </label>
 
           <div className="action-bar">
-            <button className="submit-btn" type="submit" disabled={!selectedId}>
+            <button
+              className={`submit-btn ${!selectedId ? "is-disabled" : ""}`}
+              type="button"
+              onClick={(ev) => {
+                if (!selectedId) return alert("범인을 선택해주세요.");
+                if (!whyText.trim()) return alert("동기를 입력해주세요.");
+                if (!howText.trim()) return alert("수법을 입력해주세요.");
+                if (!evidenceText.trim()) return alert("증거를 입력해주세요.");
+                (
+                  ev.currentTarget.closest("form") as HTMLFormElement
+                )?.requestSubmit();
+              }}
+              aria-disabled={!selectedId}
+              title={!selectedId ? "범인을 먼저 선택하세요" : "제출"}
+            >
               추리 결과 제출
             </button>
           </div>
