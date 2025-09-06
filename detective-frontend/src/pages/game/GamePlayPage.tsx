@@ -196,6 +196,13 @@ export default function GamePlayPage() {
   const [overviewOpen, setOverviewOpen] = useState(false); // ✅ 사건 개요 복구
 
   const [input, setInput] = useState("");
+  const MSGS_KEY = sk(sessionId, "msgs");
+
+  // ✅ 복원/저장 제어용 ref
+  const hydratedRef = useRef(false);
+  const skipNextSaveRef = useRef(true);
+
+  // 대화 상태
   const [msgs, setMsgs] = useState<ChatMessage[]>([]); // ✅ 저장/복원
   const [asking, setAsking] = useState(false);
 
@@ -236,24 +243,38 @@ export default function GamePlayPage() {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
 
-  // 대화만 세션별 저장/복원
-  const MSGS_KEY = sk(sessionId, "msgs");
-  const restoredMsgsRef = useRef(false);
+  /* --- 대화 복원 --- */
   useEffect(() => {
-    if (restoredMsgsRef.current) return;
-    const raw = sessionStorage.getItem(MSGS_KEY);
-    if (raw) {
-      try {
+    // 1) 복원
+    try {
+      const raw = sessionStorage.getItem(MSGS_KEY);
+      if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setMsgs(parsed as ChatMessage[]);
-      } catch {
-        /* noop */
+        if (Array.isArray(parsed)) {
+          setMsgs(parsed as ChatMessage[]);
+        }
       }
+    } catch {
+      /* noop */
     }
-    restoredMsgsRef.current = true;
+    // 2) 복원 완료 표시 및 최초 저장 스킵 플래그 ON
+    hydratedRef.current = true;
+    skipNextSaveRef.current = true;
   }, [MSGS_KEY]);
+
+  /* --- 대화 저장: 복원 직후 첫 저장 한 번은 스킵 --- */
   useEffect(() => {
-    sessionStorage.setItem(MSGS_KEY, JSON.stringify(msgs));
+    if (!hydratedRef.current) return;
+    if (skipNextSaveRef.current) {
+      // 복원 렌더 사이클의 첫 저장은 건너뛰어 빈 배열이 덮어쓰는 것을 방지
+      skipNextSaveRef.current = false;
+      return;
+    }
+    try {
+      sessionStorage.setItem(MSGS_KEY, JSON.stringify(msgs));
+    } catch {
+      /* noop */
+    }
   }, [MSGS_KEY, msgs]);
 
   /* --- 시나리오 불러오기 --- */
@@ -294,16 +315,37 @@ export default function GamePlayPage() {
         if (suspectsBase.length > 0) {
           setActiveId(suspectsBase[0].id);
           setViewId(suspectsBase[0].id);
-          if (sessionStorage.getItem(MSGS_KEY) == null) {
+
+          // ✅ 저장된 대화 "없거나 길이=0"이면 초기 진술 주입
+          let existingLen = 0;
+          try {
+            const existingRaw = sessionStorage.getItem(MSGS_KEY);
+            const parsed = existingRaw ? JSON.parse(existingRaw) : null;
+            existingLen = Array.isArray(parsed) ? parsed.length : 0;
+          } catch {
+            existingLen = 0;
+          }
+
+          if (existingLen === 0) {
             const baseMsgs: ChatMessage[] = suspectsBase
-              .filter((s) => !!s.comment)
+              .filter((s) => !!s.comment?.trim())
               .map((s) => ({
                 id: `c-${s.id}`,
                 from: "npc",
                 whoId: s.id,
-                text: s.comment!,
+                text: s.comment!.trim(),
               }));
+
             setMsgs(baseMsgs);
+            // 복원 직후 첫 저장 스킵 플래그를 꺼서 바로 저장되게 하거나,
+            // 여기서 직접 저장한다. (아래는 직접 저장)
+            try {
+              sessionStorage.setItem(MSGS_KEY, JSON.stringify(baseMsgs));
+              // 이후 저장 루프와의 충돌 방지 위해 저장 스킵은 해제
+              skipNextSaveRef.current = false;
+            } catch {
+              /* noop */
+            }
           }
         }
       } catch (err) {
@@ -311,7 +353,7 @@ export default function GamePlayPage() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioId]);
+  }, [scenarioId, MSGS_KEY]);
 
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -538,6 +580,13 @@ export default function GamePlayPage() {
           <div className="memo-header" onMouseDown={onDragStart}>
             📝 메모장
           </div>
+        </div>
+      )}
+      {memoOpen && (
+        <div
+          className="memo-popup-body"
+          style={{ top: memoPos.y + 32, left: memoPos.x, position: "absolute" }}
+        >
           <textarea
             value={memoText}
             onChange={(e) => setMemoText(e.target.value)}

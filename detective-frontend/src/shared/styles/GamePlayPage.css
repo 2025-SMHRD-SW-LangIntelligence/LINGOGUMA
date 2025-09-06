@@ -1080,3 +1080,37 @@
     width: 44vw;
   }
 }
+/* === Chat Panel Glassmorphism (override) === */
+.chat-panel {
+  /* 더 옅은 반투명 배경 */
+  background: rgba(20, 22, 28, 0.28);
+  /* 유리 느낌 */
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* 테두리/내부광 살짝 조정 */
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 8px rgba(255, 255, 255, 0.04) inset;
+}
+
+/* 상단 아바타 바/FACTS 바도 반투명 톤 다운 */
+.chat-avatars {
+  background: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom-color: rgba(255, 255, 255, 0.16);
+}
+.chat-facts {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+
+/* 말풍선 대비 유지 (가독성) */
+.bubble.me {
+  background: rgba(79, 135, 255, 0.92);
+}
+.bubble.npc {
+  background: rgba(255, 255, 255, 0.95);
+}
