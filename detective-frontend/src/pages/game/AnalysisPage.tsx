@@ -296,12 +296,12 @@ export default function AnalysisPage() {
 
           {solved ? (
             <div className="result-box">
-              <h3>
-                <span style={{ fontSize: "2rem" }}>✅</span> 정답입니다.
-              </h3>
               <p className="result-sub">
                 선택한 범인 : {culpritName || culpritId || "미입력"}
               </p>
+              <h3>
+                <span style={{ fontSize: "2rem" }}>✅</span> 정답입니다.
+              </h3>
             </div>
           ) : (
             <div className="result-box">
