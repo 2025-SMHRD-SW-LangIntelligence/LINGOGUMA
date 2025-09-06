@@ -142,3 +142,12 @@
 .cap-exit-btn:hover {
   background: #b91c1c;
 }
+.result-box {
+  margin-bottom: 24px; /* 결과 블록과 아래 표 간격 */
+}
+
+.result-sub {
+  margin-top: 0px; /* h3 바로 밑에 살짝 붙음 */
+  font-size: 1rem;
+  color: #ccc; /* 보조 텍스트 느낌 */
+}

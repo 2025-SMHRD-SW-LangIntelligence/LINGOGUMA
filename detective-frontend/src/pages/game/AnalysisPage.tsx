@@ -293,10 +293,26 @@ export default function AnalysisPage() {
       <section className="cap-card">
         <header className="cap-header">
           <h1>추리 결과 분석</h1>
-          <p className="cap-sub">
-            선택한 범인: <b>{culpritName || culpritId || "미입력"}</b>
-          </p>
-          <p>{solved ? "정답입니다" : "틀렸습니다 ❌"}</p>
+
+          {solved ? (
+            <div className="result-box">
+              <h3>
+                <span style={{ fontSize: "2rem" }}>✅</span> 정답입니다.
+              </h3>
+              <p className="result-sub">
+                선택한 범인 : {culpritName || culpritId || "미입력"}
+              </p>
+            </div>
+          ) : (
+            <div className="result-box">
+              <p className="result-sub">
+                선택한 범인 : {culpritName || culpritId || "미입력"}
+              </p>
+              <h3>
+                <span style={{ fontSize: "2rem" }}>❌</span> 틀렸습니다.
+              </h3>
+            </div>
+          )}
         </header>
 
         {/* KPI */}
