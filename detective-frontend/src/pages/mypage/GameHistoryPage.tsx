@@ -21,13 +21,43 @@ interface GameResult {
 export default function GameHistoryPage() {
   const { user } = useAuth();
   const [results, setResults] = useState<GameResult[]>([]);
+  const [nameMaps, setNameMaps] = useState<
+    Record<number, Record<string, string>>
+  >({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
         const res = await api.get<GameResult[]>("/game-results/me");
-        setResults(res.data ?? []);
+        const list = res.data ?? [];
+        setResults(list);
+
+        const maps: Record<number, Record<string, string>> = {};
+        for (const r of list) {
+          try {
+            const scen = await api.get(`/scenarios/${r.scenIdx}`);
+            let content: any = scen.data?.contentJson;
+            if (typeof content === "string") {
+              try {
+                content = JSON.parse(content);
+              } catch {
+                content = {};
+              }
+            }
+            const chars: any[] = Array.isArray(content?.characters)
+              ? content.characters
+              : [];
+            const map: Record<string, string> = {};
+            chars.forEach((c) => {
+              if (c?.id && c?.name) map[String(c.id)] = String(c.name);
+            });
+            maps[r.scenIdx] = map;
+          } catch {
+            maps[r.scenIdx] = {};
+          }
+        }
+        setNameMaps(maps);
       } catch (err) {
         console.error("게임 기록 불러오기 실패:", err);
       }
@@ -56,13 +86,17 @@ export default function GameHistoryPage() {
 
   const culpritText = (r: GameResult) => {
     const a = r.answerJson ?? {};
-    if (typeof a.culprit === "string") return a.culprit || "미입력";
-    if (a.culprit && typeof a.culprit.name === "string") return a.culprit.name;
+    const map = nameMaps[r.scenIdx] || {};
+    if (typeof a.culprit === "string") {
+      return map[a.culprit] || a.culprit || "미입력";
+    }
+    if (a.culprit && typeof a.culprit.name === "string") {
+      return a.culprit.name;
+    }
     return "미입력";
   };
 
   return (
-    // ✅ 섹션에 좁은 폭 클래스를 추가
     <section className="account-section">
       <h3 className="mypage-section-title">내 게임 기록</h3>
 
@@ -99,32 +133,10 @@ export default function GameHistoryPage() {
               <div className="account-card-body">
                 <div className="account-profile-grid">
                   <div className="k">범인 추리</div>
-                  <div className="v">
-                    {(() => {
-                      const a = r.answerJson ?? {};
-                      if (typeof a.culprit === "string")
-                        return a.culprit || "미입력";
-                      if (a.culprit && typeof a.culprit.name === "string")
-                        return a.culprit.name;
-                      return "미입력";
-                    })()}
-                  </div>
+                  <div className="v">{culpritText(r)}</div>
 
                   <div className="k">능력치 평균</div>
-                  <div className="v">
-                    {(() => {
-                      const s = r.skillsJson ?? {};
-                      const vals = [
-                        Number(s.logic) || 0,
-                        Number(s.creativity) || 0,
-                        Number(s.focus) || 0,
-                        Number(s.diversity) || 0,
-                        Number(s.depth) || 0,
-                      ];
-                      return Math.round(vals.reduce((a, b) => a + b, 0) / 5);
-                    })()}
-                    점
-                  </div>
+                  <div className="v">{avgScore(r)}점</div>
                 </div>
               </div>
             </div>
