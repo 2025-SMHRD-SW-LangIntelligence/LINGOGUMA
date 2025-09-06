@@ -580,13 +580,7 @@ export default function GamePlayPage() {
           <div className="memo-header" onMouseDown={onDragStart}>
             📝 메모장
           </div>
-        </div>
-      )}
-      {memoOpen && (
-        <div
-          className="memo-popup-body"
-          style={{ top: memoPos.y + 32, left: memoPos.x, position: "absolute" }}
-        >
+
           <textarea
             value={memoText}
             onChange={(e) => setMemoText(e.target.value)}
