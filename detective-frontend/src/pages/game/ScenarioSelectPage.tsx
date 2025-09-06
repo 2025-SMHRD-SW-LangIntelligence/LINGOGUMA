@@ -5,6 +5,7 @@ import { useAuth } from "@/store/auth.store";
 import { api } from "@/shared/api/client";
 import "@/shared/styles/ScenarioSelectPage.css";
 
+import bg from "@/assets/images/background.jpg";
 import folder from "@/assets/images/folder.png";
 import tutoImg from "@/assets/images/effects/tuto.png";
 import star from "@/assets/images/icons/star.png";
@@ -168,7 +169,16 @@ export default function ScenarioSelectPage() {
      렌더
      ========================= */
   return (
-    <div className="sc-root">
+    <div
+      className="sc-root"
+      style={{
+        minHeight: "100dvh",
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       {/* 우상단 고정 아바타 버튼 */}
       <button
         type="button"
