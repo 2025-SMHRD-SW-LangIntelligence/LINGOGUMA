@@ -173,6 +173,8 @@
 }
 .btn-ghost:hover {
   opacity: 1;
+  background: #ffffff;
+  color: #000;
 }
 
 /* 링크/보조 영역 */
@@ -265,4 +267,11 @@
   .auth--signup::after {
     top: 30%;
   }
+}
+
+.auth-complete-msg {
+  margin: 12px 0 20px;
+  text-align: center;
+  font-size: clamp(15px, 2vw, 18px);
+  color: #fff;
 }

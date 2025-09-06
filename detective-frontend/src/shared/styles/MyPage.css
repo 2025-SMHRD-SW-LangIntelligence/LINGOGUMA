@@ -273,6 +273,7 @@
 .account-btn-primary {
   background: #e77a3e;
   border-color: #e77a3e;
+  color: #ffffff !important;
 }
 .account-btn-primary:hover {
   background: #ff914d;

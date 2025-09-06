@@ -452,7 +452,7 @@
 .btn.btn-danger {
   background: var(--danger);
   border-color: var(--danger);
-  color: #111;
+  color: #fff;
 }
 
 /* 상태 뱃지 */
