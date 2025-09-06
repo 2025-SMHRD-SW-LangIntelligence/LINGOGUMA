@@ -379,8 +379,9 @@ export default function AnalysisPage() {
         </div>
 
         {/* 제출 답변 + 유사도 */}
-        <section className="cap-feedback" style={{ marginTop: 12 }}>
-          <h3>제출한 답변(미리보기)</h3>
+        <section className="cap-feedback">
+          <h2>제출한 답변</h2>
+          <p></p>
 
           {simLoading && (
             <p style={{ opacity: 0.8 }}>유사도 분석 불러오는 중...</p>
@@ -389,20 +390,20 @@ export default function AnalysisPage() {
 
           <ul>
             <li>
-              <b>동기</b>: {viewAnswers.동기 || "(비어 있음)"}{" "}
+              <b>동기</b> : {viewAnswers.동기 || "(비어 있음)"}{" "}
               {sim ? <YesNo ok={!!sim.verdict?.motive} /> : null}
               {sim ? (
                 <span style={{ marginLeft: 8, opacity: 0.8 }}>
-                  {Math.round((sim.sim_motive ?? 0) * 100)}%
+                  ({Math.round((sim.sim_motive ?? 0) * 100)}%)
                 </span>
               ) : null}
             </li>
             <li>
-              <b>수법</b>: {viewAnswers.수법 || "(비어 있음)"}{" "}
+              <b>수법</b> : {viewAnswers.수법 || "(비어 있음)"}{" "}
               {sim ? <YesNo ok={!!sim.verdict?.method} /> : null}
               {sim ? (
                 <span style={{ marginLeft: 8, opacity: 0.8 }}>
-                  {Math.round((sim.sim_method ?? 0) * 100)}%
+                  ({Math.round((sim.sim_method ?? 0) * 100)}%)
                 </span>
               ) : null}
             </li>
@@ -411,16 +412,15 @@ export default function AnalysisPage() {
           {/* 증거 브레이크다운(있으면) */}
           {sim?.evidence_breakdown?.length ? (
             <div style={{ marginTop: 10 }}>
-              <h4>증거 매칭</h4>
+              <p></p>
+              <h3>증거 매칭</h3>
               <ul style={{ paddingLeft: 18 }}>
                 {sim.evidence_breakdown.map((it, idx) => (
                   <li key={idx} style={{ marginBottom: 4 }}>
                     <span style={{ fontWeight: 600 }}>{it.text}</span>
                     <YesNo ok={it.matched} />
                     {it.matched && it.matchedName ? (
-                      <span style={{ marginLeft: 6, opacity: 0.8 }}>
-                        (정답: {it.matchedName})
-                      </span>
+                      <span style={{ marginLeft: 6, opacity: 0.8 }}></span>
                     ) : null}
                   </li>
                 ))}
