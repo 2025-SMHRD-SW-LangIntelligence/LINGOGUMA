@@ -99,8 +99,8 @@
   left: 50%;
   top: 58%;
   transform: translate(-50%, -50%);
-  width: min(1000px, 60vw);
-  height: min(460px, 50vh);
+  width: min(1100px, 68vw);
+  height: min(640px, 68vh);
   display: grid;
   grid-template-columns: repeat(4, max-content);
   justify-content: center;
@@ -111,18 +111,21 @@
 }
 .actor-btn {
   position: relative;
-  width: 100%;
-  background: transparent;
+  display: inline-block; /* ← grid → inline-block 로 변경 */
+  width: auto; /* ← 이미지 크기만큼만 버튼 생성 */
+  background: none;
   border: none;
   padding: 0;
-  display: grid;
-  justify-items: center;
-  gap: 4px;
+  margin: 0;
+  line-height: 0; /* ← 인라인 공백 제거 */
   cursor: pointer;
 }
+
 .actor-full {
-  width: clamp(120px, 16vw, 200px);
-  max-height: 70%;
+  display: block;
+  height: clamp(420px, 56vh, 720px); /* ← 원하는 만큼 키우면 됨 */
+  width: auto; /* 비율 유지 */
+  max-height: none; /* stage 높이 내에서만 제한 */
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
   transition: transform 0.18s ease;
@@ -130,15 +133,20 @@
 .actor-btn:hover .actor-full {
   transform: translateY(-2px) scale(1.02);
 }
+.actor-avatar img {
+  display: block;
+  height: clamp(269px, 38vh, 520px);
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  user-select: none;
+}
 .actor-name {
   position: absolute;
-  /*bottom: var(--name-bottom, 12%);
-  bottom: calc(100% + 8px);*/
-  top: 50%;
-  bottom: auto;
   left: 50%;
-  /*transform: translateX(-50%);*/
-  transform: translate(-50%, -50%);
+  bottom: 45px; /* ← 이미지 안쪽 하단 고정 */
+  transform: translateX(-50%);
   padding: 4px 8px;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.45);
