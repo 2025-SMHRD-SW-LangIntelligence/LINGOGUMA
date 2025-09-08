@@ -102,7 +102,12 @@ public class GameController {
             "액션은 플레이어가 요청할 때만 정보를 제공한다.",
             "액션은 증거를 원본 그대로 전달하며 변형하지 않는다.",
             "액션은 사건의 결과나 정답을 직접 말하지 않고, 단서만 보여준다.",
-            "액션은 현장 조사, CCTV 확인, 물건 검색, 기록 조회, 목격자 증언 수집 등을 수행합니다."
+            "액션은 현장 조사, CCTV 확인, 물건 검색, 기록 조회, 목격자 증언 수집 등을 수행합니다.",
+            "액션은 나의 행동이다."
+            // 소문
+            
+
+            
         );
 
         StringBuilder systemPrompt = new StringBuilder();
@@ -113,6 +118,11 @@ public class GameController {
                 systemPrompt.append("- ").append(r).append("\n");
             }
         }
+
+        // [ADD] 소문 전용 규칙 추가 (프롬프트만으로 제어)
+        systemPrompt.append("\n[소문 규칙]\n");
+        systemPrompt.append("- 사용자가 \"소문을 조사한다\"라고 입력하면, 아래 [rumors] 목록만 줄바꿈으로 그대로 출력한다.\n");
+        systemPrompt.append("- 부가 설명, 요약, 분석, 감정 표현은 금지한다.\n");
 
         // 게임 설명
         systemPrompt.append("게임 설명:\n");
