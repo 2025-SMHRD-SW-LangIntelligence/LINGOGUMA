@@ -337,11 +337,9 @@ export default function GamePlayPage() {
               }));
 
             setMsgs(baseMsgs);
-            // 복원 직후 첫 저장 스킵 플래그를 꺼서 바로 저장되게 하거나,
-            // 여기서 직접 저장한다. (아래는 직접 저장)
+            // 복원 직후 첫 저장 스킵을 해제하고 즉시 저장
             try {
               sessionStorage.setItem(MSGS_KEY, JSON.stringify(baseMsgs));
-              // 이후 저장 루프와의 충돌 방지 위해 저장 스킵은 해제
               skipNextSaveRef.current = false;
             } catch {
               /* noop */
@@ -396,6 +394,53 @@ export default function GamePlayPage() {
     },
     []
   );
+
+  /* -------------------------------
+     ✅ 용의자 소개(브리핑) 상태/로직
+     ------------------------------- */
+  type BriefItem = PlaySuspect & {
+    facts: string[];
+    quote?: string;
+  };
+
+  const briefList: BriefItem[] = useMemo(() => {
+    return (suspects ?? [])
+      .filter((s) => s.id !== ACTION_ID) // 조사(Action) 항목 제외
+      .map((s) => {
+        const facts = Array.isArray(s.facts) ? s.facts.map(String) : [];
+        const quote = (s.comment ?? "").trim();
+        return { ...s, facts, quote };
+      })
+      .filter((b) => b.quote || b.facts.length > 0);
+  }, [suspects]);
+
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [briefIdx, setBriefIdx] = useState(0);
+  const briefInitRef = useRef(false);
+
+  useEffect(() => {
+    if (briefInitRef.current) return;
+    if (briefList.length > 0) {
+      setBriefOpen(true);
+      setBriefIdx(0);
+      briefInitRef.current = true;
+    }
+  }, [briefList]);
+
+  const currentBrief = briefList[briefIdx];
+  const briefFacts = currentBrief?.facts ?? [];
+  const briefQuote = currentBrief?.quote ?? "";
+  const briefImgSrc =
+    currentBrief?.full || currentBrief?.avatar || placeholderFull;
+
+  const closeBrief = () => setBriefOpen(false);
+  const nextBrief = () => {
+    if (briefIdx < briefList.length - 1) setBriefIdx((i) => i + 1);
+    else closeBrief();
+  };
+  const prevBrief = () => {
+    if (briefIdx > 0) setBriefIdx((i) => i - 1);
+  };
 
   /* --- 질문 전송 --- */
   const send = async () => {
@@ -522,6 +567,68 @@ export default function GamePlayPage() {
       <button className="timer-badge" onClick={goResult}>
         심문 종료 ({mm}:{ss})
       </button>
+
+      {/* ✅ 용의자 소개(브리핑) 오버레이 */}
+      {briefOpen && currentBrief && (
+        <div
+          className="brief-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="용의자 설명"
+        >
+          <div className="brief-dim" />
+
+          <div className="brief-panel">
+            <div
+              className="brief-figure"
+              style={{ ["--brief-img" as any]: `url(${briefImgSrc})` }}
+            >
+              <img
+                src={briefImgSrc}
+                alt={currentBrief.name}
+                onError={(e) => (e.currentTarget.src = placeholderFull)}
+              />
+            </div>
+
+            <div className="brief-text">
+              <h2 className="brief-title">{currentBrief.name}</h2>
+
+              {briefFacts.length > 0 && (
+                <ul className="brief-facts">
+                  {briefFacts.map((line, i) => (
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
+              )}
+
+              {briefQuote && <p className="brief-quote">{briefQuote}</p>}
+            </div>
+          </div>
+
+          {/* 오른쪽 아래 내비 */}
+          <div className="brief-navs">
+            <button
+              type="button"
+              className="brief-sidenav prev fab-like"
+              onClick={prevBrief}
+              aria-label="이전"
+              title="이전"
+            >
+              <IconChatLeft />
+            </button>
+
+            <button
+              type="button"
+              className="brief-sidenav next fab-like"
+              onClick={nextBrief}
+              aria-label="다음"
+              title="다음"
+            >
+              <IconChatRight />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 좌측 도구 */}
       <div className="tools">
