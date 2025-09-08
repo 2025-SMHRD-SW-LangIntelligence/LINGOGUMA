@@ -91,6 +91,7 @@ public class GameController {
             "플레이어는 탐정이다. 반드시 플레이어의 질문과 요청에 집중한다.",
             "사건과 무관한 잡담은 하지 않는다.",
             "항상 캐릭터 설정(신상, 성격, 말투)을 유지한다.",
+            "초등학생도 이해할 수 있게 쉬운 단어를 사용할 것",
             // 용의자
             "용의자는 자신의 알리바이를 일관성 있게 유지한다.",
             "용의자는 증거와 명백히 모순되는 발언은 피한다.",
@@ -123,6 +124,10 @@ public class GameController {
         systemPrompt.append("\n[소문 규칙]\n");
         systemPrompt.append("- 사용자가 \"소문을 조사한다\"라고 입력하면, 아래 [rumors] 목록만 줄바꿈으로 그대로 출력한다.\n");
         systemPrompt.append("- 부가 설명, 요약, 분석, 감정 표현은 금지한다.\n");
+
+        // 추가 설정
+        systemPrompt.append("[additional_setting]을 읽고 시나리오에 반영해라\n");
+        systemPrompt.append("플레이들의 각자의 역할은 [additional_setting]에 명시되어 있고 그들은 자신의 역할에 대해 플레이어에게 말할 수 있다");
 
         // 게임 설명
         systemPrompt.append("게임 설명:\n");
